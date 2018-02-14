@@ -1,0 +1,81 @@
+UNAME_SYSTEM := $(shell uname -s)
+
+CUDAPATH = /usr/local/cuda
+NVCC = ${CUDAPATH}/bin/nvcc
+CXXFLAGS = -I$(OFXPATH)/include -I$(PATHTOROOT)/include -I$(OFXSEXTPATH)
+PLUGINFOLDER = BaldavengerPlugins
+
+ifeq ($(UNAME_SYSTEM), Linux)
+	OPENCLPATH = /opt/AMDAPP
+	CXXFLAGS += -I${OPENCLPATH}/include -fPIC
+	NVCCFLAGS = --compiler-options="-fPIC"
+	ARCH = Linux-x86-64
+	CUFLAGS = -L${CUDAPATH}/lib64 -lcuda -lcudart
+	LINKFLAGS_OR = -shared
+	LINKFLAGS = $(LINKFLAGS_OR)
+	OFX_DIR = /usr/OFX/Plugins
+endif
+
+ifeq ($(UNAME_SYSTEM), Darwin)
+	CUFLAGS = -L${CUDAPATH}/lib -lcuda -lcudart -F/Library/Frameworks -framework CUDA -framework OpenCL -framework OpenGL -framework AppKit
+	CLFLAGS = -F/Library/Frameworks -framework OpenCL -framework OpenGL -framework AppKit
+	CPUFLAGS = -F/Library/Frameworks -framework OpenGL -framework AppKit
+	LINKFLAGS_OR = -bundle -fvisibility=hidden -exported_symbols_list $(PATHTOROOT)/include/osxSymbols
+	LINKFLAGS = $(LINKFLAGS_OR)
+	ARCH = MacOS
+	OFX_DIR = /Library/OFX/Plugins
+endif
+
+ifeq ($(ENABLECUDA), TRUE)
+	CXXFLAGS += -I${CUDAPATH}/include
+	LINKFLAGS += $(CUFLAGS)
+else
+	LINKFLAGS += $(CLFLAGS)
+	PLUGINFOLDER = BaldavengerPluginsCL
+endif
+
+ifeq ($(CPU_ONLY), TRUE)
+	LINKFLAGS = $(LINKFLAGS_OR)
+	LINKFLAGS += $(CPUFLAGS)
+	PLUGINFOLDER = BaldavengerPluginsCPU
+endif
+
+	BUNDLE_DIR = $(TOP_SRCDIR)/$(PLUGINFOLDER)/$(PLUGINNAME).ofx.bundle/Contents/$(ARCH)/
+	BUNDLE_RES = $(TOP_SRCDIR)/$(PLUGINFOLDER)/$(PLUGINNAME).ofx.bundle/Contents/Resources/
+	PLUGIN_DIR = $(OFX_DIR)/$(PLUGINFOLDER)/$(PLUGINNAME).ofx.bundle/Contents/$(ARCH)/
+	PLUGIN_RES = $(OFX_DIR)/$(PLUGINFOLDER)/$(PLUGINNAME).ofx.bundle/Contents/Resources/
+	
+ifeq ($(INSTALL_PLUGIN), TRUE)
+	BUNDLE_DIR = $(PLUGIN_DIR)
+	BUNDLE_RES = $(PLUGIN_RES)
+endif
+
+SUPPORTOBJECTS ?= \
+ofxsMultiThread.o \
+ofxsInteract.o \
+ofxsProperty.o \
+ofxsLog.o \
+ofxsCore.o \
+ofxsPropertyValidation.o \
+ofxsImageEffect.o \
+ofxsParams.o 
+
+VPATH += $(PATHTOROOT)/Library $(OFXSEXTPATH)
+
+$(PLUGINNAME).ofx: $(PLUGINOBJECTS) $(SUPPORTOBJECTS)
+	$(CXX) $^ -o $@ $(LINKFLAGS)
+	mkdir -p $(BUNDLE_DIR)
+	cp $(PLUGINNAME).ofx $(BUNDLE_DIR)
+	mkdir -p $(BUNDLE_RES)
+	cp $(RESOURCES) $(BUNDLE_RES)
+	rm *.o *.ofx
+
+$(PLUGINNAME)CudaKernel.o: $(PLUGINNAME)CudaKernel.cu
+	${NVCC} -c $< $(NVCCFLAGS)
+
+%.o: $(PATHTOROOT)/Library/%.cpp
+	$(CXX) -c $< $(CXXFLAGS)
+	
+clean:
+	rm -f *.o *.ofx
+	rm -fr $(PLUGINNAME).ofx.bundle
