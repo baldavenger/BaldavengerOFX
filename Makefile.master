@@ -1,0 +1,17 @@
+# DaVinci Resolve specific libraries
+
+OFXPATH ?= $(TOP_SRCDIR)/openfx
+OFXSEXTPATH ?= $(TOP_SRCDIR)/SupportExt
+
+PATHTOROOT = $(OFXPATH)/Support
+
+## Select TRUE to install directly to OFX/Plugin folder, select FALSE for usual location. OVERRIDE ##
+#INSTALL_PLUGIN := TRUE
+
+## Select TRUE to include CUDA option, select FALSE for only OpenCL. OVERRIDE ##
+#ENABLECUDA := TRUE
+
+## Select TRUE for CPU ONLY processing (removes both CUDA and OpenCL, overrides ENABLECUDA), select FALSE for no change. OVERRIDE ##
+#CPU_ONLY := FALSE
+
+include $(PATHTOROOT)/Plugins/Makefile.master
