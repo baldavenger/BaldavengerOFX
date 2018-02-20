@@ -30,8 +30,8 @@ using std::string;
 "Convolution Filters"
 
 #define kPluginIdentifier "OpenFX.Yo.Convolution"
-#define kPluginVersionMajor 2
-#define kPluginVersionMinor 1
+#define kPluginVersionMajor 1
+#define kPluginVersionMinor 2
 
 #define kSupportsTiles false
 #define kSupportsMultiResolution false
@@ -56,6 +56,8 @@ using std::string;
 #define kParamConvolutionOptionErodeHint "erodes dark area of matte"
 #define kParamConvolutionOptionDilate "Dilate"
 #define kParamConvolutionOptionDilateHint "expands dark area of matte"
+#define kParamConvolutionOptionScatter "Scatter"
+#define kParamConvolutionOptionScatterHint "disperse pixels within controlled range"
 #define kParamConvolutionOptionCustom "Custom"
 #define kParamConvolutionOptionCustomHint "custom 3x3 spatial matrix"
 
@@ -69,6 +71,7 @@ enum ConvolutionEnum
     eConvolutionEdgeEnhance,
     eConvolutionErode,
     eConvolutionDilate,
+    eConvolutionScatter,
     eConvolutionCustom,
 };
 
@@ -92,17 +95,14 @@ public:
     virtual void multiThreadProcessImages(OfxRectI p_ProcWindow);
     
     void setSrcImg(OFX::Image* p_SrcImg);
-    void setScales(int p_Convolve, float p_Adjust1, float p_Adjust2, float p_Threshold, int p_Display, float p_Matrix11, float p_Matrix12, 
-		float p_Matrix13, float p_Matrix21, float p_Matrix22, float p_Matrix23, float p_Matrix31, float p_Matrix32, float p_Matrix33);
+    void setScales(int p_Convolve, int p_Display, float* p_Adjust, float* p_Matrix);
 
 private:
     OFX::Image* _srcImg;
-    int convolve;
-    float adjust1;
-    float adjust2;
-    float threshold;
-    int display;
-    float matrix[9];
+    int _convolve;
+    int _display;
+    float _adjust[3];
+    float _matrix[9];
 };
 
 Convolution::Convolution(OFX::ImageEffect& p_Instance)
@@ -110,8 +110,8 @@ Convolution::Convolution(OFX::ImageEffect& p_Instance)
 {
 }
 /*
-extern void RunCudaKernel(int p_Width, int p_Height, int p_Convolve, float p_Adjust1, 
-float p_Adjust2, float p_Threshold, int p_Display, float* p_Matrix, float* p_Input, float* p_Output);
+extern void RunCudaKernel(float* p_Input, float* p_Output, int p_Width, int p_Height, 
+int p_Convolve, int p_Display, float* p_Adjust, float* p_Matrix);
 
 void Convolution::processImagesCUDA()
 {
@@ -122,11 +122,11 @@ void Convolution::processImagesCUDA()
     float* input = static_cast<float*>(_srcImg->getPixelData());
     float* output = static_cast<float*>(_dstImg->getPixelData());
 
-    RunCudaKernel(width, height, convolve, adjust1, adjust2, threshold, display, matrix, input, output);
+    RunCudaKernel(input, output, width, height, _convolve, _display, _adjust, _matrix);
 }
 
-extern void RunOpenCLKernel(void* p_CmdQ, int p_Width, int p_Height, int p_Convolve, 
-float p_Adjust1, float p_Adjust2, float p_Threshold, int p_Display, float* p_Matrix, float* p_Input, float* p_Output);
+extern void RunOpenCLKernel(void* p_CmdQ, float* p_Input, float* p_Output, int p_Width, int p_Height, 
+int p_Convolve, int p_Display, float* p_Adjust, float* p_Matrix);
 
 void Convolution::processImagesOpenCL()
 {
@@ -137,7 +137,7 @@ void Convolution::processImagesOpenCL()
     float* input = static_cast<float*>(_srcImg->getPixelData());
     float* output = static_cast<float*>(_dstImg->getPixelData());
 
-    RunOpenCLKernel(_pOpenCLCmdQ, width, height, convolve, adjust1, adjust2, threshold, display, matrix, input, output);
+    RunOpenCLKernel(_pOpenCLCmdQ, input, output, width, height, _convolve, _display, _adjust, _matrix);
 }
 */
 void Convolution::multiThreadProcessImages(OfxRectI p_ProcWindow)
@@ -181,23 +181,22 @@ void Convolution::setSrcImg(OFX::Image* p_SrcImg)
     _srcImg = p_SrcImg;
 }
 
-void Convolution::setScales(int p_Convolve, float p_Adjust1, float p_Adjust2, float p_Threshold, int p_Display, float p_Matrix11, float p_Matrix12, 
-			float p_Matrix13, float p_Matrix21, float p_Matrix22, float p_Matrix23, float p_Matrix31, float p_Matrix32, float p_Matrix33)
+void Convolution::setScales(int p_Convolve, int p_Display, float* p_Adjust, float* p_Matrix)
 {
-   convolve = p_Convolve;
-   adjust1 = p_Adjust1;
-   adjust2 = p_Adjust2;
-   threshold = p_Threshold;
-   display = p_Display;
-   matrix[0] = p_Matrix11;
-   matrix[1] = p_Matrix12;
-   matrix[2] = p_Matrix13;
-   matrix[3] = p_Matrix21;
-   matrix[4] = p_Matrix22;
-   matrix[5] = p_Matrix23;
-   matrix[6] = p_Matrix31;
-   matrix[7] = p_Matrix32;
-   matrix[8] = p_Matrix33;
+   _convolve = p_Convolve;
+   _display = p_Display;
+   _adjust[0] = p_Adjust[0];
+   _adjust[1] = p_Adjust[1];
+   _adjust[2] = p_Adjust[2];
+   _matrix[0] = p_Matrix[0];
+   _matrix[1] = p_Matrix[1];
+   _matrix[2] = p_Matrix[2];
+   _matrix[3] = p_Matrix[3];
+   _matrix[4] = p_Matrix[4];
+   _matrix[5] = p_Matrix[5];
+   _matrix[6] = p_Matrix[6];
+   _matrix[7] = p_Matrix[7];
+   _matrix[8] = p_Matrix[8];
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -227,7 +226,7 @@ private:
     OFX::ChoiceParam* m_Convolve;
     OFX::DoubleParam* m_Adjust1;
     OFX::DoubleParam* m_Adjust2;
-    OFX::DoubleParam* m_Threshold;
+    OFX::DoubleParam* m_Adjust3;
     OFX::BooleanParam* m_Display;
     OFX::Double3DParam* m_Row1;
     OFX::Double3DParam* m_Row2;
@@ -251,19 +250,19 @@ ConvolutionPlugin::ConvolutionPlugin(OfxImageEffectHandle p_Handle)
     m_Convolve = fetchChoiceParam(kParamConvolution);
     m_Adjust1 = fetchDoubleParam("Adjust1");
     m_Adjust2 = fetchDoubleParam("Adjust2");
-    m_Threshold = fetchDoubleParam("Threshold");
-    m_Display = fetchBooleanParam("display");
-    m_Row1 = fetchDouble3DParam("row1");
-    m_Row2 = fetchDouble3DParam("row2");
-    m_Row3 = fetchDouble3DParam("row3");
+    m_Adjust3 = fetchDoubleParam("Adjust3");
+    m_Display = fetchBooleanParam("Display");
+    m_Row1 = fetchDouble3DParam("Row1");
+    m_Row2 = fetchDouble3DParam("Row2");
+    m_Row3 = fetchDouble3DParam("Row3");
 
-    m_Path = fetchStringParam("path");
-    m_Path2 = fetchStringParam("path2");
-	m_Name = fetchStringParam("name");
-	m_Info = fetchPushButtonParam("info");
-	m_Button1 = fetchPushButtonParam("button1");
-	m_Button2 = fetchPushButtonParam("button2");
-	m_Button3 = fetchPushButtonParam("button3");
+    m_Path = fetchStringParam("Path");
+    m_Path2 = fetchStringParam("Path2");
+	m_Name = fetchStringParam("Name");
+	m_Info = fetchPushButtonParam("Info");
+	m_Button1 = fetchPushButtonParam("Button1");
+	m_Button2 = fetchPushButtonParam("Button2");
+	m_Button3 = fetchPushButtonParam("Button3");
 
 }
 
@@ -308,10 +307,15 @@ void ConvolutionPlugin::changedParam(const OFX::InstanceChangedArgs& p_Args, con
     bool enhance = convolve_i == 5;
     bool erode = convolve_i == 6;
     bool dilate = convolve_i == 7;
-    bool cust = convolve_i == 8;
+    bool scatter = convolve_i == 8;
+    bool cust = convolve_i == 9;
     
     if(erode || dilate) {
     m_Adjust1->setLabel("amount");
+    } else
+    if(scatter) {
+    m_Adjust1->setLabel("amount");
+    m_Adjust2->setLabel("mix");
     } else
     if(cust || enhance) {
     m_Adjust1->setLabel("scale");
@@ -319,7 +323,7 @@ void ConvolutionPlugin::changedParam(const OFX::InstanceChangedArgs& p_Args, con
     } else {
     m_Adjust1->setLabel("blur");
     m_Adjust2->setLabel("sharpen");
-    m_Threshold->setLabel("threshold");
+    m_Adjust3->setLabel("threshold");
     }
     
     if(edge) {
@@ -328,8 +332,8 @@ void ConvolutionPlugin::changedParam(const OFX::InstanceChangedArgs& p_Args, con
     m_Adjust1->setIsSecretAndDisabled(false);
     }
     
-    m_Adjust2->setIsSecretAndDisabled(!freq);
-    m_Threshold->setIsSecretAndDisabled(!freq && !edge);
+    m_Adjust2->setIsSecretAndDisabled(!freq && !scatter);
+    m_Adjust3->setIsSecretAndDisabled(!freq && !edge);
     m_Display->setIsSecretAndDisabled(!freq && !cust);
     m_Row1->setIsSecretAndDisabled(!cust);
     m_Row2->setIsSecretAndDisabled(!cust);
@@ -337,14 +341,14 @@ void ConvolutionPlugin::changedParam(const OFX::InstanceChangedArgs& p_Args, con
     
     }
     
-    if(p_ParamName == "info")
+    if(p_ParamName == "Info")
     {
 	
 	sendMessage(OFX::Message::eMessageMessage, "", string(kPluginDescription));
 	
 	}
 	
-	if(p_ParamName == "button1")
+	if(p_ParamName == "Button1")
     {
        
 	string PATH;
@@ -378,7 +382,7 @@ void ConvolutionPlugin::changedParam(const OFX::InstanceChangedArgs& p_Args, con
 	}
 	}
 
-	if(p_ParamName == "button2")
+	if(p_ParamName == "Button2")
     {
     
 	string PATH;
@@ -413,7 +417,7 @@ void ConvolutionPlugin::changedParam(const OFX::InstanceChangedArgs& p_Args, con
 	}
 	}
     
-    if(p_ParamName == "button3")
+    if(p_ParamName == "Button3")
     {
     
     string PATH2;
@@ -480,32 +484,31 @@ void ConvolutionPlugin::setupAndProcess(Convolution& p_Convolution, const OFX::R
 	int convolve_i;
     m_Convolve->getValueAtTime(p_Args.time, convolve_i);
     ConvolutionEnum ConvolutionFilter = (ConvolutionEnum)convolve_i;
-    
     int _convolve = convolve_i;
-
-	double _adjust1 = m_Adjust1->getValueAtTime(p_Args.time);
-	double _adjust2 = m_Adjust2->getValueAtTime(p_Args.time);
-	double _threshold = m_Threshold->getValueAtTime(p_Args.time);
-	bool display = m_Display->getValueAtTime(p_Args.time);
+    
+    bool display = m_Display->getValueAtTime(p_Args.time);
 	int _display = display ? 1 : 0;
+
+	float _adjust[3];
+	float _matrix[9];
+
+	_adjust[0] = m_Adjust1->getValueAtTime(p_Args.time);
+	_adjust[1] = m_Adjust2->getValueAtTime(p_Args.time);
+	_adjust[2] = m_Adjust3->getValueAtTime(p_Args.time);
 	
-	RGBValues rMatrix;
+	RGBValues rMatrix, gMatrix, bMatrix;
     m_Row1->getValueAtTime(p_Args.time, rMatrix.r, rMatrix.g, rMatrix.b);
-    double r1Matrix = rMatrix.r;
-    double r2Matrix = rMatrix.g;
-    double r3Matrix = rMatrix.b;
-    
-    RGBValues gMatrix;
     m_Row2->getValueAtTime(p_Args.time, gMatrix.r, gMatrix.g, gMatrix.b);
-    double g1Matrix = gMatrix.r;
-    double g2Matrix = gMatrix.g;
-    double g3Matrix = gMatrix.b;
-    
-    RGBValues bMatrix;
     m_Row3->getValueAtTime(p_Args.time, bMatrix.r, bMatrix.g, bMatrix.b);
-    double b1Matrix = bMatrix.r;
-    double b2Matrix = bMatrix.g;
-    double b3Matrix = bMatrix.b;
+    _matrix[0] = rMatrix.r;
+    _matrix[1] = rMatrix.g;
+    _matrix[2] = rMatrix.b;
+    _matrix[3] = gMatrix.r;
+    _matrix[4] = gMatrix.g;
+    _matrix[5] = gMatrix.b;
+    _matrix[6] = bMatrix.r;
+    _matrix[7] = bMatrix.g;
+    _matrix[8] = bMatrix.b;
 
     // Set the images
     p_Convolution.setDstImg(dst.get());
@@ -518,8 +521,7 @@ void ConvolutionPlugin::setupAndProcess(Convolution& p_Convolution, const OFX::R
     p_Convolution.setRenderWindow(p_Args.renderWindow);
 
     // Set the scales
-    p_Convolution.setScales(_convolve, _adjust1, _adjust2, _threshold, _display, 
-    r1Matrix, r2Matrix, r3Matrix, g1Matrix, g2Matrix, g3Matrix, b1Matrix, b2Matrix, b3Matrix);
+    p_Convolution.setScales(_convolve, _display, _adjust, _matrix);
 
     // Call the base class process member, this will call the derived templated process code
     p_Convolution.process();
@@ -581,32 +583,32 @@ void ConvolutionPluginFactory::describeInContext(OFX::ImageEffectDescriptor& p_D
     // Make some pages and to things in
     PageParamDescriptor* page = p_Desc.definePageParam("Controls");
     
-    {
-	ChoiceParamDescriptor *param = p_Desc.defineChoiceParam(kParamConvolution);
-	param->setLabel(kParamConvolutionLabel);
-	param->setHint(kParamConvolutionHint);
-	assert(param->getNOptions() == (int)eConvolutionGaus);
-	param->appendOption(kParamConvolutionOptionGaus, kParamConvolutionOptionGausHint);
-	assert(param->getNOptions() == (int)eConvolutionSimple);
-	param->appendOption(kParamConvolutionOptionSimple, kParamConvolutionOptionSimpleHint);
-	assert(param->getNOptions() == (int)eConvolutionBox);
-	param->appendOption(kParamConvolutionOptionBox, kParamConvolutionOptionBoxHint);
-	assert(param->getNOptions() == (int)eConvolutionFrequency);
-	param->appendOption(kParamConvolutionOptionFrequency, kParamConvolutionOptionFrequencyHint);
-	assert(param->getNOptions() == (int)eConvolutionEdgeDetect);
-	param->appendOption(kParamConvolutionOptionEdgeDetect, kParamConvolutionOptionEdgeDetectHint);
-	assert(param->getNOptions() == (int)eConvolutionEdgeEnhance);
-	param->appendOption(kParamConvolutionOptionEdgeEnhance, kParamConvolutionOptionEdgeEnhanceHint);
-	assert(param->getNOptions() == (int)eConvolutionErode);
-	param->appendOption(kParamConvolutionOptionErode, kParamConvolutionOptionErodeHint);
-	assert(param->getNOptions() == (int)eConvolutionDilate);
-	param->appendOption(kParamConvolutionOptionDilate, kParamConvolutionOptionDilateHint);
-	assert(param->getNOptions() == (int)eConvolutionCustom);
-	param->appendOption(kParamConvolutionOptionCustom, kParamConvolutionOptionCustomHint);
-	param->setDefault( (int)eConvolutionGaus );
-	param->setAnimates(false);
-    page->addChild(*param);
-	}
+	ChoiceParamDescriptor *choiceparam = p_Desc.defineChoiceParam(kParamConvolution);
+	choiceparam->setLabel(kParamConvolutionLabel);
+	choiceparam->setHint(kParamConvolutionHint);
+	assert(choiceparam->getNOptions() == (int)eConvolutionGaus);
+	choiceparam->appendOption(kParamConvolutionOptionGaus, kParamConvolutionOptionGausHint);
+	assert(choiceparam->getNOptions() == (int)eConvolutionSimple);
+	choiceparam->appendOption(kParamConvolutionOptionSimple, kParamConvolutionOptionSimpleHint);
+	assert(choiceparam->getNOptions() == (int)eConvolutionBox);
+	choiceparam->appendOption(kParamConvolutionOptionBox, kParamConvolutionOptionBoxHint);
+	assert(choiceparam->getNOptions() == (int)eConvolutionFrequency);
+	choiceparam->appendOption(kParamConvolutionOptionFrequency, kParamConvolutionOptionFrequencyHint);
+	assert(choiceparam->getNOptions() == (int)eConvolutionEdgeDetect);
+	choiceparam->appendOption(kParamConvolutionOptionEdgeDetect, kParamConvolutionOptionEdgeDetectHint);
+	assert(choiceparam->getNOptions() == (int)eConvolutionEdgeEnhance);
+	choiceparam->appendOption(kParamConvolutionOptionEdgeEnhance, kParamConvolutionOptionEdgeEnhanceHint);
+	assert(choiceparam->getNOptions() == (int)eConvolutionErode);
+	choiceparam->appendOption(kParamConvolutionOptionErode, kParamConvolutionOptionErodeHint);
+	assert(choiceparam->getNOptions() == (int)eConvolutionDilate);
+	choiceparam->appendOption(kParamConvolutionOptionDilate, kParamConvolutionOptionDilateHint);
+	assert(choiceparam->getNOptions() == (int)eConvolutionScatter);
+	choiceparam->appendOption(kParamConvolutionOptionScatter, kParamConvolutionOptionScatterHint);
+	assert(choiceparam->getNOptions() == (int)eConvolutionCustom);
+	choiceparam->appendOption(kParamConvolutionOptionCustom, kParamConvolutionOptionCustomHint);
+	choiceparam->setDefault( (int)eConvolutionGaus );
+	choiceparam->setAnimates(false);
+    page->addChild(*choiceparam);
     
     DoubleParamDescriptor* param = p_Desc.defineDoubleParam("Adjust1");
     param->setLabel("blur");
@@ -627,7 +629,7 @@ void ConvolutionPluginFactory::describeInContext(OFX::ImageEffectDescriptor& p_D
     param->setIsSecretAndDisabled(true);
     page->addChild(*param);
     
-    param = p_Desc.defineDoubleParam("Threshold");
+    param = p_Desc.defineDoubleParam("Adjust3");
     param->setLabel("threshold");
     param->setHint("adjust threshold");
     param->setDefault(0.0);
@@ -637,97 +639,87 @@ void ConvolutionPluginFactory::describeInContext(OFX::ImageEffectDescriptor& p_D
     param->setIsSecretAndDisabled(true);
     page->addChild(*param);
     
-    BooleanParamDescriptor* boolParam = p_Desc.defineBooleanParam("display");
+    BooleanParamDescriptor* boolParam = p_Desc.defineBooleanParam("Display");
     boolParam->setLabel("display high frequency");
     //boolParam->setHint("display high frequency");
     boolParam->setDefault(false);
     boolParam->setIsSecretAndDisabled(true);
     page->addChild(*boolParam);
     
-    Double3DParamDescriptor* paramR = p_Desc.defineDouble3DParam("row1");
-    paramR->setLabel("Row 1");
+    Double3DParamDescriptor* paramR = p_Desc.defineDouble3DParam("Row1");
+    paramR->setLabel("row 1");
     paramR->setDefault(0, 0, 0);
     paramR->setIncrement(1);
     paramR->setIsSecretAndDisabled(true);
     page->addChild(*paramR);
     
-    Double3DParamDescriptor* paramG = p_Desc.defineDouble3DParam("row2");
-    paramG->setLabel("Row 2");
+    Double3DParamDescriptor* paramG = p_Desc.defineDouble3DParam("Row2");
+    paramG->setLabel("row 2");
     paramG->setDefault(0, 1, 0);
     paramG->setIncrement(1);
     paramG->setIsSecretAndDisabled(true);
     page->addChild(*paramG);
     
-    Double3DParamDescriptor* paramB = p_Desc.defineDouble3DParam("row3");
-    paramB->setLabel("Row 3");
+    Double3DParamDescriptor* paramB = p_Desc.defineDouble3DParam("Row3");
+    paramB->setLabel("row 3");
     paramB->setDefault(0, 0, 0);
     paramB->setIncrement(1);
     paramB->setIsSecretAndDisabled(true);
     page->addChild(*paramB);
 	
-    {
-    PushButtonParamDescriptor* param = p_Desc.definePushButtonParam("info");
-    param->setLabel("Info");
-    page->addChild(*param);
-    }
+    PushButtonParamDescriptor* pushparam = p_Desc.definePushButtonParam("Info");
+    pushparam->setLabel("info");
+    page->addChild(*pushparam);
     
-    {    
     GroupParamDescriptor* script = p_Desc.defineGroupParam("Script Export");
     script->setOpen(false);
-    script->setHint("export DCTL and Nuke script");
-      if (page) {
-            page->addChild(*script);
-            }
-    {
-    PushButtonParamDescriptor* param = p_Desc.definePushButtonParam("button1");
-    param->setLabel("Export DCTL");
-    param->setHint("create DCTL version");
-    param->setParent(*script);
-    page->addChild(*param);
+    script->setHint("export dctl and nuke script");
+    if (page) {
+    page->addChild(*script);
     }
-    {
-    PushButtonParamDescriptor* param = p_Desc.definePushButtonParam("button2");
-    param->setLabel("Export Nuke script");
-    param->setHint("create NUKE version");
-    param->setParent(*script);
-    page->addChild(*param);
-    }
-    {
-	StringParamDescriptor* param = p_Desc.defineStringParam("name");
-	param->setLabel("Name");
-	param->setHint("overwrites if the same");
-	param->setDefault("Convolution");
-	param->setParent(*script);
-	page->addChild(*param);
-	}
-	{
-	StringParamDescriptor* param = p_Desc.defineStringParam("path");
-	param->setLabel("Directory");
-	param->setHint("make sure it's the absolute path");
-	param->setStringType(eStringTypeFilePath);
-	param->setDefault(kPluginScript);
-	param->setFilePathExists(false);
-	param->setParent(*script);
-	page->addChild(*param);
-	}
-	{
-    PushButtonParamDescriptor* param = p_Desc.definePushButtonParam("button3");
-    param->setLabel("Export Shader");
-    param->setHint("create Shader version");
-    param->setParent(*script);
-    page->addChild(*param);
-    }
-    {
-	StringParamDescriptor* param = p_Desc.defineStringParam("path2");
-	param->setLabel("Shader Directory");
-	param->setHint("make sure it's the absolute path");
-	param->setStringType(eStringTypeFilePath);
-	param->setDefault(kPluginScript2);
-	param->setFilePathExists(false);
-	param->setParent(*script);
-	page->addChild(*param);
-	}
-	}        
+    
+    pushparam = p_Desc.definePushButtonParam("Button1");
+    pushparam->setLabel("export dctl");
+    pushparam->setHint("create dctl version");
+    pushparam->setParent(*script);
+    page->addChild(*pushparam);
+    
+    pushparam = p_Desc.definePushButtonParam("Button2");
+    pushparam->setLabel("export nuke script");
+    pushparam->setHint("create nUKE version");
+    pushparam->setParent(*script);
+    page->addChild(*pushparam);
+    
+	StringParamDescriptor* stringparam = p_Desc.defineStringParam("Name");
+	stringparam->setLabel("name");
+	stringparam->setHint("overwrites if the same");
+	stringparam->setDefault("Convolution");
+	stringparam->setParent(*script);
+	page->addChild(*stringparam);
+	
+	stringparam = p_Desc.defineStringParam("Path");
+	stringparam->setLabel("directory");
+	stringparam->setHint("make sure it's the absolute path");
+	stringparam->setStringType(eStringTypeFilePath);
+	stringparam->setDefault(kPluginScript);
+	stringparam->setFilePathExists(false);
+	stringparam->setParent(*script);
+	page->addChild(*stringparam);
+	
+    pushparam = p_Desc.definePushButtonParam("Button3");
+    pushparam->setLabel("export shader");
+    pushparam->setHint("create shader version");
+    pushparam->setParent(*script);
+    page->addChild(*pushparam);
+    
+	stringparam = p_Desc.defineStringParam("Path2");
+	stringparam->setLabel("shader directory");
+	stringparam->setHint("make sure it's the absolute path");
+	stringparam->setStringType(eStringTypeFilePath);
+	stringparam->setDefault(kPluginScript2);
+	stringparam->setFilePathExists(false);
+	stringparam->setParent(*script);
+	page->addChild(*stringparam);        
 }
 
 ImageEffect* ConvolutionPluginFactory::createInstance(OfxImageEffectHandle p_Handle, ContextEnum /*p_Context*/)

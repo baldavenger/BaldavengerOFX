@@ -347,6 +347,28 @@ const char *KernelSource = "\n" \
 "} \n" \
 "} \n" \
 "} \n" \
+"__kernel void k_scatter(__global float* p_Input, __global float* p_Output, int p_Width, int p_Height, int p_Range, float p_Mix) \n" \
+"{                                  \n" \
+"const int x = get_global_id(0); \n" \
+"const int y = get_global_id(1);                                   \n" \
+"if ((x < p_Width) && (y < p_Height)) \n" \
+"{   \n" \
+"const int index = (y * p_Width + x) * 4; \n" \
+"int rg = p_Range + 1; \n" \
+"int totA = round((p_Input[index + 0] + p_Input[index + 1] + p_Input[index + 2]) * 1111) + x; \n" \
+"int totB = round((p_Input[index + 0] + p_Input[index + 1]) * 1111) + y; \n" \
+"int polarityA = totA % 2 > 0.0f ? -1.0f : 1.0f; \n" \
+"int polarityB = totB % 2 > 0.0f ? -1.0f : 1.0f; \n" \
+"int scatterA = (totA % rg) * polarityA; \n" \
+"int scatterB = (totB % rg) * polarityB; \n" \
+"int X = (x + scatterA) < 0 ? abs(x + scatterA) : ((x + scatterA) > (p_Width - 1) ? (2 * (p_Width - 1)) - (x + scatterA) : (x + scatterA)); \n" \
+"int Y = (y + scatterB) < 0 ? abs(y + scatterB) : ((y + scatterB) > (p_Height - 1) ? (2 * (p_Height - 1)) - (y + scatterB) : (y + scatterB)); \n" \
+"p_Output[index + 0] = p_Input[((Y * p_Width) + X) * 4 + 0] * (1.0f - p_Mix) + p_Mix * p_Input[index + 0]; \n" \
+"p_Output[index + 1] = p_Input[((Y * p_Width) + X) * 4 + 1] * (1.0f - p_Mix) + p_Mix * p_Input[index + 1]; \n" \
+"p_Output[index + 2] = p_Input[((Y * p_Width) + X) * 4 + 2] * (1.0f - p_Mix) + p_Mix * p_Input[index + 2]; \n" \
+"p_Output[index + 3] = p_Input[index + 3]; \n" \
+"} \n" \
+"} \n" \
 "\n";
 
 class Locker
@@ -418,8 +440,8 @@ int shrRoundUp(size_t localWorkSize, int numItems) {
     return result;
 }
 
-void RunOpenCLKernel(void* p_CmdQ, int p_Width, int p_Height, int p_Convolve, float p_Adjust1, float p_Adjust2, 
-float p_Threshold, int p_Display, float* p_Matrix, float* p_Input, float* p_Output)
+void RunOpenCLKernel(void* p_CmdQ, float* p_Input, float* p_Output, int p_Width, int p_Height, 
+int p_Convolve, int p_Display, float* p_Adjust, float* p_Matrix)
 {
 	szBuffBytes = p_Width * p_Height * sizeof(float);
 	
@@ -471,6 +493,7 @@ float p_Threshold, int p_Display, float* p_Matrix, float* p_Input, float* p_Outp
 	cl_kernel FreqAdd = NULL;
 	cl_kernel EdgeDetect = NULL;
 	cl_kernel EdgeEnhance = NULL;
+	cl_kernel Scatter = NULL;
 	cl_kernel CustomMatrix = NULL;
 
 	Gausfilter = clCreateKernel(program, "k_gaussian", &error);
@@ -504,6 +527,9 @@ float p_Threshold, int p_Display, float* p_Matrix, float* p_Input, float* p_Outp
 	CheckError(error, "Unable to create kernel");
 	
 	EdgeEnhance = clCreateKernel(program, "k_edgeEnhance", &error);
+	CheckError(error, "Unable to create kernel");
+	
+	Scatter = clCreateKernel(program, "k_scatter", &error);
 	CheckError(error, "Unable to create kernel");
 	
 	CustomMatrix = clCreateKernel(program, "k_customMatrix", &error);
@@ -546,9 +572,9 @@ float p_Threshold, int p_Display, float* p_Matrix, float* p_Input, float* p_Outp
     case 0:
     {
     
-    p_Adjust1 *= 100.0f;
-    error |= clSetKernelArg(Gausfilter, 4, sizeof(float), &p_Adjust1);
-    if (p_Adjust1 > 0.0f) {
+    p_Adjust[0] *= 100.0f;
+    error |= clSetKernelArg(Gausfilter, 4, sizeof(float), &p_Adjust[0]);
+    if (p_Adjust[0] > 0.0f) {
     for(int c = 0; c < 3; c++) {
     error = clSetKernelArg(Gausfilter, 0, sizeof(cl_mem), &p_Input);
     error |= clSetKernelArg(Gausfilter, 2, sizeof(int), &p_Width);
@@ -575,9 +601,9 @@ float p_Threshold, int p_Display, float* p_Matrix, float* p_Input, float* p_Outp
 
     case 1:
     {
-    p_Adjust1 *= 100.0f;
-    error |= clSetKernelArg(Recursive, 4, sizeof(float), &p_Adjust1);
-    if (p_Adjust1 > 0.0f) {
+    p_Adjust[0] *= 100.0f;
+    error |= clSetKernelArg(Recursive, 4, sizeof(float), &p_Adjust[0]);
+    if (p_Adjust[0] > 0.0f) {
     for(int c = 0; c < 3; c++) {
     error = clSetKernelArg(Recursive, 0, sizeof(cl_mem), &p_Input);
     error |= clSetKernelArg(Recursive, 2, sizeof(int), &p_Width);
@@ -604,7 +630,7 @@ float p_Threshold, int p_Display, float* p_Matrix, float* p_Input, float* p_Outp
 
     case 2:
     {
-    int R = p_Adjust1 * 100;
+    int R = p_Adjust[0] * 100;
     error |= clSetKernelArg(Boxfilter, 4, sizeof(int), &R);
     if (R > 0) {
     for(int c = 0; c < 3; c++) {
@@ -633,12 +659,12 @@ float p_Threshold, int p_Display, float* p_Matrix, float* p_Input, float* p_Outp
 
     case 3:
     {
-    p_Threshold *= 5.0f;
-    p_Adjust1 *= 10.0f;
-    float sharpen = (2 * p_Adjust2) + 1;
+    p_Adjust[2] *= 5.0f;
+    p_Adjust[0] *= 10.0f;
+    float sharpen = (2 * p_Adjust[1]) + 1;
     
-    if (p_Threshold > 0.0f) {
-    error |= clSetKernelArg(Gausfilter, 4, sizeof(float), &p_Threshold);
+    if (p_Adjust[2] > 0.0f) {
+    error |= clSetKernelArg(Gausfilter, 4, sizeof(float), &p_Adjust[2]);
     for(int c = 0; c < 3; c++) {
     error = clSetKernelArg(Gausfilter, 0, sizeof(cl_mem), &p_Input);
     error |= clSetKernelArg(Gausfilter, 2, sizeof(int), &p_Width);
@@ -672,8 +698,8 @@ float p_Threshold, int p_Display, float* p_Matrix, float* p_Input, float* p_Outp
 	clEnqueueNDRangeKernel(cmdQ, FreqSharpen, 2, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
 	
 	if (p_Display != 1) {
-	if (p_Adjust1 > 0.0f) {
-	error |= clSetKernelArg(Gausfilter, 4, sizeof(float), &p_Adjust1);
+	if (p_Adjust[0] > 0.0f) {
+	error |= clSetKernelArg(Gausfilter, 4, sizeof(float), &p_Adjust[0]);
 	for(int c = 0; c < 3; c++) {
     error = clSetKernelArg(Gausfilter, 0, sizeof(cl_mem), &p_Output);
     error |= clSetKernelArg(Gausfilter, 2, sizeof(int), &p_Width);
@@ -704,10 +730,10 @@ float p_Threshold, int p_Display, float* p_Matrix, float* p_Input, float* p_Outp
 
     case 4:
     {
-    p_Threshold *= 3.0f;
-    error |= clSetKernelArg(Gausfilter, 4, sizeof(float), &p_Threshold);
+    p_Adjust[2] *= 3.0f;
+    error |= clSetKernelArg(Gausfilter, 4, sizeof(float), &p_Adjust[2]);
     
-    if (p_Threshold > 0.0f) {
+    if (p_Adjust[2] > 0.0f) {
     for(int c = 0; c < 3; c++) {
     error = clSetKernelArg(Gausfilter, 0, sizeof(cl_mem), &p_Input);
     error |= clSetKernelArg(Gausfilter, 2, sizeof(int), &p_Width);
@@ -734,7 +760,7 @@ float p_Threshold, int p_Display, float* p_Matrix, float* p_Input, float* p_Outp
 	error |= clSetKernelArg(EdgeDetect, 1, sizeof(cl_mem), &p_Output);
 	error |= clSetKernelArg(EdgeDetect, 2, sizeof(int), &p_Width);
 	error |= clSetKernelArg(EdgeDetect, 3, sizeof(int), &p_Height);
-	error |= clSetKernelArg(EdgeDetect, 4, sizeof(float), &p_Threshold);
+	error |= clSetKernelArg(EdgeDetect, 4, sizeof(float), &p_Adjust[2]);
 	CheckError(error, "Unable to set kernel arguments");
 	clEnqueueNDRangeKernel(cmdQ, EdgeDetect, 2, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
 	}
@@ -742,12 +768,12 @@ float p_Threshold, int p_Display, float* p_Matrix, float* p_Input, float* p_Outp
         
     case 5:
     {
-    p_Adjust1 *= 20.0f;
+    p_Adjust[0] *= 20.0f;
 	error = clSetKernelArg(EdgeEnhance, 0, sizeof(cl_mem), &p_Input);
 	error |= clSetKernelArg(EdgeEnhance, 1, sizeof(cl_mem), &p_Output);
 	error |= clSetKernelArg(EdgeEnhance, 2, sizeof(int), &p_Width);
 	error |= clSetKernelArg(EdgeEnhance, 3, sizeof(int), &p_Height);
-	error |= clSetKernelArg(EdgeEnhance, 4, sizeof(float), &p_Adjust1);
+	error |= clSetKernelArg(EdgeEnhance, 4, sizeof(float), &p_Adjust[0]);
 	CheckError(error, "Unable to set kernel arguments");
 	clEnqueueNDRangeKernel(cmdQ, EdgeEnhance, 2, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
 	}
@@ -756,7 +782,7 @@ float p_Threshold, int p_Display, float* p_Matrix, float* p_Input, float* p_Outp
     case 6:
     {
     
-    int radio = ceil(p_Adjust1 * 15);
+    int radio = ceil(p_Adjust[0] * 15);
     int tile_w = 640;
     int tile_h = 1;
     erodeLocalWorkSize[0] = tile_w + (2 * radio);
@@ -773,7 +799,7 @@ float p_Threshold, int p_Display, float* p_Matrix, float* p_Input, float* p_Outp
     error |= clSetKernelArg(Erode, 7, sizeof(float) * erodeLocalWorkSize[1] * erodeLocalWorkSize[0], NULL);
     CheckError(error, "Unable to set kernel arguments");
     
-	if (p_Adjust1 > 0.0f) {
+	if (p_Adjust[0] > 0.0f) {
 	for(int c = 0; c < 3; c++) {
 	error = clSetKernelArg(Erode, 0, sizeof(cl_mem), &p_Input);
 	error |= clSetKernelArg(Erode, 2, sizeof(int), &radio);
@@ -802,7 +828,7 @@ float p_Threshold, int p_Display, float* p_Matrix, float* p_Input, float* p_Outp
     case 7:
     {
     
-    int radio = ceil(p_Adjust1 * 15);
+    int radio = ceil(p_Adjust[0] * 15);
     int tile_w = 640;
     int tile_h = 1;
     erodeLocalWorkSize[0] = tile_w + (2 * radio);
@@ -818,7 +844,7 @@ float p_Threshold, int p_Display, float* p_Matrix, float* p_Input, float* p_Outp
     error |= clSetKernelArg(Dilate, 6, sizeof(int), &tile_h);
     error |= clSetKernelArg(Dilate, 7, sizeof(float) * erodeLocalWorkSize[1] * erodeLocalWorkSize[0], NULL);
     CheckError(error, "Unable to set kernel arguments");
-	if (p_Adjust1 > 0.0f) {
+	if (p_Adjust[0] > 0.0f) {
 	for(int c = 0; c < 3; c++) {
 	error = clSetKernelArg(Dilate, 0, sizeof(cl_mem), &p_Input);
 	error |= clSetKernelArg(Dilate, 2, sizeof(int), &radio);
@@ -846,14 +872,34 @@ float p_Threshold, int p_Display, float* p_Matrix, float* p_Input, float* p_Outp
     	
     case 8:
     {
+    
+    int radio = ceil(p_Adjust[0] * 15);
+    error = clSetKernelArg(Scatter, 0, sizeof(cl_mem), &p_Input);
+    error = clSetKernelArg(Scatter, 1, sizeof(cl_mem), &p_Output);
+    error = clSetKernelArg(Scatter, 2, sizeof(int), &p_Width);
+    error = clSetKernelArg(Scatter, 3, sizeof(int), &p_Height);
+    error = clSetKernelArg(Scatter, 4, sizeof(int), &radio);
+    error = clSetKernelArg(Scatter, 5, sizeof(float), &p_Adjust[1]);
+    CheckError(error, "Unable to set kernel arguments");
+    
+    if (p_Adjust[0] > 0.0f) {
+    clEnqueueNDRangeKernel(cmdQ, Scatter, 2, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
+    } else {
+	clEnqueueNDRangeKernel(cmdQ, Simple, 2, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
+	}
+	}
+    	break;
+    
+    case 9:
+    {
 	
-	p_Adjust1 *= 10.0f;
+	p_Adjust[0] *= 10.0f;
 	
 	error = clSetKernelArg(CustomMatrix, 0, sizeof(cl_mem), &p_Input);
 	error |= clSetKernelArg(CustomMatrix, 1, sizeof(cl_mem), &p_Output);
 	error |= clSetKernelArg(CustomMatrix, 2, sizeof(int), &p_Width);
 	error |= clSetKernelArg(CustomMatrix, 3, sizeof(int), &p_Height);
-	error |= clSetKernelArg(CustomMatrix, 4, sizeof(float), &p_Adjust1);
+	error |= clSetKernelArg(CustomMatrix, 4, sizeof(float), &p_Adjust[0]);
 	error |= clSetKernelArg(CustomMatrix, 5, sizeof(int), &p_Display);
 	error |= clSetKernelArg(CustomMatrix, 6, sizeof(float), &p_Matrix[0]);
 	error |= clSetKernelArg(CustomMatrix, 7, sizeof(float), &p_Matrix[1]);
