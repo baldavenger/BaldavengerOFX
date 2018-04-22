@@ -34,6 +34,20 @@ using std::string;
 #define kSupportsMultiResolution false
 #define kSupportsMultipleClipPARs false
 
+#define kParamInput "Input"
+#define kParamInputLabel "Process"
+#define kParamInputHint "Standard or Inverse"
+#define kParamInputOptionStandard "Standard"
+#define kParamInputOptionStandardHint "Standard"
+#define kParamInputOptionInverse "Inverse"
+#define kParamInputOptionInverseHint "Inverse"
+
+enum InputEnum
+{
+    eInputStandard,
+    eInputInverse,
+};
+
 #define kParamIDT "IDT"
 #define kParamIDTLabel "IDT"
 #define kParamIDTHint "IDT"
@@ -59,6 +73,34 @@ enum IDTEnum
     
 };
 
+#define kParamACESIN "ACESIN"
+#define kParamACESINLabel "ACES to"
+#define kParamACESINHint "Convert from ACES to"
+#define kParamACESINOptionBypass "Bypass"
+#define kParamACESINOptionBypassHint "Bypass"
+#define kParamACESINOptionACEScc "ACEScc"
+#define kParamACESINOptionACESccHint "ACEScc"
+#define kParamACESINOptionACEScct "ACEScct"
+#define kParamACESINOptionACEScctHint "ACEScct"
+#define kParamACESINOptionACEScg "ACEScg"
+#define kParamACESINOptionACEScgHint "ACEScg"
+#define kParamACESINOptionACESproxy10 "ACESproxy10"
+#define kParamACESINOptionACESproxy10Hint "ACESproxy10"
+#define kParamACESINOptionACESproxy12 "ACESproxy12"
+#define kParamACESINOptionACESproxy12Hint "ACESproxy12"
+
+
+enum ACESINEnum
+{
+    eACESINBypass,
+    eACESINACEScc,
+    eACESINACEScct,
+    eACESINACEScg,
+    eACESINACESproxy10,
+    eACESINACESproxy12,
+    
+};
+
 #define kParamLMT "LMT"
 #define kParamLMTLabel "LMT"
 #define kParamLMTHint "LMT"
@@ -68,6 +110,8 @@ enum IDTEnum
 #define kParamLMTOptionBleachHint "Bleach Bypass"
 #define kParamLMTOptionPFE "PFE"
 #define kParamLMTOptionPFEHint "Print Film Emulation"
+#define kParamLMTOptionCustom "Custom"
+#define kParamLMTOptionCustomHint "Custom LMT"
 
 
 enum LMTEnum
@@ -75,12 +119,69 @@ enum LMTEnum
     eLMTBypass,
     eLMTBleach,
     eLMTPFE,
+    eLMTCustom,
     
+};
+
+#define kParamACESOUT "ACESOUT"
+#define kParamACESOUTLabel "ACES from"
+#define kParamACESOUTHint "Convert to ACES from "
+#define kParamACESOUTOptionBypass "Bypass"
+#define kParamACESOUTOptionBypassHint "Bypass"
+#define kParamACESOUTOptionACEScc "ACEScc"
+#define kParamACESOUTOptionACESccHint "ACEScc"
+#define kParamACESOUTOptionACEScct "ACEScct"
+#define kParamACESOUTOptionACEScctHint "ACEScct"
+#define kParamACESOUTOptionACEScg "ACEScg"
+#define kParamACESOUTOptionACEScgHint "ACEScg"
+#define kParamACESOUTOptionACESproxy10 "ACESproxy10"
+#define kParamACESOUTOptionACESproxy10Hint "ACESproxy10"
+#define kParamACESOUTOptionACESproxy12 "ACESproxy12"
+#define kParamACESOUTOptionACESproxy12Hint "ACESproxy12"
+
+
+enum ACESOUTEnum
+{
+    eACESOUTBypass,
+    eACESOUTACEScc,
+    eACESOUTACEScct,
+    eACESOUTACEScg,
+    eACESOUTACESproxy10,
+    eACESOUTACESproxy12,
+    
+};
+
+#define kParamRRT "RRT"
+#define kParamRRTLabel "RRT"
+#define kParamRRTHint "RRT"
+#define kParamRRTOptionBypass "Bypass"
+#define kParamRRTOptionBypassHint "Bypass"
+#define kParamRRTOptionEnabled "Enabled"
+#define kParamRRTOptionEnabledHint "Enabled"
+
+enum RRTEnum
+{
+    eRRTBypass,
+    eRRTEnabled,
+};
+
+#define kParamInvRRT "InvRRT"
+#define kParamInvRRTLabel "Inverse RRT"
+#define kParamInvRRTHint "Inverse RRT"
+#define kParamInvRRTOptionBypass "Bypass"
+#define kParamInvRRTOptionBypassHint "Bypass"
+#define kParamInvRRTOptionEnabled "Enabled"
+#define kParamInvRRTOptionEnabledHint "Enabled"
+
+enum InvRRTEnum
+{
+    eInvRRTBypass,
+    eInvRRTEnabled,
 };
 
 #define kParamODT "ODT"
 #define kParamODTLabel "ODT"
-#define kParamODTHint "RRT + selected ODT"
+#define kParamODTHint "ODT"
 #define kParamODTOptionBypass "Bypass"
 #define kParamODTOptionBypassHint "Bypass"
 #define kParamODTOptionRec709_100dim "Rec709 100nits Dim"
@@ -100,6 +201,31 @@ enum ODTEnum
     eODTRec2020_100dim,
     eODTRec2020_ST2084_1000,
     eODTRGBmonitor_100dim,
+    
+};
+
+#define kParamInvODT "InvODT"
+#define kParamInvODTLabel "Inverse ODT"
+#define kParamInvODTHint "Inverse ODT"
+#define kParamInvODTOptionBypass "Bypass"
+#define kParamInvODTOptionBypassHint "Bypass"
+#define kParamInvODTOptionRec709_100dim "Rec709 100nits Dim"
+#define kParamInvODTOptionRec709_100dimHint "Rec709 100nits Dim"
+#define kParamInvODTOptionRec2020_100dim "Rec2020 100nits Dim"
+#define kParamInvODTOptionRec2020_100dimHint "Rec2020 100nits Dim"
+#define kParamInvODTOptionRec2020_ST2084_1000 "Rec2020 ST2084 1000nits"
+#define kParamInvODTOptionRec2020_ST2084_1000Hint "Rec2020 ST2084 1000nits"
+#define kParamInvODTOptionRGBmonitor_100dim "RGB monitor 100nits Dim"
+#define kParamInvODTOptionRGBmonitor_100dimHint "RGB monitor 100nits Dim"
+
+
+enum InvODTEnum
+{
+    eInvODTBypass,
+    eInvODTRec709_100dim,
+    eInvODTRec2020_100dim,
+    eInvODTRec2020_ST2084_1000,
+    eInvODTRGBmonitor_100dim,
     
 };
 
@@ -124,14 +250,22 @@ public:
     virtual void multiThreadProcessImages(OfxRectI p_ProcWindow);
     
     void setSrcImg(OFX::Image* p_SrcImg);
-    void setScales(int p_IDT, int p_LMT, int p_ODT, float p_Exposure);
+    void setScales(int p_Direction, int p_IDT, int p_ACESIN, int p_LMT, int p_ACESOUT, 
+    int p_RRT, int p_InvRRT, int p_ODT, int p_InvODT, float p_Exposure, float* p_LMTScale);
 
 private:
     OFX::Image* _srcImg;
+    int _direction;
     int _idt;
+    int _acesin;
     int _lmt;
+    int _acesout;
+    int _rrt;
+    int _invrrt;
     int _odt;
+    int _invodt;
     float _exposure;
+    float _lmtscale[13];
 };
 
 ACES::ACES(OFX::ImageEffect& p_Instance)
@@ -139,7 +273,9 @@ ACES::ACES(OFX::ImageEffect& p_Instance)
 {
 }
 
-extern void RunCudaKernel(const float* p_Input, float* p_Output, int p_Width, int p_Height, int p_IDT, int p_LMT, int p_ODT, float p_Exposure);
+extern void RunCudaKernel(const float* p_Input, float* p_Output, int p_Width, int p_Height, 
+int p_Direction, int p_IDT, int p_ACESIN, int p_LMT, int p_ACESOUT, int p_RRT, int p_InvRRT, 
+int p_ODT, int p_InvODT, float p_Exposure, float* p_LMTScale);
 
 void ACES::processImagesCUDA()
 {
@@ -150,7 +286,8 @@ void ACES::processImagesCUDA()
     float* input = static_cast<float*>(_srcImg->getPixelData());
     float* output = static_cast<float*>(_dstImg->getPixelData());
 
-    RunCudaKernel(input, output, width, height, _idt, _lmt, _odt, _exposure);
+    RunCudaKernel(input, output, width, height, _direction, _idt, _acesin, 
+    _lmt, _acesout, _rrt, _invrrt, _odt, _invodt, _exposure, _lmtscale);
 }
 /*
 extern void RunOpenCLKernel(void* p_CmdQ, int p_Width, int p_Height, const float* p_Input, float* p_Output);
@@ -208,12 +345,32 @@ void ACES::setSrcImg(OFX::Image* p_SrcImg)
     _srcImg = p_SrcImg;
 }
 
-void ACES::setScales(int p_IDT, int p_LMT, int p_ODT, float p_Exposure)
+void ACES::setScales(int p_Direction, int p_IDT, int p_ACESIN, int p_LMT, int p_ACESOUT, int p_RRT, 
+int p_InvRRT, int p_ODT, int p_InvODT, float p_Exposure, float* p_LMTScale)
 {
+_direction = p_Direction;
 _idt = p_IDT;
+_acesin = p_ACESIN;
 _lmt = p_LMT;
+_acesout = p_ACESOUT;
+_rrt = p_RRT;
+_invrrt = p_InvRRT;
 _odt = p_ODT;
+_invodt = p_InvODT;
 _exposure = p_Exposure;
+_lmtscale[0] = p_LMTScale[0];
+_lmtscale[1] = p_LMTScale[1];
+_lmtscale[2] = p_LMTScale[2];
+_lmtscale[3] = p_LMTScale[3];
+_lmtscale[4] = p_LMTScale[4];
+_lmtscale[5] = p_LMTScale[5];
+_lmtscale[6] = p_LMTScale[6];
+_lmtscale[7] = p_LMTScale[7];
+_lmtscale[8] = p_LMTScale[8];
+_lmtscale[9] = p_LMTScale[9];
+_lmtscale[10] = p_LMTScale[10];
+_lmtscale[11] = p_LMTScale[11];
+_lmtscale[12] = p_LMTScale[12];
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -240,11 +397,30 @@ private:
     OFX::Clip* m_DstClip;
     OFX::Clip* m_SrcClip;
     
+    OFX::ChoiceParam* m_Direction;
     OFX::ChoiceParam* m_IDT;
+    OFX::ChoiceParam* m_ACESIN;
     OFX::ChoiceParam* m_LMT;
+    OFX::ChoiceParam* m_ACESOUT;
+    OFX::ChoiceParam* m_RRT;
+    OFX::ChoiceParam* m_InvRRT;
 	OFX::ChoiceParam* m_ODT;
+	OFX::ChoiceParam* m_InvODT;
 	
 	OFX::DoubleParam* m_Exposure;
+	OFX::DoubleParam* m_ScaleC;
+	OFX::DoubleParam* m_Slope;
+	OFX::DoubleParam* m_Offset;
+	OFX::DoubleParam* m_Power;
+	OFX::DoubleParam* m_Sat;
+	OFX::DoubleParam* m_Gamma;
+	OFX::DoubleParam* m_Pivot;
+	OFX::DoubleParam* m_RotateH;
+	OFX::DoubleParam* m_Range;
+	OFX::DoubleParam* m_Shift;
+	OFX::DoubleParam* m_HueCH;
+	OFX::DoubleParam* m_RangeCH;
+	OFX::DoubleParam* m_ScaleCH;
 
     OFX::StringParam* m_Path;
     OFX::StringParam* m_Name;
@@ -259,10 +435,30 @@ ACESPlugin::ACESPlugin(OfxImageEffectHandle p_Handle)
     m_DstClip = fetchClip(kOfxImageEffectOutputClipName);
     m_SrcClip = fetchClip(kOfxImageEffectSimpleSourceClipName);
     
+    m_Direction = fetchChoiceParam(kParamInput);
     m_IDT = fetchChoiceParam(kParamIDT);
+    m_ACESIN = fetchChoiceParam(kParamACESIN);
 	m_LMT = fetchChoiceParam(kParamLMT);
-	m_ODT = fetchChoiceParam(kParamODT);		
+	m_ACESOUT = fetchChoiceParam(kParamACESOUT);
+	m_RRT = fetchChoiceParam(kParamRRT);
+	m_InvRRT = fetchChoiceParam(kParamInvRRT);
+	m_ODT = fetchChoiceParam(kParamODT);
+	m_InvODT = fetchChoiceParam(kParamInvODT);		
+	
 	m_Exposure = fetchDoubleParam("Exposure");
+	m_ScaleC = fetchDoubleParam("ScaleC");
+	m_Slope = fetchDoubleParam("Slope");
+	m_Offset = fetchDoubleParam("Offset");
+	m_Power = fetchDoubleParam("Power");
+	m_Sat = fetchDoubleParam("Sat");
+	m_Gamma = fetchDoubleParam("Gamma");
+	m_Pivot = fetchDoubleParam("Pivot");
+	m_RotateH = fetchDoubleParam("RotateH");
+	m_Range = fetchDoubleParam("Range");
+	m_Shift = fetchDoubleParam("Shift");
+	m_HueCH = fetchDoubleParam("HueCH");
+	m_RangeCH = fetchDoubleParam("RangeCH");
+	m_ScaleCH = fetchDoubleParam("ScaleCH");
 
     m_Path = fetchStringParam("path");
 	m_Name = fetchStringParam("name");
@@ -302,7 +498,74 @@ bool ACESPlugin::isIdentity(const OFX::IsIdentityArguments& p_Args, OFX::Clip*& 
 
 void ACESPlugin::changedParam(const OFX::InstanceChangedArgs& p_Args, const std::string& p_ParamName)
 {
+ 	
+ 	if(p_ParamName == kParamInput)
+    {
+ 	int Direction_i;
+    m_Direction->getValueAtTime(p_Args.time, Direction_i);
+    InputEnum Direction = (InputEnum)Direction_i;
+    int direction = Direction_i;
     
+    bool forward = Direction_i == 0;
+    //bool inverse = Direction_i == 1;
+    
+    int LMT_i;
+    m_LMT->getValueAtTime(p_Args.time, LMT_i);
+    LMTEnum LMT = (LMTEnum)LMT_i;
+    
+	bool custom = LMT_i == 3;
+    
+	m_IDT->setIsSecretAndDisabled(!forward);
+	m_ACESIN->setIsSecretAndDisabled(!forward);
+	m_LMT->setIsSecretAndDisabled(!forward);
+	m_ACESOUT->setIsSecretAndDisabled(!forward);
+	m_RRT->setIsSecretAndDisabled(!forward);
+	m_InvRRT->setIsSecretAndDisabled(forward);
+	m_ODT->setIsSecretAndDisabled(!forward);
+	m_InvODT->setIsSecretAndDisabled(forward);
+	
+	m_Exposure->setIsSecretAndDisabled(!forward);
+	m_ScaleC->setIsSecretAndDisabled(!forward || !custom);
+	m_Slope->setIsSecretAndDisabled(!forward || !custom);
+	m_Offset->setIsSecretAndDisabled(!forward || !custom);
+	m_Power->setIsSecretAndDisabled(!forward || !custom);
+	m_Sat->setIsSecretAndDisabled(!forward || !custom);
+	m_Gamma->setIsSecretAndDisabled(!forward || !custom);
+	m_Pivot->setIsSecretAndDisabled(!forward || !custom);
+	m_RotateH->setIsSecretAndDisabled(!forward || !custom);
+	m_Range->setIsSecretAndDisabled(!forward || !custom);
+	m_Shift->setIsSecretAndDisabled(!forward || !custom);
+	m_HueCH->setIsSecretAndDisabled(!forward || !custom);
+	m_RangeCH->setIsSecretAndDisabled(!forward || !custom);
+	m_ScaleCH->setIsSecretAndDisabled(!forward || !custom);
+	}
+	
+	if(p_ParamName == kParamLMT)
+    {
+    
+    int LMT_i;
+    m_LMT->getValueAtTime(p_Args.time, LMT_i);
+    LMTEnum LMT = (LMTEnum)LMT_i;
+    
+	bool custom = LMT_i == 3;
+	
+	m_Exposure->setIsSecretAndDisabled(!custom);
+	m_ScaleC->setIsSecretAndDisabled(!custom);
+	m_Slope->setIsSecretAndDisabled(!custom);
+	m_Offset->setIsSecretAndDisabled(!custom);
+	m_Power->setIsSecretAndDisabled(!custom);
+	m_Sat->setIsSecretAndDisabled(!custom);
+	m_Gamma->setIsSecretAndDisabled(!custom);
+	m_Pivot->setIsSecretAndDisabled(!custom);
+	m_RotateH->setIsSecretAndDisabled(!custom);
+	m_Range->setIsSecretAndDisabled(!custom);
+	m_Shift->setIsSecretAndDisabled(!custom);
+	m_HueCH->setIsSecretAndDisabled(!custom);
+	m_RangeCH->setIsSecretAndDisabled(!custom);
+	m_ScaleCH->setIsSecretAndDisabled(!custom);
+	}
+ 	
+ 	   
     if(p_ParamName == "info")
     {
 	
@@ -401,26 +664,67 @@ void ACESPlugin::setupAndProcess(ACES& p_ACES, const OFX::RenderArguments& p_Arg
         OFX::throwSuiteStatusException(kOfxStatErrValue);
     }
 	
+	int Direction_i;
+    m_Direction->getValueAtTime(p_Args.time, Direction_i);
+    InputEnum Direction = (InputEnum)Direction_i;
+    int direction = Direction_i;
+	
 	int IDT_i;
     m_IDT->getValueAtTime(p_Args.time, IDT_i);
     IDTEnum IDT = (IDTEnum)IDT_i;
-    
     int idt = IDT_i;
+    
+    int ACESIN_i;
+    m_ACESIN->getValueAtTime(p_Args.time, ACESIN_i);
+    ACESINEnum ACESIN = (ACESINEnum)ACESIN_i;
+    int acesin = ACESIN_i;
     
     int LMT_i;
     m_LMT->getValueAtTime(p_Args.time, LMT_i);
     LMTEnum LMT = (LMTEnum)LMT_i;
-    
     int lmt = LMT_i;
+    
+    int ACESOUT_i;
+    m_ACESOUT->getValueAtTime(p_Args.time, ACESOUT_i);
+    ACESOUTEnum ACESOUT = (ACESOUTEnum)ACESOUT_i;
+    int acesout = ACESOUT_i;
+    
+    int RRT_i;
+    m_RRT->getValueAtTime(p_Args.time, RRT_i);
+    RRTEnum RRT = (RRTEnum)RRT_i;
+    int rrt = RRT_i;
+    
+    int InvRRT_i;
+    m_InvRRT->getValueAtTime(p_Args.time, InvRRT_i);
+    InvRRTEnum InvRRT = (InvRRTEnum)InvRRT_i;
+    int invrrt = InvRRT_i;
     
     int ODT_i;
     m_ODT->getValueAtTime(p_Args.time, ODT_i);
     ODTEnum ODT = (ODTEnum)ODT_i;
-    
     int odt = ODT_i;
     
+    int InvODT_i;
+    m_InvODT->getValueAtTime(p_Args.time, InvODT_i);
+    InvODTEnum InvODT = (InvODTEnum)InvODT_i;
+    int invodt = InvODT_i;
+    
     float exposure = m_Exposure->getValueAtTime(p_Args.time);
-    	
+    float lmtscale[13];
+    lmtscale[0] = m_ScaleC->getValueAtTime(p_Args.time);
+    lmtscale[1] = m_Slope->getValueAtTime(p_Args.time);
+    lmtscale[2] = m_Offset->getValueAtTime(p_Args.time);
+    lmtscale[3] = m_Power->getValueAtTime(p_Args.time);
+    lmtscale[4] = m_Sat->getValueAtTime(p_Args.time);
+    lmtscale[5] = m_Gamma->getValueAtTime(p_Args.time);
+    lmtscale[6] = m_Pivot->getValueAtTime(p_Args.time);
+    lmtscale[7] = m_RotateH->getValueAtTime(p_Args.time);
+    lmtscale[8] = m_Range->getValueAtTime(p_Args.time);
+    lmtscale[9] = m_Shift->getValueAtTime(p_Args.time);
+    lmtscale[10] = m_HueCH->getValueAtTime(p_Args.time);
+    lmtscale[11] = m_RangeCH->getValueAtTime(p_Args.time);
+    lmtscale[12] = m_ScaleCH->getValueAtTime(p_Args.time);
+    
     // Set the images
     p_ACES.setDstImg(dst.get());
     p_ACES.setSrcImg(src.get());
@@ -432,7 +736,7 @@ void ACESPlugin::setupAndProcess(ACES& p_ACES, const OFX::RenderArguments& p_Arg
     p_ACES.setRenderWindow(p_Args.renderWindow);
 
     // Set the scales
-    p_ACES.setScales(idt, lmt, odt, exposure);
+    p_ACES.setScales(direction, idt, acesin, lmt, acesout, rrt, invrrt, odt, invodt, exposure, lmtscale);
 
     // Call the base class process member, this will call the derived templated process code
     p_ACES.process();
@@ -517,6 +821,19 @@ void ACESPluginFactory::describeInContext(OFX::ImageEffectDescriptor& p_Desc, OF
     PageParamDescriptor* page = p_Desc.definePageParam("Controls");
     
     {
+	ChoiceParamDescriptor *param = p_Desc.defineChoiceParam(kParamInput);
+	param->setLabel(kParamInputLabel);
+	param->setHint(kParamInputHint);
+	assert(param->getNOptions() == (int)eInputStandard);
+	param->appendOption(kParamInputOptionStandard, kParamInputOptionStandardHint);
+	assert(param->getNOptions() == (int)eInputInverse);
+	param->appendOption(kParamInputOptionInverse, kParamInputOptionInverseHint);
+	param->setDefault( (int)eInputStandard );
+	param->setAnimates(false);
+    page->addChild(*param);
+	}
+    
+    {
 	ChoiceParamDescriptor *param = p_Desc.defineChoiceParam(kParamIDT);
 	param->setLabel(kParamIDTLabel);
 	param->setHint(kParamIDTHint);
@@ -532,6 +849,7 @@ void ACESPluginFactory::describeInContext(OFX::ImageEffectDescriptor& p_Desc, OF
 	param->appendOption(kParamIDTOptionADX16, kParamIDTOptionADX16Hint);
 	param->setDefault( (int)eIDTBypass );
 	param->setAnimates(false);
+	param->setIsSecretAndDisabled(false);
     page->addChild(*param);
 	}
 	
@@ -540,7 +858,30 @@ void ACESPluginFactory::describeInContext(OFX::ImageEffectDescriptor& p_Desc, OF
 	param->setRange(-10.0f, 10.0f);
 	param->setIncrement(0.001f);
 	param->setDisplayRange(-10.0f, 10.0f);
+	param->setIsSecretAndDisabled(false);
 	page->addChild(*param);
+	
+	{
+	ChoiceParamDescriptor *param = p_Desc.defineChoiceParam(kParamACESIN);
+	param->setLabel(kParamACESINLabel);
+	param->setHint(kParamACESINHint);
+	assert(param->getNOptions() == (int)eACESINBypass);
+	param->appendOption(kParamACESINOptionBypass, kParamACESINOptionBypassHint);
+	assert(param->getNOptions() == (int)eACESINACEScc);
+	param->appendOption(kParamACESINOptionACEScc, kParamACESINOptionACESccHint);
+	assert(param->getNOptions() == (int)eACESINACEScct);
+	param->appendOption(kParamACESINOptionACEScct, kParamACESINOptionACEScctHint);
+	assert(param->getNOptions() == (int)eACESINACEScg);
+	param->appendOption(kParamACESINOptionACEScg, kParamACESINOptionACEScgHint);
+	assert(param->getNOptions() == (int)eACESINACESproxy10);
+	param->appendOption(kParamACESINOptionACESproxy10, kParamACESINOptionACESproxy10Hint);
+	assert(param->getNOptions() == (int)eACESINACESproxy12);
+	param->appendOption(kParamACESINOptionACESproxy12, kParamACESINOptionACESproxy12Hint);
+	param->setDefault( (int)eACESINBypass );
+	param->setAnimates(false);
+	param->setIsSecretAndDisabled(false);
+    page->addChild(*param);
+	}
 	
 	{
 	ChoiceParamDescriptor *param = p_Desc.defineChoiceParam(kParamLMT);
@@ -552,8 +893,165 @@ void ACESPluginFactory::describeInContext(OFX::ImageEffectDescriptor& p_Desc, OF
 	param->appendOption(kParamLMTOptionBleach, kParamLMTOptionBleachHint);
 	assert(param->getNOptions() == (int)eLMTPFE);
 	param->appendOption(kParamLMTOptionPFE, kParamLMTOptionPFEHint);
+	assert(param->getNOptions() == (int)eLMTCustom);
+	param->appendOption(kParamLMTOptionCustom, kParamLMTOptionCustomHint);
 	param->setDefault( (int)eLMTBypass );
 	param->setAnimates(false);
+	param->setIsSecretAndDisabled(false);
+    page->addChild(*param);
+	}
+	
+	param = defineScaleParam(p_Desc, "ScaleC", "scale_C", "scaleC", 0);
+    param->setDefault(1.0);
+    param->setRange(0.0, 2.0);
+    param->setIncrement(0.001);
+    param->setDisplayRange(0.0, 2.0);
+    param->setIsSecretAndDisabled(true);
+    page->addChild(*param);
+	
+	param = defineScaleParam(p_Desc, "Slope", "slope", "slope", 0);
+    param->setDefault(1.0);
+    param->setRange(0.0, 2.0);
+    param->setIncrement(0.001);
+    param->setDisplayRange(0.0, 2.0);
+    param->setIsSecretAndDisabled(true);
+    page->addChild(*param);
+    
+    param = defineScaleParam(p_Desc, "Offset", "offset", "offset", 0);
+    param->setDefault(0.0);
+    param->setRange(-10.0, 10.0);
+    param->setIncrement(0.001);
+    param->setDisplayRange(-2.0, 2.0);
+    param->setIsSecretAndDisabled(true);
+    page->addChild(*param);
+        
+    param = defineScaleParam(p_Desc, "Power", "power", "power", 0);
+    param->setDefault(1.0);
+    param->setRange(0.0, 5.0);
+    param->setIncrement(0.001);
+    param->setDisplayRange(0.0, 3.0);
+    param->setIsSecretAndDisabled(true);
+    page->addChild(*param);
+    
+    param = defineScaleParam(p_Desc, "Sat", "saturation", "saturation", 0);
+    param->setDefault(1.0);
+    param->setRange(0.0, 3.0);
+    param->setIncrement(0.001);
+    param->setDisplayRange(0.0, 2.0);
+    param->setIsSecretAndDisabled(true);
+    page->addChild(*param);
+    
+    param = defineScaleParam(p_Desc, "Gamma", "gamma_adjust_linear", "gamma_adjust_linear", 0);
+    param->setDefault(1.0);
+    param->setRange(0.0, 5.0);
+    param->setIncrement(0.001);
+    param->setDisplayRange(0.0, 3.0);
+    param->setIsSecretAndDisabled(true);
+    page->addChild(*param);
+    
+    param = defineScaleParam(p_Desc, "Pivot", "pivot", "pivot", 0);
+    param->setDefault(0.18);
+    param->setRange(0.0, 1.0);
+    param->setIncrement(0.001);
+    param->setDisplayRange(0.0, 1.0);
+    param->setIsSecretAndDisabled(true);
+    page->addChild(*param);
+    
+    param = defineScaleParam(p_Desc, "RotateH", "rotate_H_in_Hue", "rotate_H_in_Hue", 0);
+    param->setDefault(180.0);
+    param->setRange(0.0, 360.0);
+    param->setIncrement(0.01);
+    param->setDisplayRange(0.0, 360.0);
+    param->setIsSecretAndDisabled(true);
+    page->addChild(*param);
+    
+    param = defineScaleParam(p_Desc, "Range", "range", "range", 0);
+    param->setDefault(0.0);
+    param->setRange(0.0, 180.0);
+    param->setIncrement(0.01);
+    param->setDisplayRange(0.0, 180.0);
+    param->setIsSecretAndDisabled(true);
+    page->addChild(*param);
+    
+    param = defineScaleParam(p_Desc, "Shift", "shift", "shift", 0);
+    param->setDefault(0.0);
+    param->setRange(-90.0, 90.0);
+    param->setIncrement(0.01);
+    param->setDisplayRange(-90.0, 90.0);
+    param->setIsSecretAndDisabled(true);
+    page->addChild(*param);
+    
+    param = defineScaleParam(p_Desc, "HueCH", "scale_C_at_Hue", "scale_C_at_Hue", 0);
+    param->setDefault(180.0);
+    param->setRange(0.0, 360.0);
+    param->setIncrement(0.01);
+    param->setDisplayRange(0.0, 360.0);
+    param->setIsSecretAndDisabled(true);
+    page->addChild(*param);
+    
+    param = defineScaleParam(p_Desc, "RangeCH", "rangeCH", "rangeCH", 0);
+    param->setDefault(0.0);
+    param->setRange(0.0, 180.0);
+    param->setIncrement(0.01);
+    param->setDisplayRange(0.0, 180.0);
+    param->setIsSecretAndDisabled(true);
+    page->addChild(*param);
+    
+    param = defineScaleParam(p_Desc, "ScaleCH", "scaleCH", "scaleCH", 0);
+    param->setDefault(1.0);
+    param->setRange(0.0, 5.0);
+    param->setIncrement(0.001);
+    param->setDisplayRange(0.0, 3.0);
+    param->setIsSecretAndDisabled(true);
+    page->addChild(*param);
+    
+    {
+	ChoiceParamDescriptor *param = p_Desc.defineChoiceParam(kParamACESOUT);
+	param->setLabel(kParamACESOUTLabel);
+	param->setHint(kParamACESOUTHint);
+	assert(param->getNOptions() == (int)eACESOUTBypass);
+	param->appendOption(kParamACESOUTOptionBypass, kParamACESOUTOptionBypassHint);
+	assert(param->getNOptions() == (int)eACESOUTACEScc);
+	param->appendOption(kParamACESOUTOptionACEScc, kParamACESOUTOptionACESccHint);
+	assert(param->getNOptions() == (int)eACESOUTACEScct);
+	param->appendOption(kParamACESOUTOptionACEScct, kParamACESOUTOptionACEScctHint);
+	assert(param->getNOptions() == (int)eACESOUTACEScg);
+	param->appendOption(kParamACESOUTOptionACEScg, kParamACESOUTOptionACEScgHint);
+	assert(param->getNOptions() == (int)eACESOUTACESproxy10);
+	param->appendOption(kParamACESOUTOptionACESproxy10, kParamACESOUTOptionACESproxy10Hint);
+	assert(param->getNOptions() == (int)eACESOUTACESproxy12);
+	param->appendOption(kParamACESOUTOptionACESproxy12, kParamACESOUTOptionACESproxy12Hint);
+	param->setDefault( (int)eACESOUTBypass );
+	param->setAnimates(false);
+	param->setIsSecretAndDisabled(false);
+    page->addChild(*param);
+	}
+	
+	{
+	ChoiceParamDescriptor *param = p_Desc.defineChoiceParam(kParamRRT);
+	param->setLabel(kParamRRTLabel);
+	param->setHint(kParamRRTHint);
+	assert(param->getNOptions() == (int)eRRTBypass);
+	param->appendOption(kParamRRTOptionBypass, kParamRRTOptionBypassHint);
+	assert(param->getNOptions() == (int)eRRTEnabled);
+	param->appendOption(kParamRRTOptionEnabled, kParamRRTOptionEnabledHint);
+	param->setDefault( (int)eRRTBypass );
+	param->setAnimates(false);
+	param->setIsSecretAndDisabled(false);
+    page->addChild(*param);
+	}
+	
+	{
+	ChoiceParamDescriptor *param = p_Desc.defineChoiceParam(kParamInvRRT);
+	param->setLabel(kParamInvRRTLabel);
+	param->setHint(kParamInvRRTHint);
+	assert(param->getNOptions() == (int)eInvRRTBypass);
+	param->appendOption(kParamInvRRTOptionBypass, kParamInvRRTOptionBypassHint);
+	assert(param->getNOptions() == (int)eInvRRTEnabled);
+	param->appendOption(kParamInvRRTOptionEnabled, kParamInvRRTOptionEnabledHint);
+	param->setDefault( (int)eInvRRTBypass );
+	param->setAnimates(false);
+	param->setIsSecretAndDisabled(true);
     page->addChild(*param);
 	}
 	
@@ -573,6 +1071,27 @@ void ACESPluginFactory::describeInContext(OFX::ImageEffectDescriptor& p_Desc, OF
 	param->appendOption(kParamODTOptionRGBmonitor_100dim, kParamODTOptionRGBmonitor_100dimHint);
 	param->setDefault( (int)eODTBypass );
 	param->setAnimates(false);
+	param->setIsSecretAndDisabled(false);
+    page->addChild(*param);
+	}
+	
+	{
+	ChoiceParamDescriptor *param = p_Desc.defineChoiceParam(kParamInvODT);
+	param->setLabel(kParamInvODTLabel);
+	param->setHint(kParamInvODTHint);
+	assert(param->getNOptions() == (int)eInvODTBypass);
+	param->appendOption(kParamInvODTOptionBypass, kParamInvODTOptionBypassHint);
+	assert(param->getNOptions() == (int)eInvODTRec709_100dim);
+	param->appendOption(kParamInvODTOptionRec709_100dim, kParamInvODTOptionRec709_100dimHint);
+	assert(param->getNOptions() == (int)eInvODTRec2020_100dim);
+	param->appendOption(kParamInvODTOptionRec2020_100dim, kParamInvODTOptionRec2020_100dimHint);
+	assert(param->getNOptions() == (int)eInvODTRec2020_ST2084_1000);
+	param->appendOption(kParamInvODTOptionRec2020_ST2084_1000, kParamInvODTOptionRec2020_ST2084_1000Hint);
+	assert(param->getNOptions() == (int)eInvODTRGBmonitor_100dim);
+	param->appendOption(kParamInvODTOptionRGBmonitor_100dim, kParamInvODTOptionRGBmonitor_100dimHint);
+	param->setDefault( (int)eInvODTBypass );
+	param->setAnimates(false);
+	param->setIsSecretAndDisabled(true);
     page->addChild(*param);
 	}
 	
