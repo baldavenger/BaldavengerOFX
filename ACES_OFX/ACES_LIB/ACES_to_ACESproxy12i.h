@@ -14,7 +14,7 @@ const int CVmin = 256;
 const int CVmax = 3760;
 */
 
-__device__ inline int lin_to_ACESproxy( float in)
+__device__ inline int lin_to_ACESproxy12( float in)
 {
 float StepsPerStop = 200.0f;
 float MidCVoffset = 1700.0f;
@@ -26,16 +26,16 @@ else
 return max( CVmin, min( CVmax, round( (log2f(in) + 2.5f) * StepsPerStop + MidCVoffset)));
 }
 
-__device__ inline float3 ACES_to_ACESproxy10( float3 ACES)
+__device__ inline float3 ACES_to_ACESproxy12( float3 ACES)
 {
 
 ACES = clamp_f3( ACES, 0.0f, HALF_POS_INF);
 float3 lin_AP1 = mult_f3_f44( ACES, AP0_2_AP1_MAT);
 
 int ACESproxy[3];
-ACESproxy[0] = lin_to_ACESproxy( lin_AP1.x );
-ACESproxy[1] = lin_to_ACESproxy( lin_AP1.y );
-ACESproxy[2] = lin_to_ACESproxy( lin_AP1.z );
+ACESproxy[0] = lin_to_ACESproxy12( lin_AP1.x );
+ACESproxy[1] = lin_to_ACESproxy12( lin_AP1.y );
+ACESproxy[2] = lin_to_ACESproxy12( lin_AP1.z );
 
 float3 out;
 out.x = ACESproxy[0] / 4095.0f;

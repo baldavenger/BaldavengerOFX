@@ -13,7 +13,7 @@ __constant__  bool legalRange = false;
 */
 
 
-__device__ float3 inline ODT_Rec709_100_dim( float3 oces)
+__device__ float3 inline ODT_Rec709_100nits_dim( float3 oces)
 {
 
   Chromaticities DISPLAY_PRI = REC709_PRI;
