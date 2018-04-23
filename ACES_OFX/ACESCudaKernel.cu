@@ -35,23 +35,35 @@ break;
 
 case 1:
 {
-aces = IDT_Alexa_v3_logC_EI800(aces);
+aces = ACEScc_to_ACES(aces);
 }
 break;
 
 case 2:
 {
-aces = IDT_Alexa_v3_raw_EI800_CCT65(aces);
+aces = ACEScct_to_ACES(aces);
 }
 break;
 
 case 3:
 {
-aces = ADX10_to_ACES(aces);
+aces = IDT_Alexa_v3_logC_EI800(aces);
 }
 break;
 
 case 4:
+{
+aces = IDT_Alexa_v3_raw_EI800_CCT65(aces);
+}
+break;
+
+case 5:
+{
+aces = ADX10_to_ACES(aces);
+}
+break;
+
+case 6:
 {
 aces = ADX16_to_ACES(aces);
 }
@@ -191,23 +203,36 @@ break;
 
 case 1:
 {
-aces = ODT_Rec709_100nits_dim(aces);
+aces = ACES_to_ACEScc(aces);
 }
 break;
 
 case 2:
 {
+aces = ACES_to_ACEScct(aces);
+}
+break;
+
+
+case 3:
+{
+aces = ODT_Rec709_100nits_dim(aces);
+}
+break;
+
+case 4:
+{
 aces = ODT_Rec2020_100nits_dim(aces);
 }
 break;
 
-case 3:
+case 5:
 {
 aces = ODT_Rec2020_ST2084_1000nits(aces);
 }
 break;
 
-case 4:
+case 6:
 {
 aces = ODT_RGBmonitor_100nits_dim(aces);
 }

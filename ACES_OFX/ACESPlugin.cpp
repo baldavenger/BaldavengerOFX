@@ -53,19 +53,25 @@ enum InputEnum
 #define kParamIDTHint "IDT"
 #define kParamIDTOptionBypass "Bypass"
 #define kParamIDTOptionBypassHint "Bypass"
+#define kParamIDTOptionACEScc "ACEScc"
+#define kParamIDTOptionACESccHint "ACEScc to ACES"
+#define kParamIDTOptionACEScct "ACEScct"
+#define kParamIDTOptionACEScctHint "ACEScct to ACES"
 #define kParamIDTOptionAlexaLogC800 "Alexa LogC EI800"
-#define kParamIDTOptionAlexaLogC800Hint "Alexa LogC EI800"
+#define kParamIDTOptionAlexaLogC800Hint "Alexa LogC EI800 to ACES"
 #define kParamIDTOptionAlexaRaw800 "Alexa Raw EI800"
-#define kParamIDTOptionAlexaRaw800Hint "Alexa Raw EI800"
+#define kParamIDTOptionAlexaRaw800Hint "Alexa Raw EI800 to ACES"
 #define kParamIDTOptionADX10 "ADX10"
-#define kParamIDTOptionADX10Hint "ADX10"
+#define kParamIDTOptionADX10Hint "ADX10 to ACES"
 #define kParamIDTOptionADX16 "ADX16"
-#define kParamIDTOptionADX16Hint "ADX16"
+#define kParamIDTOptionADX16Hint "ADX16 to ACES"
 
 
 enum IDTEnum
 {
     eIDTBypass,
+    eIDTACEScc,
+    eIDTACEScct,
     eIDTAlexaLogC800,
     eIDTAlexaRaw800,
     eIDTADX10,
@@ -184,6 +190,10 @@ enum InvRRTEnum
 #define kParamODTHint "ODT"
 #define kParamODTOptionBypass "Bypass"
 #define kParamODTOptionBypassHint "Bypass"
+#define kParamODTOptionACEScc "ACEScc"
+#define kParamODTOptionACESccHint "ACES to ACEScc"
+#define kParamODTOptionACEScct "ACEScct"
+#define kParamODTOptionACEScctHint "ACES to ACEScct"
 #define kParamODTOptionRec709_100dim "Rec709 100nits Dim"
 #define kParamODTOptionRec709_100dimHint "Rec709 100nits Dim"
 #define kParamODTOptionRec2020_100dim "Rec2020 100nits Dim"
@@ -197,6 +207,8 @@ enum InvRRTEnum
 enum ODTEnum
 {
     eODTBypass,
+    eODTACEScc,
+    eODTACEScct,
     eODTRec709_100dim,
     eODTRec2020_100dim,
     eODTRec2020_ST2084_1000,
@@ -549,7 +561,6 @@ void ACESPlugin::changedParam(const OFX::InstanceChangedArgs& p_Args, const std:
     
 	bool custom = LMT_i == 3;
 	
-	m_Exposure->setIsSecretAndDisabled(!custom);
 	m_ScaleC->setIsSecretAndDisabled(!custom);
 	m_Slope->setIsSecretAndDisabled(!custom);
 	m_Offset->setIsSecretAndDisabled(!custom);
@@ -839,6 +850,10 @@ void ACESPluginFactory::describeInContext(OFX::ImageEffectDescriptor& p_Desc, OF
 	param->setHint(kParamIDTHint);
 	assert(param->getNOptions() == (int)eIDTBypass);
 	param->appendOption(kParamIDTOptionBypass, kParamIDTOptionBypassHint);
+	assert(param->getNOptions() == (int)eIDTACEScc);
+	param->appendOption(kParamIDTOptionACEScc, kParamIDTOptionACESccHint);
+	assert(param->getNOptions() == (int)eIDTACEScct);
+	param->appendOption(kParamIDTOptionACEScct, kParamIDTOptionACEScctHint);
 	assert(param->getNOptions() == (int)eIDTAlexaLogC800);
 	param->appendOption(kParamIDTOptionAlexaLogC800, kParamIDTOptionAlexaLogC800Hint);
 	assert(param->getNOptions() == (int)eIDTAlexaRaw800);
@@ -941,7 +956,7 @@ void ACESPluginFactory::describeInContext(OFX::ImageEffectDescriptor& p_Desc, OF
     param->setIsSecretAndDisabled(true);
     page->addChild(*param);
     
-    param = defineScaleParam(p_Desc, "Gamma", "gamma_adjust_linear", "gamma_adjust_linear", 0);
+    param = defineScaleParam(p_Desc, "Gamma", "gamma_adjust_linear", "contrast", 0);
     param->setDefault(1.0);
     param->setRange(0.0, 5.0);
     param->setIncrement(0.001);
@@ -949,7 +964,7 @@ void ACESPluginFactory::describeInContext(OFX::ImageEffectDescriptor& p_Desc, OF
     param->setIsSecretAndDisabled(true);
     page->addChild(*param);
     
-    param = defineScaleParam(p_Desc, "Pivot", "pivot", "pivot", 0);
+    param = defineScaleParam(p_Desc, "Pivot", "pivot", "pivot point", 0);
     param->setDefault(0.18);
     param->setRange(0.0, 1.0);
     param->setIncrement(0.001);
@@ -1042,25 +1057,15 @@ void ACESPluginFactory::describeInContext(OFX::ImageEffectDescriptor& p_Desc, OF
 	}
 	
 	{
-	ChoiceParamDescriptor *param = p_Desc.defineChoiceParam(kParamInvRRT);
-	param->setLabel(kParamInvRRTLabel);
-	param->setHint(kParamInvRRTHint);
-	assert(param->getNOptions() == (int)eInvRRTBypass);
-	param->appendOption(kParamInvRRTOptionBypass, kParamInvRRTOptionBypassHint);
-	assert(param->getNOptions() == (int)eInvRRTEnabled);
-	param->appendOption(kParamInvRRTOptionEnabled, kParamInvRRTOptionEnabledHint);
-	param->setDefault( (int)eInvRRTBypass );
-	param->setAnimates(false);
-	param->setIsSecretAndDisabled(true);
-    page->addChild(*param);
-	}
-	
-	{
 	ChoiceParamDescriptor *param = p_Desc.defineChoiceParam(kParamODT);
 	param->setLabel(kParamODTLabel);
 	param->setHint(kParamODTHint);
 	assert(param->getNOptions() == (int)eODTBypass);
 	param->appendOption(kParamODTOptionBypass, kParamODTOptionBypassHint);
+	assert(param->getNOptions() == (int)eODTACEScc);
+	param->appendOption(kParamODTOptionACEScc, kParamODTOptionACESccHint);
+	assert(param->getNOptions() == (int)eODTACEScct);
+	param->appendOption(kParamODTOptionACEScct, kParamODTOptionACEScctHint);
 	assert(param->getNOptions() == (int)eODTRec709_100dim);
 	param->appendOption(kParamODTOptionRec709_100dim, kParamODTOptionRec709_100dimHint);
 	assert(param->getNOptions() == (int)eODTRec2020_100dim);
@@ -1090,6 +1095,20 @@ void ACESPluginFactory::describeInContext(OFX::ImageEffectDescriptor& p_Desc, OF
 	assert(param->getNOptions() == (int)eInvODTRGBmonitor_100dim);
 	param->appendOption(kParamInvODTOptionRGBmonitor_100dim, kParamInvODTOptionRGBmonitor_100dimHint);
 	param->setDefault( (int)eInvODTBypass );
+	param->setAnimates(false);
+	param->setIsSecretAndDisabled(true);
+    page->addChild(*param);
+	}
+	
+	{
+	ChoiceParamDescriptor *param = p_Desc.defineChoiceParam(kParamInvRRT);
+	param->setLabel(kParamInvRRTLabel);
+	param->setHint(kParamInvRRTHint);
+	assert(param->getNOptions() == (int)eInvRRTBypass);
+	param->appendOption(kParamInvRRTOptionBypass, kParamInvRRTOptionBypassHint);
+	assert(param->getNOptions() == (int)eInvRRTEnabled);
+	param->appendOption(kParamInvRRTOptionEnabled, kParamInvRRTOptionEnabledHint);
+	param->setDefault( (int)eInvRRTBypass );
 	param->setAnimates(false);
 	param->setIsSecretAndDisabled(true);
     page->addChild(*param);
