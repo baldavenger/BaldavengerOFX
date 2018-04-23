@@ -49,7 +49,7 @@ __device__ float inline segmented_spline_c5_fwd( float x)
 
   // Check for negatives or zero before taking the log. If negative or zero,
   // set to HALF_MIN.
-  float logx = log10f( fmax(x, HALF_MIN )); 
+  float logx = log10f( max(x, HALF_MIN )); 
 
   float logy;
 

@@ -16,6 +16,7 @@
 #define HALF_NAN		65535.0f
 #define HALF_POS_INF	31744.0f
 #define HALF_NEG_INF	64512.0f
+#define PIE				3.14159265358979323846264338327950288
 
 __device__ inline int size(float array[])
 {

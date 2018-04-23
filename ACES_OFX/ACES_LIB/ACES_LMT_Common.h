@@ -1,7 +1,7 @@
 #ifndef __ACES_LMT_COMMON_H_INCLUDED__
 #define __ACES_LMT_COMMON_H_INCLUDED__
 
-__constant__ float PIE = 3.14159265358979323846264338327950288f;
+//__constant__ float PIE = 3.14159265358979323846264338327950288f;
 __constant__ float X_BRK = 0.0078125f;
 __constant__ float Y_BRK = 0.155251141552511f;
 __constant__ float A = 10.5402377416545f;

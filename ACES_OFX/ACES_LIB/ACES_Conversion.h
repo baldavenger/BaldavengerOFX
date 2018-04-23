@@ -1,3 +1,6 @@
+#ifndef __ACES_CONVERSION_H_INCLUDED__
+#define __ACES_CONVERSION_H_INCLUDED__
+
 //
 // ACES Color Space Conversions
 //
@@ -67,16 +70,16 @@ return ACES;
 
 }
 
-__device__ inline int lin_to_ACESproxy10( float in)
+__device__ inline float lin_to_ACESproxy10( float in)
 {
 float StepsPerStop = 50.0f;
 float MidCVoffset = 425.0f;
-int CVmin = 64;
-int CVmax = 940;	
+float CVmin = 64.0f;
+float CVmax = 940.0f;	
 if (in <= powf(2.0f, -9.72f))
 return CVmin;
 else
-return fmax( CVmin, fmin( CVmax, round( (log2f(in) + 2.5f) * StepsPerStop + MidCVoffset)));
+return max( CVmin, min( CVmax, round( (log2f(in) + 2.5f) * StepsPerStop + MidCVoffset)));
 }
 
 __device__ inline float3 ACES_to_ACESproxy10( float3 ACES)
@@ -124,16 +127,16 @@ __device__ inline float3 ACESproxy10_to_ACES( float3 In)
 	return ACES;
 }
 
-__device__ inline int lin_to_ACESproxy12( float in)
+__device__ inline float lin_to_ACESproxy12( float in)
 {
 float StepsPerStop = 200.0f;
 float MidCVoffset = 1700.0f;
-int CVmin = 256;
-int CVmax = 3760;
+float CVmin = 256.0f;
+float CVmax = 3760.0f;
 if (in <= powf(2.0f, -9.72f))
 return CVmin;
 else
-return fmax( CVmin, fmin( CVmax, round( (log2f(in) + 2.5f) * StepsPerStop + MidCVoffset)));
+return max( CVmin, min( CVmax, round( (log2f(in) + 2.5f) * StepsPerStop + MidCVoffset)));
 }
 
 __device__ inline float3 ACES_to_ACESproxy12( float3 ACES)
@@ -182,3 +185,5 @@ float3 ACES = mult_f3_f44( lin_AP1, AP1_2_AP0_MAT);
 return ACES;
 
 }
+
+#endif
