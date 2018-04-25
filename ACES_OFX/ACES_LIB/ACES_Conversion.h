@@ -5,7 +5,7 @@
 // ACES Color Space Conversions
 //
 
-#include "ACES_functions.h"
+#include "ACES_Functions.h"
 #include "ACES_Transform_Common.h"
 
 __device__ inline float lin_to_ACEScc( float in)
