@@ -253,6 +253,24 @@ __device__ inline float moncurve_r( float y, float gamma, float offs )
   return x;
 }
 
+__device__ inline float3 moncurve_f_f3( float3 x, float gamma, float offs)
+{
+    float3 y;
+    y.x = moncurve_f( x.x, gamma, offs);
+    y.y = moncurve_f( x.y, gamma, offs);
+    y.z = moncurve_f( x.z, gamma, offs);
+    return y;
+}
+
+__device__ inline float3 moncurve_r_f3( float3 y, float gamma, float offs)
+{
+    float3 x;
+    x.x = moncurve_r( y.x, gamma, offs);
+    x.y = moncurve_r( y.y, gamma, offs);
+    x.z = moncurve_r( y.z, gamma, offs);
+    return x;
+}
+
 __device__ inline float bt1886_f( float V, float gamma, float Lw, float Lb)
 {
   // The reference EOTF specified in Rec. ITU-R BT.1886
@@ -271,6 +289,24 @@ __device__ inline float bt1886_r( float L, float gamma, float Lw, float Lb)
   float b = powf( Lb, 1.0f/gamma) / ( powf( Lw, 1.0f/gamma) - powf( Lb, 1.0f/gamma));
   float V = powf( max( L / a, 0.0f), 1.0f/gamma) - b;
   return V;
+}
+
+__device__ inline float3 bt1886_f_f3( float3 V, float gamma, float Lw, float Lb)
+{
+    float3 L;
+    L.x = bt1886_f( V.x, gamma, Lw, Lb);
+    L.y = bt1886_f( V.y, gamma, Lw, Lb);
+    L.z = bt1886_f( V.z, gamma, Lw, Lb);
+    return L;
+}
+
+__device__ inline float3 bt1886_r_f3( float3 L, float gamma, float Lw, float Lb)
+{
+    float3 V;
+    V.x = bt1886_r( L.x, gamma, Lw, Lb);
+    V.y = bt1886_r( L.y, gamma, Lw, Lb);
+    V.z = bt1886_r( L.z, gamma, Lw, Lb);
+    return V;
 }
 
 
@@ -403,6 +439,98 @@ __device__ inline float3 ST2084_2_Y_f3( float3 in)
   out.z = ST2084_2_Y( in.z);
 
   return out;
+}
+
+// Conversion of PQ signal to HLG, as detailed in Section 7 of ITU-R BT.2390-0
+__device__ inline float3 ST2084_2_HLG_1000nits( float3 PQ) 
+{
+    // ST.2084 EOTF (non-linear PQ to display light)
+    float3 displayLinear = ST2084_2_Y_f3( PQ);
+
+    // HLG Inverse EOTF (i.e. HLG inverse OOTF followed by the HLG OETF)
+    // HLG Inverse OOTF (display linear to scene linear)
+    float Y_d = 0.2627f * displayLinear.x + 0.6780f * displayLinear.y + 0.0593f * displayLinear.z;
+    const float L_w = 1000.0f;
+    const float L_b = 0.0f;
+    const float alpha = (L_w-L_b);
+    const float beta = L_b;
+    const float gamma = 1.2f;
+    
+    float3 sceneLinear;
+    sceneLinear.x = powf( (Y_d-beta)/alpha, (1.0f - gamma)/gamma) * ((displayLinear.x-beta)/alpha);
+    sceneLinear.y = powf( (Y_d-beta)/alpha, (1.0f - gamma)/gamma) * ((displayLinear.y-beta)/alpha);
+    sceneLinear.z = powf( (Y_d-beta)/alpha, (1.0f - gamma)/gamma) * ((displayLinear.z-beta)/alpha);
+
+    // HLG OETF (scene linear to non-linear signal value)
+    const float a = 0.17883277f;
+    const float b = 0.28466892f; // 1.-4.*a;
+    const float c = 0.55991073f; // 0.5-a*logf(4.*a);
+
+    float3 HLG;
+    if (sceneLinear.x <= 1.0f/12) {
+        HLG.x = sqrtf(3.0f * sceneLinear.x);
+    } else {
+        HLG.x = a*logf(12.0f * sceneLinear.x-b)+c;
+    }
+    if (sceneLinear.y <= 1.0f/12) {
+        HLG.y = sqrtf(3.0f * sceneLinear.y);
+    } else {
+        HLG.y = a*logf(12.0f * sceneLinear.y-b)+c;
+    }
+    if (sceneLinear.z <= 1.0f/12) {
+        HLG.z = sqrtf(3.0f * sceneLinear.z);
+    } else {
+        HLG.z = a*logf(12.0f * sceneLinear.z-b)+c;
+    }
+
+    return HLG;
+}
+
+
+// Conversion of HLG to PQ signal, as detailed in Section 7 of ITU-R BT.2390-0
+__device__ inline float3 HLG_2_ST2084_1000nits( float3 HLG) 
+{
+    const float a = 0.17883277f;
+    const float b = 0.28466892f; // 1.-4.*a;
+    const float c = 0.55991073f; // 0.5-a*logf(4.*a);
+
+    const float L_w = 1000.0f;
+    const float L_b = 0.0f;
+    const float alpha = (L_w-L_b);
+    const float beta = L_b;
+    const float gamma = 1.2f;
+
+    // HLG EOTF (non-linear signal value to display linear)
+    // HLG to scene-linear
+    float3 sceneLinear;
+    if ( HLG.x >= 0.0f && HLG.x <= 0.5f) {
+        sceneLinear.x = powf(HLG.x,2.0f)/3.0f;
+    } else {
+        sceneLinear.x = (expf((HLG.x-c)/a)+b)/12.0f;
+    }        
+    if ( HLG.y >= 0.0f && HLG.y <= 0.5f) {
+        sceneLinear.y = powf(HLG.y,2.0f)/3.0f;
+    } else {
+        sceneLinear.y = (expf((HLG.y-c)/a)+b)/12.0f;
+    }        
+    if ( HLG.z >= 0.0f && HLG.z <= 0.5f) {
+        sceneLinear.z = powf(HLG.z,2.0f)/3.0f;
+    } else {
+        sceneLinear.z = (expf((HLG.z-c)/a)+b)/12.0f;
+    }        
+    
+    float Y_s = 0.2627f * sceneLinear.x + 0.6780f * sceneLinear.y + 0.0593f * sceneLinear.z;
+
+    // Scene-linear to display-linear
+    float3 displayLinear;
+    displayLinear.x = alpha * powf( Y_s, gamma - 1.0f) * sceneLinear.x + beta;
+    displayLinear.y = alpha * powf( Y_s, gamma - 1.0f) * sceneLinear.y + beta;
+    displayLinear.z = alpha * powf( Y_s, gamma - 1.0f) * sceneLinear.z + beta;
+        
+    // ST.2084 Inverse EOTF
+    float3 PQ = Y_2_ST2084_f3( displayLinear);
+
+    return PQ;
 }
 
 #endif

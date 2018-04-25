@@ -40,6 +40,24 @@ __device__ inline float linCV_2_Y( float linCV, float Ymax, float Ymin)
   return linCV * (Ymax - Ymin) + Ymin;
 }
 
+__device__ inline float3 Y_2_linCV_f3( float3 Y, float Ymax, float Ymin)
+{
+    float3 linCV;
+    linCV.x = Y_2_linCV( Y.x, Ymax, Ymin);
+    linCV.y = Y_2_linCV( Y.y, Ymax, Ymin);
+    linCV.z = Y_2_linCV( Y.z, Ymax, Ymin);
+    return linCV;
+}
+
+__device__ inline float3 linCV_2_Y_f3( float3 linCV, float Ymax, float Ymin)
+{
+    float3 Y;
+    Y.x = linCV_2_Y( linCV.x, Ymax, Ymin);
+    Y.y = linCV_2_Y( linCV.y, Ymax, Ymin);
+    Y.z = linCV_2_Y( linCV.z, Ymax, Ymin);
+    return Y;
+}
+
 __device__ inline float3 darkSurround_to_dimSurround( float3 linearCV)
 {
   float3 XYZ = mult_f3_f44( linearCV, AP1_2_XYZ_MAT); 

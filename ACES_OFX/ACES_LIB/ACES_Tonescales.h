@@ -49,7 +49,7 @@ __device__ float inline segmented_spline_c5_fwd( float x)
 
   // Check for negatives or zero before taking the log. If negative or zero,
   // set to HALF_MIN.
-  float logx = log10f( max(x, HALF_MIN )); 
+  float logx = log10f( fmax(x, HALF_MIN )); 
 
   float logy;
 
@@ -337,7 +337,7 @@ __device__ float inline segmented_spline_c9_rev
     float c = tmp.z;
     c = c - logy;
 
-    const float d = sqrt( b * b - 4. * a * c);
+    const float d = sqrtf( b * b - 4. * a * c);
 
     const float t = ( 2. * c) / ( -d - b);
 
@@ -370,7 +370,7 @@ __device__ float inline segmented_spline_c9_rev
     float c = tmp.z;
     c = c - logy;
 
-    const float d = sqrt( b * b - 4. * a * c);
+    const float d = sqrtf( b * b - 4. * a * c);
 
     const float t = ( 2. * c) / ( -d - b);
 

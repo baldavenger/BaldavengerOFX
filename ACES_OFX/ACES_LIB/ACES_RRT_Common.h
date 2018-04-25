@@ -126,4 +126,75 @@ __device__ inline float uncenter_hue( float hueCentered, float centerH)
   return hue;
 }
 
+
+__device__ inline float3 rrt_sweeteners( float3 in)
+{
+    float3 aces = in;
+    
+    // --- Glow module --- //
+    float saturation = rgb_2_saturation( aces);
+    float ycIn = rgb_2_yc( aces);
+    float s = sigmoid_shaper( (saturation - 0.4f) / 0.2f);
+    float addedGlow = 1.0f + glow_fwd( ycIn, RRT_GLOW_GAIN * s, RRT_GLOW_MID);
+
+    aces = mult_f_f3( addedGlow, aces);
+
+    // --- Red modifier --- //
+    float hue = rgb_2_hue( aces);
+    float centeredHue = center_hue( hue, RRT_RED_HUE);
+    float hueWeight = cubic_basis_shaper( centeredHue, RRT_RED_WIDTH);
+
+    aces.x = aces.x + hueWeight * saturation * (RRT_RED_PIVOT - aces.x) * (1.0f - RRT_RED_SCALE);
+
+    // --- ACES to RGB rendering space --- //
+    aces = clamp_f3( aces, 0.0f, HALF_POS_INF);
+    float3 rgbPre = mult_f3_f44( aces, AP0_2_AP1_MAT);
+
+    // --- Global desaturation --- //
+    rgbPre = mult_f3_f33( rgbPre, RRT_SAT_MAT);
+    return rgbPre;
+}
+
+__device__ inline float3 inv_rrt_sweeteners( float3 in)
+{
+    float3 rgbPost = in;
+    
+    // --- Global desaturation --- //
+    rgbPost = mult_f3_f33( rgbPost, invert_f33(RRT_SAT_MAT));
+
+    rgbPost = clamp_f3( rgbPost, 0.0f, HALF_MAX);
+
+    // --- RGB rendering space to ACES --- //
+    float3 aces = mult_f3_f44( rgbPost, AP1_2_AP0_MAT);
+
+    aces = clamp_f3( aces, 0.0f, HALF_MAX);
+
+    // --- Red modifier --- //
+    float hue = rgb_2_hue( aces);
+    float centeredHue = center_hue( hue, RRT_RED_HUE);
+    float hueWeight = cubic_basis_shaper( centeredHue, RRT_RED_WIDTH);
+
+    float minChan;
+    if (centeredHue < 0) { // min_f3(aces) = aces[1] (i.e. magenta-red)
+      minChan = aces.y;
+    } else { // min_f3(aces) = aces[2] (i.e. yellow-red)
+      minChan = aces.z;
+    }
+
+    float a = hueWeight * (1.0f - RRT_RED_SCALE) - 1.0f;
+    float b = aces.x - hueWeight * (RRT_RED_PIVOT + minChan) * (1.0f - RRT_RED_SCALE);
+    float c = hueWeight * RRT_RED_PIVOT * minChan * (1.0f - RRT_RED_SCALE);
+
+    aces.x = ( -b - sqrt( b * b - 4.0f * a * c)) / ( 2.0f * a);
+
+    // --- Glow module --- //
+    float saturation = rgb_2_saturation( aces);
+    float ycOut = rgb_2_yc( aces);
+    float s = sigmoid_shaper( (saturation - 0.4f) / 0.2f);
+    float reducedGlow = 1.0f + glow_inv( ycOut, RRT_GLOW_GAIN * s, RRT_GLOW_MID);
+
+    aces = mult_f_f3( ( reducedGlow), aces);
+    return aces;
+}
+
 #endif
