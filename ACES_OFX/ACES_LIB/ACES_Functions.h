@@ -17,6 +17,9 @@
 #define HALF_POS_INF	31744.0f
 #define HALF_NEG_INF	64512.0f
 
+#ifndef M_PI
+#define M_PI		3.14159265358979323846264338327950288
+#endif
 
 __device__ inline int size(float array[])
 {
