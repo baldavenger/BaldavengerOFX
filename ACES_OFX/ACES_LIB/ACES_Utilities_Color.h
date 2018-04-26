@@ -116,7 +116,7 @@ __device__ inline float rgb_2_hue( float3 rgb)
   if (rgb.x == rgb.y && rgb.y == rgb.z) {
     hue = 0.0f;//FLT_NAN; // RGB triplets where RGB are equal have an undefined hue
   } else {
-    hue = (180.0f/PIE) * atan2f( sqrtf(3.0f)*(rgb.y-rgb.z), 2*rgb.x-rgb.y-rgb.z);
+    hue = (180.0f/M_PI) * atan2f( sqrtf(3.0f)*(rgb.y-rgb.z), 2*rgb.x-rgb.y-rgb.z);
   }
     
   if (hue < 0.0f) hue = hue + 360.0f;

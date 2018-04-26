@@ -63,9 +63,9 @@ __device__ inline float3 ASCCDL_inACEScct
 
     // ASC CDL
     // Slope, Offset, Power
-    acescct.x = powf( clamp( (acescct.x * SLOPE.x) + OFFSET.x, 0.0f, 1.0f), POWER.x);
-    acescct.y = powf( clamp( (acescct.y * SLOPE.y) + OFFSET.y, 0.0f, 1.0f), POWER.y);
-    acescct.z = powf( clamp( (acescct.z * SLOPE.z) + OFFSET.z, 0.0f, 1.0f), POWER.z);
+    acescct.x = powf( clamp( (acescct.x * SLOPE.x) + OFFSET.x, 0.0f, 1.0f), 1.0f / POWER.x);
+    acescct.y = powf( clamp( (acescct.y * SLOPE.y) + OFFSET.y, 0.0f, 1.0f), 1.0f / POWER.y);
+    acescct.z = powf( clamp( (acescct.z * SLOPE.z) + OFFSET.z, 0.0f, 1.0f), 1.0f / POWER.z);
     
     // Saturation
     float luma = 0.2126f * acescct.x + 0.7152f * acescct.y + 0.0722f * acescct.z;
@@ -138,7 +138,7 @@ __device__ float3 yab_2_ych(float3 yab)
 float3 ych = yab;
 float yo = yab.y * yab.y + yab.z * yab.z;
 ych.y = sqrtf(yo);
-ych.z = atan2f(yab.z, yab.y) * (180.0f / PIE);
+ych.z = atan2f(yab.z, yab.y) * (180.0f / M_PI);
 if (ych.z < 0.0f) ych.z += 360.0f;
 
 return ych;
@@ -149,7 +149,7 @@ __device__ inline float3 ych_2_yab( float3 ych )
   float3 yab;
   yab.x = ych.x;
 
-  float h = ych.z * (PIE / 180.0f);
+  float h = ych.z * (M_PI / 180.0f);
   yab.y = ych.y * cosf(h);
   yab.z = ych.y * sinf(h);
 

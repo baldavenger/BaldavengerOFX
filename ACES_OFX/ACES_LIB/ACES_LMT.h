@@ -21,8 +21,6 @@
 
 __device__ inline float3 LMT_Bleach_Bypass( float3 aces)
 {
-aces = ACEScct_to_ACES(aces);
-
 float3 a, b, blend;
 a = sat_adjust( aces, 0.9f);
 a = mult_f_f3( 2.0f, a);
@@ -34,8 +32,9 @@ a = ACES_to_ACEScct( a);
 b = ACES_to_ACEScct( b);
 
 blend = overlay_f3( a, b);
+aces = ACEScct_to_ACES(blend);
 
-return blend;
+return aces;
 }
 
 __device__ inline float3 LMT_PFE(float3 aces)
