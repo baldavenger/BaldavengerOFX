@@ -138,13 +138,13 @@ break;
 
 case 1:
 {
-aces = LMT_Bleach_Bypass(aces);
+aces = LMT_Analytic_4(aces);
 }
 break;
 
 case 2:
 {
-aces = LMT_PFE(aces);
+aces = LMT_Analytic_3(aces);
 }
 break;
 
