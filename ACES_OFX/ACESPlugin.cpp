@@ -234,18 +234,6 @@ enum ODTEnum
     eODTRRTODT_Rec2020_4000nits_15nits_ST2084,
 };
 
-//aces = RRTODT_P3D65_108nits_7_2nits_ST2084(aces);
-//aces = RRTODT_Rec2020_1000nits_15nits_HLG(aces);
-//aces = RRTODT_Rec2020_1000nits_15nits_ST2084(aces);
-//aces = RRTODT_Rec2020_2000nits_15nits_ST2084(aces);
-//aces = RRTODT_Rec2020_4000nits_15nits_ST2084(aces);
-
-//aces = InvRRTODT_P3D65_108nits_7_2nits_ST2084(aces);
-//aces = InvRRTODT_Rec2020_1000nits_15nits_HLG(aces);
-//aces = InvRRTODT_Rec2020_1000nits_15nits_ST2084(aces);
-//aces = InvRRTODT_Rec2020_2000nits_15nits_ST2084(aces);
-//aces = InvRRTODT_Rec2020_4000nits_15nits_ST2084(aces);
-
 
 #define kParamInvODT "InvODT"
 #define kParamInvODTLabel "Inverse ODT"
@@ -414,7 +402,7 @@ private:
     int _odt;
     int _invodt;
     float _exposure;
-    float _lmtscale[13];
+    float _lmtscale[12];
     float _lum[3];
     int _display;
     int _limit;
@@ -527,7 +515,6 @@ _lmtscale[8] = p_LMTScale[8];
 _lmtscale[9] = p_LMTScale[9];
 _lmtscale[10] = p_LMTScale[10];
 _lmtscale[11] = p_LMTScale[11];
-_lmtscale[12] = p_LMTScale[12];
 _lum[0] = p_Lum[0];
 _lum[1] = p_Lum[1];
 _lum[2] = p_Lum[2];
@@ -579,7 +566,7 @@ private:
 	OFX::DoubleParam* m_Slope;
 	OFX::DoubleParam* m_Offset;
 	OFX::DoubleParam* m_Power;
-	OFX::DoubleParam* m_Sat;
+	//OFX::DoubleParam* m_Sat;
 	OFX::DoubleParam* m_Gamma;
 	OFX::DoubleParam* m_Pivot;
 	OFX::DoubleParam* m_RotateH;
@@ -628,7 +615,7 @@ ACESPlugin::ACESPlugin(OfxImageEffectHandle p_Handle)
 	m_Slope = fetchDoubleParam("Slope");
 	m_Offset = fetchDoubleParam("Offset");
 	m_Power = fetchDoubleParam("Power");
-	m_Sat = fetchDoubleParam("Sat");
+	//m_Sat = fetchDoubleParam("Sat");
 	m_Gamma = fetchDoubleParam("Gamma");
 	m_Pivot = fetchDoubleParam("Pivot");
 	m_RotateH = fetchDoubleParam("RotateH");
@@ -718,7 +705,7 @@ void ACESPlugin::changedParam(const OFX::InstanceChangedArgs& p_Args, const std:
 	m_Slope->setIsSecretAndDisabled(!forward || !custom);
 	m_Offset->setIsSecretAndDisabled(!forward || !custom);
 	m_Power->setIsSecretAndDisabled(!forward || !custom);
-	m_Sat->setIsSecretAndDisabled(!forward || !custom);
+	//m_Sat->setIsSecretAndDisabled(!forward || !custom);
 	m_Gamma->setIsSecretAndDisabled(!forward || !custom);
 	m_Pivot->setIsSecretAndDisabled(!forward || !custom);
 	m_RotateH->setIsSecretAndDisabled(!forward || !custom);
@@ -764,7 +751,7 @@ void ACESPlugin::changedParam(const OFX::InstanceChangedArgs& p_Args, const std:
 	m_Slope->setIsSecretAndDisabled(!custom);
 	m_Offset->setIsSecretAndDisabled(!custom);
 	m_Power->setIsSecretAndDisabled(!custom);
-	m_Sat->setIsSecretAndDisabled(!custom);
+	//m_Sat->setIsSecretAndDisabled(!custom);
 	m_Gamma->setIsSecretAndDisabled(!custom);
 	m_Pivot->setIsSecretAndDisabled(!custom);
 	m_RotateH->setIsSecretAndDisabled(!custom);
@@ -962,20 +949,20 @@ void ACESPlugin::setupAndProcess(ACES& p_ACES, const OFX::RenderArguments& p_Arg
     int _invodt = InvODT_i;
     
     float _exposure = m_Exposure->getValueAtTime(p_Args.time);
-    float _lmtscale[13];
+    float _lmtscale[12];
     _lmtscale[0] = m_ScaleC->getValueAtTime(p_Args.time);
     _lmtscale[1] = m_Slope->getValueAtTime(p_Args.time);
     _lmtscale[2] = m_Offset->getValueAtTime(p_Args.time);
     _lmtscale[3] = m_Power->getValueAtTime(p_Args.time);
-    _lmtscale[4] = m_Sat->getValueAtTime(p_Args.time);
-    _lmtscale[5] = m_Gamma->getValueAtTime(p_Args.time);
-    _lmtscale[6] = m_Pivot->getValueAtTime(p_Args.time);
-    _lmtscale[7] = m_RotateH->getValueAtTime(p_Args.time);
-    _lmtscale[8] = m_Range->getValueAtTime(p_Args.time);
-    _lmtscale[9] = m_Shift->getValueAtTime(p_Args.time);
-    _lmtscale[10] = m_HueCH->getValueAtTime(p_Args.time);
-    _lmtscale[11] = m_RangeCH->getValueAtTime(p_Args.time);
-    _lmtscale[12] = m_ScaleCH->getValueAtTime(p_Args.time);
+   // _lmtscale[4] = m_Sat->getValueAtTime(p_Args.time);
+    _lmtscale[4] = m_Gamma->getValueAtTime(p_Args.time);
+    _lmtscale[5] = m_Pivot->getValueAtTime(p_Args.time);
+    _lmtscale[6] = m_RotateH->getValueAtTime(p_Args.time);
+    _lmtscale[7] = m_Range->getValueAtTime(p_Args.time);
+    _lmtscale[8] = m_Shift->getValueAtTime(p_Args.time);
+    _lmtscale[9] = m_HueCH->getValueAtTime(p_Args.time);
+    _lmtscale[10] = m_RangeCH->getValueAtTime(p_Args.time);
+    _lmtscale[11] = m_ScaleCH->getValueAtTime(p_Args.time);
     
     float _lum[3];
     _lum[0] = m_YMIN->getValueAtTime(p_Args.time);
@@ -1195,7 +1182,7 @@ void ACESPluginFactory::describeInContext(OFX::ImageEffectDescriptor& p_Desc, OF
     page->addChild(*param);
 	}
 	
-	param = defineScaleParam(p_Desc, "ScaleC", "scale_C", "scaleC", 0);
+	param = defineScaleParam(p_Desc, "ScaleC", "saturation", "scale color", 0);
     param->setDefault(1.0);
     param->setRange(0.0, 2.0);
     param->setIncrement(0.001);
@@ -1226,7 +1213,7 @@ void ACESPluginFactory::describeInContext(OFX::ImageEffectDescriptor& p_Desc, OF
     param->setDisplayRange(0.0, 3.0);
     param->setIsSecretAndDisabled(true);
     page->addChild(*param);
-    
+    /*
     param = defineScaleParam(p_Desc, "Sat", "saturation", "saturation", 0);
     param->setDefault(1.0);
     param->setRange(0.0, 3.0);
@@ -1234,8 +1221,8 @@ void ACESPluginFactory::describeInContext(OFX::ImageEffectDescriptor& p_Desc, OF
     param->setDisplayRange(0.0, 2.0);
     param->setIsSecretAndDisabled(true);
     page->addChild(*param);
-    
-    param = defineScaleParam(p_Desc, "Gamma", "gamma_adjust_linear", "contrast", 0);
+    */
+    param = defineScaleParam(p_Desc, "Gamma", "contrast", "gamma adjust linear", 0);
     param->setDefault(1.0);
     param->setRange(0.0, 5.0);
     param->setIncrement(0.001);
@@ -1243,7 +1230,7 @@ void ACESPluginFactory::describeInContext(OFX::ImageEffectDescriptor& p_Desc, OF
     param->setIsSecretAndDisabled(true);
     page->addChild(*param);
     
-    param = defineScaleParam(p_Desc, "Pivot", "pivot", "pivot point", 0);
+    param = defineScaleParam(p_Desc, "Pivot", "contrast pivot", "pivot point", 0);
     param->setDefault(0.18);
     param->setRange(0.0, 1.0);
     param->setIncrement(0.001);
@@ -1251,47 +1238,47 @@ void ACESPluginFactory::describeInContext(OFX::ImageEffectDescriptor& p_Desc, OF
     param->setIsSecretAndDisabled(true);
     page->addChild(*param);
     
-    param = defineScaleParam(p_Desc, "RotateH", "rotate_H_in_Hue", "rotate_H_in_Hue", 0);
-    param->setDefault(180.0);
+    param = defineScaleParam(p_Desc, "RotateH", "hue rotation at hue", "rotate hue at hue in degrees", 0);
+    param->setDefault(30.0);
     param->setRange(0.0, 360.0);
     param->setIncrement(0.01);
     param->setDisplayRange(0.0, 360.0);
     param->setIsSecretAndDisabled(true);
     page->addChild(*param);
     
-    param = defineScaleParam(p_Desc, "Range", "range", "range", 0);
-    param->setDefault(0.0);
-    param->setRange(0.0, 180.0);
-    param->setIncrement(0.01);
-    param->setDisplayRange(0.0, 180.0);
-    param->setIsSecretAndDisabled(true);
-    page->addChild(*param);
-    
-    param = defineScaleParam(p_Desc, "Shift", "shift", "shift", 0);
-    param->setDefault(0.0);
-    param->setRange(-90.0, 90.0);
-    param->setIncrement(0.01);
-    param->setDisplayRange(-90.0, 90.0);
-    param->setIsSecretAndDisabled(true);
-    page->addChild(*param);
-    
-    param = defineScaleParam(p_Desc, "HueCH", "scale_C_at_Hue", "scale_C_at_Hue", 0);
-    param->setDefault(180.0);
+    param = defineScaleParam(p_Desc, "Range", "hue rotation range", "hue range in degrees for rotating hue", 0);
+    param->setDefault(60.0);
     param->setRange(0.0, 360.0);
     param->setIncrement(0.01);
     param->setDisplayRange(0.0, 360.0);
     param->setIsSecretAndDisabled(true);
     page->addChild(*param);
     
-    param = defineScaleParam(p_Desc, "RangeCH", "rangeCH", "rangeCH", 0);
+    param = defineScaleParam(p_Desc, "Shift", "hue rotation", "shift hue range in degrees", 0);
     param->setDefault(0.0);
-    param->setRange(0.0, 180.0);
+    param->setRange(-360.0, 360.0);
     param->setIncrement(0.01);
-    param->setDisplayRange(0.0, 180.0);
+    param->setDisplayRange(-180.0, 180.0);
     param->setIsSecretAndDisabled(true);
     page->addChild(*param);
     
-    param = defineScaleParam(p_Desc, "ScaleCH", "scaleCH", "scaleCH", 0);
+    param = defineScaleParam(p_Desc, "HueCH", "saturation at hue", "scale color at hue in degrees", 0);
+    param->setDefault(30.0);
+    param->setRange(0.0, 360.0);
+    param->setIncrement(0.01);
+    param->setDisplayRange(0.0, 360.0);
+    param->setIsSecretAndDisabled(true);
+    page->addChild(*param);
+    
+    param = defineScaleParam(p_Desc, "RangeCH", "saturation at hue range", "hue range in degrees for scaling color", 0);
+    param->setDefault(60.0);
+    param->setRange(0.0, 360.0);
+    param->setIncrement(0.01);
+    param->setDisplayRange(0.0, 360.0);
+    param->setIsSecretAndDisabled(true);
+    page->addChild(*param);
+    
+    param = defineScaleParam(p_Desc, "ScaleCH", "hue saturation", "scale color at hue range", 0);
     param->setDefault(1.0);
     param->setRange(0.0, 5.0);
     param->setIncrement(0.001);

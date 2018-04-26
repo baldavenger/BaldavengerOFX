@@ -8,8 +8,8 @@ __global__ void ACESKernel(const float* p_Input, float* p_Output, int p_Width, i
 int p_Direction, int p_IDT, int p_ACESIN, int p_LMT, int p_ACESOUT, int p_RRT, int p_InvRRT, 
 int p_ODT, int p_InvODT, float p_Exposure, float p_LMTScale1, float p_LMTScale2, float p_LMTScale3, 
 float p_LMTScale4, float p_LMTScale5, float p_LMTScale6, float p_LMTScale7, float p_LMTScale8, 
-float p_LMTScale9, float p_LMTScale10, float p_LMTScale11, float p_LMTScale12, float p_LMTScale13, 
-float p_Lum0, float p_Lum1, float p_Lum2, int p_DISPLAY, int p_LIMIT, int p_EOTF, int p_SURROUND, int p_Switch0, 
+float p_LMTScale9, float p_LMTScale10, float p_LMTScale11, float p_LMTScale12, float p_Lum0, 
+float p_Lum1, float p_Lum2, int p_DISPLAY, int p_LIMIT, int p_EOTF, int p_SURROUND, int p_Switch0, 
 int p_Switch1, int p_Switch2)
 {
 const int x = blockIdx.x * blockDim.x + threadIdx.x;
@@ -155,12 +155,11 @@ aces = scale_C(aces, p_LMTScale1);
 float3 SLOPE = {p_LMTScale2, p_LMTScale2, p_LMTScale2};
 float3 OFFSET = {p_LMTScale3, p_LMTScale3, p_LMTScale3};
 float3 POWER = {p_LMTScale4, p_LMTScale4, p_LMTScale4};
-float SAT = p_LMTScale5;
 
-aces = ASCCDL_inACEScct(aces, SLOPE, OFFSET, POWER, SAT);
-aces = gamma_adjust_linear(aces, p_LMTScale6, p_LMTScale7);
-aces = rotate_H_in_H(aces, p_LMTScale8, p_LMTScale9, p_LMTScale10);
-aces = scale_C_at_H(aces, p_LMTScale11, p_LMTScale12, p_LMTScale13);
+aces = ASCCDL_inACEScct(aces, SLOPE, OFFSET, POWER);
+aces = gamma_adjust_linear(aces, p_LMTScale5, p_LMTScale6);
+aces = rotate_H_in_H(aces, p_LMTScale7, p_LMTScale8, p_LMTScale9);
+aces = scale_C_at_H(aces, p_LMTScale10, p_LMTScale11, p_LMTScale12);
 }
 }
 
@@ -411,7 +410,7 @@ dim3 blocks(((p_Width + threads.x - 1) / threads.x), p_Height, 1);
 
 ACESKernel<<<blocks, threads>>>(p_Input, p_Output, p_Width, p_Height, p_Direction, p_IDT, p_ACESIN, p_LMT, p_ACESOUT, 
 p_RRT, p_InvRRT, p_ODT, p_InvODT, p_Exposure, p_LMTScale[0], p_LMTScale[1], p_LMTScale[2], p_LMTScale[3], p_LMTScale[4], 
-p_LMTScale[5], p_LMTScale[6], p_LMTScale[7], p_LMTScale[8], p_LMTScale[9], p_LMTScale[10], p_LMTScale[11], p_LMTScale[12], 
+p_LMTScale[5], p_LMTScale[6], p_LMTScale[7], p_LMTScale[8], p_LMTScale[9], p_LMTScale[10], p_LMTScale[11], 
 p_Lum[0], p_Lum[1], p_Lum[2], p_DISPLAY, p_LIMIT, p_EOTF, p_SURROUND, p_Switch[0], p_Switch[1], p_Switch[2]);
 
 }
