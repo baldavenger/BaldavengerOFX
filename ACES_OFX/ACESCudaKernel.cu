@@ -8,9 +8,11 @@ __global__ void ACESKernel(const float* p_Input, float* p_Output, int p_Width, i
 int p_Direction, int p_IDT, int p_ACESIN, int p_LMT, int p_ACESOUT, int p_RRT, int p_InvRRT, 
 int p_ODT, int p_InvODT, float p_Exposure, float p_LMTScale1, float p_LMTScale2, float p_LMTScale3, 
 float p_LMTScale4, float p_LMTScale5, float p_LMTScale6, float p_LMTScale7, float p_LMTScale8, 
-float p_LMTScale9, float p_LMTScale10, float p_LMTScale11, float p_LMTScale12, float p_Lum0, 
-float p_Lum1, float p_Lum2, int p_DISPLAY, int p_LIMIT, int p_EOTF, int p_SURROUND, int p_Switch0, 
-int p_Switch1, int p_Switch2)
+float p_LMTScale9, float p_LMTScale10, float p_LMTScale11, float p_LMTScale12,float p_LMTScale13, 
+float p_LMTScale14, float p_LMTScale15, float p_LMTScale16, float p_LMTScale17, float p_LMTScale18, 
+float p_LMTScale19, float p_LMTScale20, float p_LMTScale21, float p_LMTScale22, float p_LMTScale23, 
+float p_LMTScale24, float p_Lum0, float p_Lum1, float p_Lum2, int p_DISPLAY, int p_LIMIT, int p_EOTF, 
+int p_SURROUND, int p_Switch0, int p_Switch1, int p_Switch2)
 {
 const int x = blockIdx.x * blockDim.x + threadIdx.x;
 const int y = blockIdx.y * blockDim.y + threadIdx.y;
@@ -81,6 +83,24 @@ case 8:
 {
 aces = IDT_Sony_SLog3_SGamut3Cine(aces);
 }
+break;
+
+case 9:
+{
+aces = IDT_Panasonic_V35(aces);
+}
+break;
+
+case 10:
+{
+aces = IDT_Canon_C500_A_D55(aces);
+}
+break;
+
+case 11:
+{
+aces = IDT_Canon_C500_A_Trig(aces);
+}
 }
 
 if(p_Exposure != 0.0f)
@@ -150,16 +170,34 @@ break;
 
 case 3:
 {
+if(p_LMTScale1 != 1.0f)
 aces = scale_C(aces, p_LMTScale1);
 
 float3 SLOPE = {p_LMTScale2, p_LMTScale2, p_LMTScale2};
 float3 OFFSET = {p_LMTScale3, p_LMTScale3, p_LMTScale3};
 float3 POWER = {p_LMTScale4, p_LMTScale4, p_LMTScale4};
-
 aces = ASCCDL_inACEScct(aces, SLOPE, OFFSET, POWER);
+
+if(p_LMTScale5 != 1.0f)
 aces = gamma_adjust_linear(aces, p_LMTScale5, p_LMTScale6);
+
+if(p_LMTScale9 != 0.0f)
 aces = rotate_H_in_H(aces, p_LMTScale7, p_LMTScale8, p_LMTScale9);
-aces = scale_C_at_H(aces, p_LMTScale10, p_LMTScale11, p_LMTScale12);
+
+if(p_LMTScale12 != 0.0f)
+aces = rotate_H_in_H(aces, p_LMTScale10, p_LMTScale11, p_LMTScale12);
+
+if(p_LMTScale15 != 0.0f)
+aces = rotate_H_in_H(aces, p_LMTScale13, p_LMTScale14, p_LMTScale15);
+
+if(p_LMTScale18 != 1.0f)
+aces = scale_C_at_H(aces, p_LMTScale16, p_LMTScale17, p_LMTScale18);
+
+if(p_LMTScale21 != 0.0f)
+aces = rotate_H_in_H(aces, p_LMTScale19, p_LMTScale20, p_LMTScale21);
+
+if(p_LMTScale24 != 1.0f)
+aces = scale_C_at_H(aces, p_LMTScale22, p_LMTScale23, p_LMTScale24);
 }
 }
 
@@ -299,6 +337,18 @@ case 12:
 {
 aces = RRTODT_Rec2020_4000nits_15nits_ST2084(aces);
 }
+break;
+
+case 13:
+{
+aces = RRTODT_Rec709_100nits_15nits_BT1886(aces);
+}
+break;
+
+case 14:
+{
+aces = RRTODT_Rec709_100nits_15nits_sRGB(aces);
+}
 }
 
 } else {
@@ -384,7 +434,20 @@ case 10:
 {
 aces = InvRRTODT_Rec2020_4000nits_15nits_ST2084(aces);
 }
+break;
+
+case 11:
+{
+aces = InvRRTODT_Rec709_100nits_15nits_BT1886(aces);
 }
+break;
+
+case 12:
+{
+aces = InvRRTODT_Rec709_100nits_15nits_sRGB(aces);
+}
+}
+
 
 if(p_InvRRT == 1)
 {
@@ -410,7 +473,9 @@ dim3 blocks(((p_Width + threads.x - 1) / threads.x), p_Height, 1);
 
 ACESKernel<<<blocks, threads>>>(p_Input, p_Output, p_Width, p_Height, p_Direction, p_IDT, p_ACESIN, p_LMT, p_ACESOUT, 
 p_RRT, p_InvRRT, p_ODT, p_InvODT, p_Exposure, p_LMTScale[0], p_LMTScale[1], p_LMTScale[2], p_LMTScale[3], p_LMTScale[4], 
-p_LMTScale[5], p_LMTScale[6], p_LMTScale[7], p_LMTScale[8], p_LMTScale[9], p_LMTScale[10], p_LMTScale[11], 
-p_Lum[0], p_Lum[1], p_Lum[2], p_DISPLAY, p_LIMIT, p_EOTF, p_SURROUND, p_Switch[0], p_Switch[1], p_Switch[2]);
+p_LMTScale[5], p_LMTScale[6], p_LMTScale[7], p_LMTScale[8], p_LMTScale[9], p_LMTScale[10], p_LMTScale[11], p_LMTScale[12], 
+p_LMTScale[13], p_LMTScale[14], p_LMTScale[15], p_LMTScale[16], p_LMTScale[17], p_LMTScale[18], p_LMTScale[19], p_LMTScale[20], 
+p_LMTScale[21], p_LMTScale[22], p_LMTScale[23], p_Lum[0], p_Lum[1], p_Lum[2], p_DISPLAY, p_LIMIT, 
+p_EOTF, p_SURROUND, p_Switch[0], p_Switch[1], p_Switch[2]);
 
 }
