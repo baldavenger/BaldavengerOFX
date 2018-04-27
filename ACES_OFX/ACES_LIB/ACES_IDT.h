@@ -14,6 +14,9 @@
 #include "ACES_IDT/IDT_Alexa_v3_raw_EI800_CCT6500.h"
 #include "ACES_IDT/IDT_Sony_SLog3_SGamut3.h"
 #include "ACES_IDT/IDT_Sony_SLog3_SGamut3Cine.h"
+#include "ACES_IDT/IDT_Panasonic_V35.h"
+#include "ACES_IDT/IDT_Canon_C500_A_D55.h"
+#include "ACES_IDT/IDT_Canon_C500_A_Trig.h"
 
 
 #endif

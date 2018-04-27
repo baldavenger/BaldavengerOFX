@@ -1088,5 +1088,22 @@ __device__ inline float SLog3_to_linear( float SLog )
 	return out;
 }
 
+__device__ inline float vLogToLinScene( float x)
+{
+	const float cutInv = 0.181f;
+	const float b = 0.00873f;
+	const float c = 0.241514f;
+	const float d = 0.598206f;
+	
+	if (x <= cutInv)
+		return (x - 0.125f) / 5.6f;
+	else
+		return powf(10.0f, (x - d) / c) - b;
+}
+
+__device__ inline float CanonLog_to_linear ( float clog_ire)
+{
+return (powf(10.0f, (clog_ire - 0.0730597f) / 0.529136f) - 1) / 10.1596f;
+}
 
 #endif

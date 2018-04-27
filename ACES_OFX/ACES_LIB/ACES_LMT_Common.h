@@ -1,7 +1,6 @@
 #ifndef __ACES_LMT_COMMON_H_INCLUDED__
 #define __ACES_LMT_COMMON_H_INCLUDED__
 
-//__constant__ float PIE = 3.14159265358979323846264338327950288f;
 __constant__ float X_BRK = 0.0078125f;
 __constant__ float Y_BRK = 0.155251141552511f;
 __constant__ float A = 10.5402377416545f;
@@ -187,8 +186,8 @@ __device__ inline float3 scale_C_at_H
 )
 {
     float3 new_rgb = rgb;
-    
     float3 ych = rgb_2_ych( rgb);
+    centerH = 360.0f - centerH;
 
     if (ych.y > 0.0f) {  // Only do the chroma adjustment if pixel is non-neutral
 
@@ -235,6 +234,7 @@ __device__ inline float3 rotate_H_in_H
     float3 ych = rgb_2_ych( rgb);
     float3 new_ych = ych;
 
+	centerH = 360.0f - centerH;
     float centeredHue = center_hue( ych.z, centerH);
     float f_H = cubic_basis_shaper( centeredHue, widthH);
 
