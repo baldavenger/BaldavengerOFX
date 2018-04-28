@@ -2,7 +2,6 @@
 #include "ACES_LIB/ACES_LMT.h"
 #include "ACES_LIB/ACES_RRT.h"
 #include "ACES_LIB/ACES_ODT.h"
-#include "ACES_LIB/ACES_CSC/ACES_Conversion.h"
 
 __global__ void ACESKernel(const float* p_Input, float* p_Output, int p_Width, int p_Height, 
 int p_Direction, int p_IDT, int p_ACESIN, int p_LMT, int p_ACESOUT, int p_RRT, int p_InvRRT, 
@@ -19,7 +18,7 @@ const int y = blockIdx.y * blockDim.y + threadIdx.y;
 
 if ((x < p_Width) && (y < p_Height))
 {
-const int index = ((y * p_Width) + x) * 4;
+const int index = (y * p_Width + x) * 4;
 
 float3 aces;
 aces.x = p_Input[index + 0];
@@ -448,7 +447,6 @@ case 12:
 aces = InvRRTODT_Rec709_100nits_15nits_sRGB(aces);
 }
 }
-
 
 if(p_InvRRT == 1)
 {
