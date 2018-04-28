@@ -22,7 +22,7 @@ __device__ float3 inline ODT_Rec2020_ST2084_1000nits( float3 oces)
     rgbPost.z = segmented_spline_c9_fwd( rgbPre.z, ODT_1000nits());
 
   // Subtract small offset to allow for a code value of 0
-    rgbPost = add_f_f3( -pow10(-4.4550166483), rgbPost);
+    rgbPost = add_f_f3( -pow10f(-4.4550166483), rgbPost);
 
   // Convert to display primary encoding
     // Rendering space RGB to XYZ

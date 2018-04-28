@@ -56,7 +56,7 @@ __device__ inline float sigmoid_shaper( float x)
 {
     // Sigmoid function in the range 0 to 1 spanning -2 to +2.
 
-    float t = max( 1.0f - fabs( x / 2.0f), 0.0f);
+    float t = fmax( 1.0f - fabs( x / 2.0f), 0.0f);
     float y = 1.0f + sign(x) * (1.0f - t * t);
 
     return y / 2.0f;
@@ -185,7 +185,7 @@ __device__ inline float3 inv_rrt_sweeteners( float3 in)
     float b = aces.x - hueWeight * (RRT_RED_PIVOT + minChan) * (1.0f - RRT_RED_SCALE);
     float c = hueWeight * RRT_RED_PIVOT * minChan * (1.0f - RRT_RED_SCALE);
 
-    aces.x = ( -b - sqrt( b * b - 4.0f * a * c)) / ( 2.0f * a);
+    aces.x = ( -b - sqrtf( b * b - 4.0f * a * c)) / ( 2.0f * a);
 
     // --- Glow module --- //
     float saturation = rgb_2_saturation( aces);

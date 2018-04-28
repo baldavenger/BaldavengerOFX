@@ -64,7 +64,7 @@ __device__ inline float3 darkSurround_to_dimSurround( float3 linearCV)
 
   float3 xyY = XYZ_2_xyY(XYZ);
   xyY.z = clamp( xyY.z, 0.0f, HALF_POS_INF);
-  xyY.z = pow( xyY.z, DIM_SURROUND_GAMMA);
+  xyY.z = powf( xyY.z, DIM_SURROUND_GAMMA);
   XYZ = xyY_2_XYZ(xyY);
 
   return mult_f3_f44( XYZ, XYZ_2_AP1_MAT);
@@ -131,7 +131,7 @@ __device__ inline float roll_white_rev(
         out = in;
     else {
         c = c + in;
-        const float discrim = sqrt( b * b - 4.0f * a * c);
+        const float discrim = sqrtf( b * b - 4.0f * a * c);
         const float t = ( 2.0f * c) / ( -discrim - b);
         out = -(( t * ( x1 - x0)) + x0);
     }

@@ -20,7 +20,7 @@ int CVmax = 940;
 if (in <= powf(2.0f, -9.72f))
 return CVmin;
 else
-return max( CVmin, min( CVmax, round( (log2f(in) + 2.5f) * StepsPerStop + MidCVoffset)));
+return fmax( CVmin, fmin( CVmax, round( (log2f(in) + 2.5f) * StepsPerStop + MidCVoffset)));
 }
 
 __device__ inline float3 ACES_to_ACESproxy10( float3 ACES)

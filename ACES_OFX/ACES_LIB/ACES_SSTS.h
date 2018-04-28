@@ -83,7 +83,7 @@ __device__ inline float5 init_coefsLow(
     // Middle coefficient (which defines the "sharpness of the bend") is linearly interpolated
     float2 bendsLow[2] = { {MIN_STOP_RRT, 0.18f}, 
                     {MIN_STOP_SDR, 0.35f} };
-    float pctLow = interpolate1D( bendsLow, log2(TsPointLow.x / 0.18f));
+    float pctLow = interpolate1D( bendsLow, log2f(TsPointLow.x / 0.18f));
     coefsLow.z = log10f(TsPointLow.y) + pctLow*(log10f(TsPointMid.y)-log10f(TsPointLow.y));
 
     return coefsLow;
@@ -114,7 +114,7 @@ __device__ inline float5 init_coefsHigh(
     // Middle coefficient (which defines the "sharpness of the bend") is linearly interpolated
     float2 bendsHigh[2] = { {MAX_STOP_SDR, 0.89f}, 
                     	{MAX_STOP_RRT, 0.90f} };
-    float pctHigh = interpolate1D( bendsHigh, log2(TsPointMax.x / 0.18f));
+    float pctHigh = interpolate1D( bendsHigh, log2f(TsPointMax.x / 0.18f));
     coefsHigh.z = log10f(TsPointMid.y) + pctHigh*(log10f(TsPointMax.y)-log10f(TsPointMid.y));
     
     return coefsHigh;
@@ -167,7 +167,7 @@ __device__ inline float ssts
 
     // Check for negatives or zero before taking the log. If negative or zero,
     // set to HALF_MIN.
-    float logx = log10f( max(x, HALF_MIN )); 
+    float logx = log10f( fmax(x, HALF_MIN )); 
 
     float logy;
 
@@ -203,7 +203,7 @@ __device__ inline float ssts
 
     }
 
-    return pow10(logy);
+    return pow10f(logy);
 
 }
 
@@ -294,7 +294,7 @@ __device__ inline float inv_ssts
 
     }
 
-    return pow10( logx);
+    return pow10f( logx);
 
 }
 

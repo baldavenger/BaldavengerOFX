@@ -9,7 +9,11 @@
 #define HALF_MIN_EXP	-13
 #define HALF_RADIX		2
 #define HALF_POS_INF	31744.0f
+
+#ifndef HALF_MIN
 #define HALF_MIN		5.96046448e-08 // Smallest positive half
+#endif
+
 #define HALF_MIN_NORM	6.10351562e-05 // Smallest positive normalized half
 #define HALF_MAX		65504.0f        // Largest positive half
 #define HALF_EPSILON	0.00097656f // Smallest positive e for which half (1.0 + e) != half (1.0)
@@ -194,17 +198,17 @@ __device__ inline float max( float a, float b)
 
 __device__ inline float min_f3( float3 a)
 {
-  return min( a.x, min( a.y, a.z));
+  return fmin( a.x, fmin( a.y, a.z));
 }
 
 __device__ inline float max_f3( float3 a)
 {
-  return max( a.x, max( a.y, a.z));
+  return fmax( a.x, fmax( a.y, a.z));
 }
 
 __device__ inline float clip( float v)
 {
-  return min(v, 1.0f);
+  return fmin(v, 1.0f);
 }
 
 __device__ inline float3 clip_f3( float3 in)
@@ -222,7 +226,7 @@ __device__ inline float clamp( float in, float clampMin, float clampMax)
   // Note: Numeric constants can be used in place of a min or max value (i.e. 
   // use HALF_NEG_INF in place of clampMin or HALF_POS_INF in place of clampMax)
   
-  return max( clampMin, min(in, clampMax));
+  return fmax( clampMin, fmin(in, clampMax));
 }
 
 __device__ inline float3 add_f_f3( float a, float3 b)
@@ -243,26 +247,28 @@ __device__ inline float3 pow_f3( float3 a, float b)
   return out;
 }
 
-__device__ inline float pow10(float x)
+#ifndef pow10f
+__device__ inline float pow10f(float x)
 {
   return powf(10.0f, x);
 }
+#endif
 
 __device__ inline float3 pow10_f3( float3 a)
 {
   float3 out;
-  out.x = pow10(a.x);
-  out.y = pow10(a.y);
-  out.z = pow10(a.z);
+  out.x = pow10f(a.x);
+  out.y = pow10f(a.y);
+  out.z = pow10f(a.z);
   return out;
 }
 
 __device__ inline float3 log10_f3( float3 a)
 {
   float3 out;
-  out.x = log10(a.x);
-  out.y = log10(a.y);
-  out.z = log10(a.z);
+  out.x = log10f(a.x);
+  out.y = log10f(a.y);
+  out.z = log10f(a.z);
   return out;
 }
 

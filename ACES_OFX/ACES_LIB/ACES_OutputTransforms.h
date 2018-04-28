@@ -31,7 +31,7 @@ __device__ inline float3 dark_to_dim( float3 XYZ)
 {
   float3 xyY = XYZ_2_xyY(XYZ);
   xyY.z = clamp( xyY.z, 0.0f, HALF_POS_INF);
-  xyY.z = pow( xyY.z, DIM_SURROUND_GAMMA);
+  xyY.z = powf( xyY.z, DIM_SURROUND_GAMMA);
   return xyY_2_XYZ(xyY);
 }
 
@@ -39,7 +39,7 @@ __device__ inline float3 dim_to_dark( float3 XYZ)
 {
   float3 xyY = XYZ_2_xyY(XYZ);
   xyY.z = clamp( xyY.z, 0.0f, HALF_POS_INF);
-  xyY.z = pow( xyY.z, 1.0f/DIM_SURROUND_GAMMA);
+  xyY.z = powf( xyY.z, 1.0f/DIM_SURROUND_GAMMA);
   return xyY_2_XYZ(xyY);
 }
 
@@ -63,7 +63,7 @@ __device__ inline float3 outputTransform
     // NOTE: This is a bit of a hack - probably a more direct way to do this.
     // Fix in future version
     TsParams PARAMS_DEFAULT = init_TsParams( Y_MIN, Y_MAX);
-    float expShift = log2(inv_ssts(Y_MID, PARAMS_DEFAULT))- log2f(0.18f);
+    float expShift = log2f(inv_ssts(Y_MID, PARAMS_DEFAULT))- log2f(0.18f);
     TsParams PARAMS = init_TsParams( Y_MIN, Y_MAX, expShift);
 
     // RRT sweeteners
@@ -205,7 +205,7 @@ __device__ inline float3 invOutputTransform
     // NOTE: This is a bit of a hack - probably a more direct way to do this.
     // Update in accordance with forward algorithm.
     TsParams PARAMS_DEFAULT = init_TsParams( Y_MIN, Y_MAX);
-    float expShift = log2(inv_ssts(Y_MID, PARAMS_DEFAULT))- log2f(0.18f);
+    float expShift = log2f(inv_ssts(Y_MID, PARAMS_DEFAULT))- log2f(0.18f);
     TsParams PARAMS = init_TsParams( Y_MIN, Y_MAX, expShift);
 
     float3 outputCV = in;

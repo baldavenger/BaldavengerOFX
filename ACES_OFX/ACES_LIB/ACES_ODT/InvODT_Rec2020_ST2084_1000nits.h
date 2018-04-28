@@ -26,7 +26,7 @@ __device__ inline float3 InvODT_Rec2020_ST2084_1000nits( float3 outputCV)
     float3 rgbPre = mult_f3_f44( XYZ, XYZ_2_AP1_MAT);
 
   // Add small offset that was used to allow for a code value of 0
-    rgbPre = add_f_f3( pow10(-4.4550166483f), rgbPre);
+    rgbPre = add_f_f3( pow10f(-4.4550166483f), rgbPre);
 
   // Apply the tonescale independently in rendering-space RGB
     float3 rgbPost;

@@ -46,7 +46,7 @@ __device__ float3 inline InvRRT( float3 oces)
     float b = aces.x - hueWeight * (RRT_RED_PIVOT + minChan) * (1.0f - RRT_RED_SCALE);
     float c = hueWeight * RRT_RED_PIVOT * minChan * (1.0f - RRT_RED_SCALE);
 
-    aces.x = ( -b - sqrt( b * b - 4.0f * a * c)) / ( 2.0f * a);
+    aces.x = ( -b - sqrtf( b * b - 4.0f * a * c)) / ( 2.0f * a);
 
   // --- Glow module --- //
     float saturation = rgb_2_saturation( aces);

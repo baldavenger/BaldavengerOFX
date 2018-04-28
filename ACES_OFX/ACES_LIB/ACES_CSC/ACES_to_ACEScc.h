@@ -13,9 +13,9 @@
 __device__ inline float lin_to_ACEScc( float in)
 {
   if (in <= 0)
-    return -0.3584474886f; // =(log2( pow(2.,-16.))+9.72)/17.52
+    return -0.3584474886f; // =(log2f( powf(2.0f,-16.0f))+9.72f)/17.52f
   else if (in < powf(2.0f, -15.0f))
-    return (log2f( pow(2.0f, -16.0f) + in * 0.5f) + 9.72f) / 17.52f;
+    return (log2f( powf(2.0f, -16.0f) + in * 0.5f) + 9.72f) / 17.52f;
   else // (in >= pow(2.,-15))
     return (log2f(in) + 9.72f) / 17.52f;
 }
