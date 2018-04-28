@@ -23,15 +23,15 @@ aces = gamma_adjust_linear( aces, 1.5f, 0.18f);
 
 aces = rotate_H_in_H( aces, 0.0f, 30.0f, -5.0f);
 
-aces = rotate_H_in_H( aces, 80.0f, 60.0f, 15.0f);
+aces = rotate_H_in_H( aces, 280.0f, 60.0f, 15.0f);
 
-aces = rotate_H_in_H( aces, 52.0f, 50.0f, 14.0f);
+aces = rotate_H_in_H( aces, 308.0f, 50.0f, 14.0f);
 
-aces = scale_C_at_H( aces, 45.0f, 40.0f, 1.4f);
+aces = scale_C_at_H( aces, 315.0f, 40.0f, 1.4f);
 
-aces = rotate_H_in_H( aces, 190.0f, 40.0f, -30.0f);
+aces = rotate_H_in_H( aces, 170.0f, 40.0f, -30.0f);
 
-aces = scale_C_at_H( aces, 240.0f, 120.0f, 1.4f);
+aces = scale_C_at_H( aces, 120.0f, 120.0f, 1.4f);
 
 return aces;
 }
