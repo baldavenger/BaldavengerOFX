@@ -173,10 +173,13 @@ case 3:
 if(p_LMTScale1 != 1.0f)
 aces = scale_C(aces, p_LMTScale1);
 
+if(!(p_LMTScale2 == 1.0f && p_LMTScale3 == 0.0f && p_LMTScale4 == 1.0f))
+{
 float3 SLOPE = {p_LMTScale2, p_LMTScale2, p_LMTScale2};
 float3 OFFSET = {p_LMTScale3, p_LMTScale3, p_LMTScale3};
 float3 POWER = {p_LMTScale4, p_LMTScale4, p_LMTScale4};
 aces = ASCCDL_inACEScct(aces, SLOPE, OFFSET, POWER);
+}
 
 if(p_LMTScale5 != 1.0f)
 aces = gamma_adjust_linear(aces, p_LMTScale5, p_LMTScale6);
