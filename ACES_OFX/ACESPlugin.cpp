@@ -13,11 +13,11 @@ using std::string;
 #include "ofxsLog.h"
 
 #ifdef __APPLE__
-#define kPluginScript "/Library/Application Support/Blackmagic Design/DaVinci Resolve/LUT"
+#define kPluginScript "/Library/Application Support/Blackmagic Design/DaVinci Resolve/LUT/ACES_DCTL"
 #elif defined(_WIN32) || defined(__WIN32__) || defined(WIN32) || defined(_WIN64) || defined(__WIN64__) || defined(WIN64)
-#define kPluginScript "\\ProgramData\\Blackmagic Design\\DaVinci Resolve\\Support\\LUT"
+#define kPluginScript "\\ProgramData\\Blackmagic Design\\DaVinci Resolve\\Support\\LUT\\ACES_DCTL"
 #else
-#define kPluginScript "/home/resolve/LUT"
+#define kPluginScript "/home/resolve/LUT/ACES_DCTL"
 #endif
 
 #define kPluginName "ACES"
@@ -28,7 +28,7 @@ using std::string;
 
 #define kPluginIdentifier "OpenFX.Yo.ACES"
 #define kPluginVersionMajor 1
-#define kPluginVersionMinor 0
+#define kPluginVersionMinor 1
 
 #define kSupportsTiles false
 #define kSupportsMultiResolution false
@@ -124,20 +124,19 @@ enum ACESINEnum
 #define kParamLMTHint "LMT"
 #define kParamLMTOptionBypass "Bypass"
 #define kParamLMTOptionBypassHint "Bypass"
+#define kParamLMTOptionCustom "Custom"
+#define kParamLMTOptionCustomHint "Custom LMT"
 #define kParamLMTOptionBleach "Bleach Bypass"
 #define kParamLMTOptionBleachHint "Bleach Bypass"
 #define kParamLMTOptionPFE "PFE"
 #define kParamLMTOptionPFEHint "Print Film Emulation"
-#define kParamLMTOptionCustom "Custom"
-#define kParamLMTOptionCustomHint "Custom LMT"
-
 
 enum LMTEnum
 {
     eLMTBypass,
+    eLMTCustom,
     eLMTBleach,
     eLMTPFE,
-    eLMTCustom,
 };
 
 #define kParamACESOUT "ACESOUT"
@@ -744,7 +743,7 @@ void ACESPlugin::changedParam(const OFX::InstanceChangedArgs& p_Args, const std:
     m_LMT->getValueAtTime(p_Args.time, LMT_i);
     LMTEnum LMT = (LMTEnum)LMT_i;
     
-	bool custom = LMT_i == 3;
+	bool custom = LMT_i == 1;
     
 	m_IDT->setIsSecretAndDisabled(!forward);
 	m_ACESIN->setIsSecretAndDisabled(!forward);
@@ -811,7 +810,7 @@ void ACESPlugin::changedParam(const OFX::InstanceChangedArgs& p_Args, const std:
     m_LMT->getValueAtTime(p_Args.time, LMT_i);
     LMTEnum LMT = (LMTEnum)LMT_i;
     
-	bool custom = LMT_i == 3;
+	bool custom = LMT_i == 1;
 	
 	m_ScaleC->setIsSecretAndDisabled(!custom);
 	m_Slope->setIsSecretAndDisabled(!custom);
@@ -891,6 +890,118 @@ void ACESPlugin::changedParam(const OFX::InstanceChangedArgs& p_Args, const std:
 	
 	if(p_ParamName == "button1")
     {
+    
+    int Direction_i;
+    m_Direction->getValueAtTime(p_Args.time, Direction_i);
+    InputEnum Direction = (InputEnum)Direction_i;
+    int _direction = Direction_i;
+	
+	int IDT_i;
+    m_IDT->getValueAtTime(p_Args.time, IDT_i);
+    IDTEnum IDT = (IDTEnum)IDT_i;
+    int _idt = IDT_i;
+    
+    int ACESIN_i;
+    m_ACESIN->getValueAtTime(p_Args.time, ACESIN_i);
+    ACESINEnum ACESIN = (ACESINEnum)ACESIN_i;
+    int _acesin = ACESIN_i;
+    
+    int LMT_i;
+    m_LMT->getValueAtTime(p_Args.time, LMT_i);
+    LMTEnum LMT = (LMTEnum)LMT_i;
+    int _lmt = LMT_i;
+    
+    int ACESOUT_i;
+    m_ACESOUT->getValueAtTime(p_Args.time, ACESOUT_i);
+    ACESOUTEnum ACESOUT = (ACESOUTEnum)ACESOUT_i;
+    int _acesout = ACESOUT_i;
+    
+    int RRT_i;
+    m_RRT->getValueAtTime(p_Args.time, RRT_i);
+    RRTEnum RRT = (RRTEnum)RRT_i;
+    int _rrt = RRT_i;
+    
+    int InvRRT_i;
+    m_InvRRT->getValueAtTime(p_Args.time, InvRRT_i);
+    InvRRTEnum InvRRT = (InvRRTEnum)InvRRT_i;
+    int _invrrt = InvRRT_i;
+    
+    int ODT_i;
+    m_ODT->getValueAtTime(p_Args.time, ODT_i);
+    ODTEnum ODT = (ODTEnum)ODT_i;
+    int _odt = ODT_i;
+    
+    int InvODT_i;
+    m_InvODT->getValueAtTime(p_Args.time, InvODT_i);
+    InvODTEnum InvODT = (InvODTEnum)InvODT_i;
+    int _invodt = InvODT_i;
+    
+    float _exposure = m_Exposure->getValueAtTime(p_Args.time);
+    float _lmtscale[24];
+    _lmtscale[0] = m_ScaleC->getValueAtTime(p_Args.time);
+    _lmtscale[1] = m_Slope->getValueAtTime(p_Args.time);
+    _lmtscale[2] = m_Offset->getValueAtTime(p_Args.time);
+    _lmtscale[3] = m_Power->getValueAtTime(p_Args.time);
+    _lmtscale[4] = m_Gamma->getValueAtTime(p_Args.time);
+    _lmtscale[5] = m_Pivot->getValueAtTime(p_Args.time);
+    
+    _lmtscale[6] = m_RotateH1->getValueAtTime(p_Args.time);
+    _lmtscale[7] = m_Range1->getValueAtTime(p_Args.time);
+    _lmtscale[8] = m_Shift1->getValueAtTime(p_Args.time);
+    
+    _lmtscale[9] = m_RotateH2->getValueAtTime(p_Args.time);
+    _lmtscale[10] = m_Range2->getValueAtTime(p_Args.time);
+    _lmtscale[11] = m_Shift2->getValueAtTime(p_Args.time);
+    
+    _lmtscale[12] = m_RotateH3->getValueAtTime(p_Args.time);
+    _lmtscale[13] = m_Range3->getValueAtTime(p_Args.time);
+    _lmtscale[14] = m_Shift3->getValueAtTime(p_Args.time);
+    
+    _lmtscale[15] = m_HueCH1->getValueAtTime(p_Args.time);
+    _lmtscale[16] = m_RangeCH1->getValueAtTime(p_Args.time);
+    _lmtscale[17] = m_ScaleCH1->getValueAtTime(p_Args.time);
+    
+    _lmtscale[18] = m_RotateH4->getValueAtTime(p_Args.time);
+    _lmtscale[19] = m_Range4->getValueAtTime(p_Args.time);
+    _lmtscale[20] = m_Shift4->getValueAtTime(p_Args.time);
+    
+    _lmtscale[21] = m_HueCH2->getValueAtTime(p_Args.time);
+    _lmtscale[22] = m_RangeCH2->getValueAtTime(p_Args.time);
+    _lmtscale[23] = m_ScaleCH2->getValueAtTime(p_Args.time);
+    
+    float _lum[3];
+    _lum[0] = m_YMIN->getValueAtTime(p_Args.time);
+    _lum[0] *= 0.0001f;
+    _lum[1] = m_YMID->getValueAtTime(p_Args.time);
+    _lum[2] = m_YMAX->getValueAtTime(p_Args.time);
+    
+    int DISPLAY_i;
+    m_DISPLAY->getValueAtTime(p_Args.time, DISPLAY_i);
+    DISPLAYEnum DISPLAY = (DISPLAYEnum)DISPLAY_i;
+    int _display = DISPLAY_i;
+    
+    int LIMIT_i;
+    m_LIMIT->getValueAtTime(p_Args.time, LIMIT_i);
+    LIMITEnum LIMIT = (LIMITEnum)LIMIT_i;
+    int _limit = LIMIT_i;
+    
+    int EOTF_i;
+    m_EOTF->getValueAtTime(p_Args.time, EOTF_i);
+    EOTFEnum EOTF = (EOTFEnum)EOTF_i;
+    int _eotf = EOTF_i;
+    
+    int SURROUND_i;
+    m_SURROUND->getValueAtTime(p_Args.time, SURROUND_i);
+    SURROUNDEnum SURROUND = (SURROUNDEnum)SURROUND_i;
+    int _surround = SURROUND_i;
+    
+    int _switch[3];
+    bool stretch = m_STRETCH->getValueAtTime(p_Args.time);
+	_switch[0] = stretch ? 1 : 0;
+	bool d60sim = m_D60SIM->getValueAtTime(p_Args.time);
+	_switch[1] = d60sim ? 1 : 0;
+	bool legalrange = m_LEGALRANGE->getValueAtTime(p_Args.time);
+	_switch[2] = legalrange ? 1 : 0;
        
 	string PATH;
 	m_Path->getValue(PATH);
@@ -906,16 +1017,510 @@ void ACESPlugin::changedParam(const OFX::InstanceChangedArgs& p_Args, const std:
 	pFile = fopen ((PATH + "/" + NAME + ".dctl").c_str(), "w");
 	if (pFile != NULL) {
     	
-	fprintf (pFile, "// ACESPlugin DCTL export\n" \
+	fprintf (pFile, "// ACESPlugin DCTL export \n" \
+	"// Should be placed in ACES_DCTL folder \n" \
+	" \n" \
+	"#include \"ACES_LIB/ACES_IDT.h\" \n" \
+	"#include \"ACES_LIB/ACES_LMT.h\" \n" \
+	"#include \"ACES_LIB/ACES_RRT.h\" \n" \
+	"#include \"ACES_LIB/ACES_ODT.h\" \n" \
+	" \n" \
+	"__DEVICE__ float3 transform(int p_Width, int p_Height, int p_X, int p_Y, float p_R, float p_G, float p_B) \n" \
+	"{ \n" \
+	"int Direction = %d;		// 0 == Standard , 1 == Inverse \n" \
+	"int Idt = %d;			// 0 == Bypass \n" \
+	"int AcesIn = %d;			// 0 == Bypass \n" \
+	"int Lmt = %d;			// 0 == Bypass , 1 == Custom \n" \
+	"int AcesOut = %d;		// 0 == Bypass \n" \
+	"int Rrt = %d;			// 0 == Bypass , 1 == Enable \n" \
+	"int InvRrt = %d;			// 0 == Bypass , 1 == Enable \n" \
+	"int Odt = %d;			// 0 == Bypass , 1 == Custom \n" \
+	"int InvOdt = %d;			// 0 == Bypass , 1 == Custom \n" \
+	" \n" \
+	"float Exposure = %ff; \n" \
+	"float Color_Boost = %ff; \n" \
+	"float Slope = %ff; \n" \
+	"float Offset = %ff; \n" \
+	"float Power = %ff; \n" \
+	" \n" \
+	"float Contrast = %ff; \n" \
+	"float Pivot = %ff; \n" \
+	"float RotateH1 = %ff; \n" \
+	"float Range1 = %ff; \n" \
+	"float Shift1 = %ff; \n" \
+	"float RotateH2 = %ff; \n" \
+	"float Range2 = %ff; \n" \
+	"float Shift2 = %ff; \n" \
+	"float RotateH3 = %ff; \n" \
+	"float Range3 = %ff; \n" \
+	"float Shift3 = %ff; \n" \
+	" \n" \
+	"float HueCH1 = %ff; \n" \
+	"float RangeCH1 = %ff; \n" \
+	"float ScaleCH1 = %ff; \n" \
+	"float RotateH4 = %ff; \n" \
+	"float Range4 = %ff; \n" \
+	"float Shift4 = %ff; \n" \
+	"float HueCH2 = %ff; \n" \
+	"float RangeCH2 = %ff; \n" \
+	"float ScaleCH2 = %ff; \n" \
+	" \n" \
+	"float Black_Luminance = %ff; \n" \
+	"float Midpoint_Luminance = %ff; \n" \
+	"float Peak_white_Luminance = %ff; \n" \
+	" \n" \
+	"int Display = %d;	// 0 == REC2020_PRI , 1 == P3D60_PRI , 2 == P3D65_PRI , 3 == P3DCI_PRI , 4 == REC709_PRI \n" \
+	"int Limit = %d;  	// 0 == REC2020_PRI , 1 == P3D60_PRI , 2 == P3D65_PRI , 3 == P3DCI_PRI , 4 == REC709_PRI \n" \
+	"int Eotf = %d; 		// 0 == ST-2084 (PQ) \n" \
+	"					// 1 == BT.1886 (Rec.709/2020 settings) \n" \
+	"					// 2 == sRGB (mon_curve w/ presets) \n" \
+	"					// 3 == gamma 2.6 \n" \
+	"					// 4 == linear (no EOTF) \n" \
+	"					// 5 == HLG \n" \
+	"int Surround = %d; 	// 0 == Dark , 1 == Dim , 2 == Normal \n" \
+	" \n" \
+	"int Stretch_Black_Luminance = %d; \n" \
+	"int D60sim = %d; \n" \
+	"int Legal_Range = %d; \n" \
+	" \n" \
+	"float3 aces = make_float3(p_R, p_G, p_B); \n" \
+	" \n" \
+	"if(Direction == 0) \n" \
+	"{ \n" \
+	" \n" \
+	"switch (Idt) \n" \
+	"{ \n" \
+	"case 0: \n" \
+	"{ \n" \
+	"} \n" \
+	"break; \n" \
+	" \n" \
+	"case 1: \n" \
+	"{ \n" \
+	"aces = ACEScc_to_ACES(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	" \n" \
+	"case 2: \n" \
+	"{ \n" \
+	"aces = ACEScct_to_ACES(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	" \n" \
+	"case 3: \n" \
+	"{ \n" \
+	"aces = IDT_Alexa_v3_logC_EI800(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	" \n" \
+	"case 4: \n" \
+	"{ \n" \
+	"aces = IDT_Alexa_v3_raw_EI800_CCT65(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	" \n" \
+	"case 5: \n" \
+	"{ \n" \
+	"aces = ADX10_to_ACES(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	" \n" \
+	"case 6: \n" \
+	"{ \n" \
+	"aces = ADX16_to_ACES(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	" \n" \
+	"case 7: \n" \
+	"{ \n" \
+	"aces = IDT_Sony_SLog3_SGamut3(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	" \n" \
+	"case 8: \n" \
+	"{ \n" \
+	"aces = IDT_Sony_SLog3_SGamut3Cine(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	" \n" \
+	"case 9: \n" \
+	"{ \n" \
+	"aces = IDT_Panasonic_V35(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	" \n" \
+	"case 10: \n" \
+	"{ \n" \
+	"aces = IDT_Canon_C500_A_D55(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	" \n" \
+	"case 11: \n" \
+	"{ \n" \
+	"aces = IDT_Canon_C500_A_Trig(aces); \n" \
+	"} \n" \
+	"} \n" \
+	" \n" \
+	"if(Exposure != 0.0f) \n" \
+	"{ \n" \
+	"aces.x *= _powf(2.0f, Exposure); \n" \
+	"aces.y *= _powf(2.0f, Exposure); \n" \
+	"aces.z *= _powf(2.0f, Exposure); \n" \
+	"} \n" \
+	" \n" \
+	"switch (AcesIn) \n" \
+	"{ \n" \
+	"case 0: \n" \
+	"{ \n" \
+	"} \n" \
+	"break; \n" \
+	" \n" \
+	"case 1: \n" \
+	"{ \n" \
+	"aces = ACES_to_ACEScc(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	" \n" \
+	"case 2: \n" \
+	"{ \n" \
+	"aces = ACES_to_ACEScct(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	" \n" \
+	"case 3: \n" \
+	"{ \n" \
+	"aces = ACES_to_ACEScg(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	" \n" \
+	"case 4: \n" \
+	"{ \n" \
+	"aces = ACES_to_ACESproxy10(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	" \n" \
+	"case 5: \n" \
+	"{ \n" \
+	"aces = ACES_to_ACESproxy12(aces); \n" \
+	"} \n" \
+	"} \n" \
+	" \n" \
+	"switch (Lmt) \n" \
+	"{ \n" \
+	"case 0: \n" \
+	"{ \n" \
+	"} \n" \
+	"break; \n" \
+	" \n" \
+	"case 1: \n" \
+	"{ \n" \
+	"// Custom LMT \n" \
+	"if(Color_Boost != 1.0f) \n" \
+	"aces = scale_C(aces, Color_Boost); \n" \
+	" \n" \
+	"if(!(Slope == 1.0f && Offset == 0.0f && Power == 1.0f)) \n" \
+	"{ \n" \
+	"float3 SLOPE = {Slope, Slope, Slope}; \n" \
+	"float3 OFFSET = {Offset, Offset, Offset}; \n" \
+	"float3 POWER = {Power, Power, Power}; \n" \
+	"aces = ASCCDL_inACEScct(aces, SLOPE, OFFSET, POWER); \n" \
+	"} \n" \
+	" \n" \
+	"if(Contrast != 1.0f) \n" \
+	"aces = gamma_adjust_linear(aces, Contrast, Pivot); \n" \
+	" \n" \
+	"if(Shift1 != 0.0f) \n" \
+	"aces = rotate_H_in_H(aces, RotateH1, Range1, Shift1); \n" \
+	" \n" \
+	"if(Shift2 != 0.0f) \n" \
+	"aces = rotate_H_in_H(aces, RotateH2, Range2, Shift2); \n" \
+	" \n" \
+	"if(Shift3 != 0.0f) \n" \
+	"aces = rotate_H_in_H(aces, RotateH3, Range3, Shift3); \n" \
+	" \n" \
+	"if(ScaleCH1 != 1.0f) \n" \
+	"aces = scale_C_at_H(aces, HueCH1, RangeCH1, ScaleCH1); \n" \
+	" \n" \
+	"if(Shift4 != 0.0f) \n" \
+	"aces = rotate_H_in_H(aces, RotateH4, Range4, Shift4); \n" \
+	" \n" \
+	"if(ScaleCH2 != 1.0f) \n" \
+	"aces = scale_C_at_H(aces, HueCH2, RangeCH2, ScaleCH2); \n" \
+	"} \n" \
+	"break; \n" \
+	" \n" \
+	"case 2: \n" \
+	"{ \n" \
+	"aces = LMT_Analytic_4(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	" \n" \
+	"case 3: \n" \
+	"{ \n" \
+	"aces = LMT_Analytic_3(aces); \n" \
+	"} \n" \
+	"} \n" \
+	" \n" \
+	"switch (AcesOut) \n" \
+	"{ \n" \
+	"case 0: \n" \
+	"{ \n" \
+	"} \n" \
+	"break; \n" \
+	" \n" \
+	"case 1: \n" \
+	"{ \n" \
+	"aces = ACEScc_to_ACES(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	" \n" \
+	"case 2: \n" \
+	"{ \n" \
+	"aces = ACEScct_to_ACES(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	" \n" \
+	"case 3: \n" \
+	"{ \n" \
+	"aces = ACEScg_to_ACES(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	" \n" \
+	"case 4: \n" \
+	"{ \n" \
+	"aces = ACESproxy10_to_ACES(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	" \n" \
+	"case 5: \n" \
+	"{ \n" \
+	"aces = ACESproxy12_to_ACES(aces); \n" \
+	"} \n" \
+	"} \n" \
+	" \n" \
+	"if(Rrt == 1) \n" \
+	"{ \n" \
+	"aces = RRT(aces); \n" \
+	"} \n" \
+	" \n" \
+	"switch (Odt) \n" \
+	"{ \n" \
+	"case 0: \n" \
+	"{ \n" \
+	"} \n" \
+	"break; \n" \
+	" \n" \
+	"case 1: \n" \
+	"{ \n" \
+	"// Custom RRTODT \n" \
+	"float Y_MIN = Black_Luminance; \n" \
+	"float Y_MID = Midpoint_Luminance; \n" \
+	"float Y_MAX = Peak_white_Luminance; \n" \
+	" \n" \
+	"Chromaticities DISPLAY_PRI = Display == 0 ? REC2020_PRI : Display == 1 ? P3D60_PRI : Display == 2 ? P3D65_PRI : Display == 3 ? P3DCI_PRI : REC709_PRI; \n" \
+	"Chromaticities LIMITING_PRI = Limit == 0 ? REC2020_PRI : Limit == 1 ? P3D60_PRI : Limit == 2 ? P3D65_PRI : Limit == 3 ? P3DCI_PRI : REC709_PRI; \n" \
+	" \n" \
+	"int EOTF = Eotf; \n" \
+	"				 \n" \
+	"int SURROUND = Surround; \n" \
+	"					            \n" \
+	"bool STRETCH_BLACK = Stretch_Black_Luminance == 1; \n" \
+	"bool D60_SIM = D60sim == 1; \n" \
+	"bool LEGAL_RANGE = Legal_Range == 1; \n" \
+	" \n" \
+	"aces = outputTransform( aces, Y_MIN, Y_MID, Y_MAX, DISPLAY_PRI, LIMITING_PRI, EOTF, SURROUND, STRETCH_BLACK, D60_SIM, LEGAL_RANGE ); \n" \
+	" \n" \
+	"} \n" \
+	"break; \n" \
+	" \n" \
+	"case 2: \n" \
+	"{ \n" \
+	"aces = ACES_to_ACEScc(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	" \n" \
+	"case 3: \n" \
+	"{ \n" \
+	"aces = ACES_to_ACEScct(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	" \n" \
+	"case 4: \n" \
+	"{ \n" \
+	"aces = ODT_Rec709_100nits_dim(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	" \n" \
+	"case 5: \n" \
+	"{ \n" \
+	"aces = ODT_Rec2020_100nits_dim(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	" \n" \
+	"case 6: \n" \
+	"{ \n" \
+	"aces = ODT_Rec2020_ST2084_1000nits(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	" \n" \
+	"case 7: \n" \
+	"{ \n" \
+	"aces = ODT_RGBmonitor_100nits_dim(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	" \n" \
+	"case 8: \n" \
+	"{ \n" \
+	"aces = RRTODT_P3D65_108nits_7_2nits_ST2084(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	" \n" \
+	"case 9: \n" \
+	"{ \n" \
+	"aces = RRTODT_Rec2020_1000nits_15nits_HLG(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	" \n" \
+	"case 10: \n" \
+	"{ \n" \
+	"aces = RRTODT_Rec2020_1000nits_15nits_ST2084(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	" \n" \
+	"case 11: \n" \
+	"{ \n" \
+	"aces = RRTODT_Rec2020_2000nits_15nits_ST2084(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	" \n" \
+	"case 12: \n" \
+	"{ \n" \
+	"aces = RRTODT_Rec2020_4000nits_15nits_ST2084(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	" \n" \
+	"case 13: \n" \
+	"{ \n" \
+	"aces = RRTODT_Rec709_100nits_15nits_BT1886(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	" \n" \
+	"case 14: \n" \
+	"{ \n" \
+	"aces = RRTODT_Rec709_100nits_15nits_sRGB(aces); \n" \
+	"} \n" \
+	"} \n" \
+	" \n" \
+	"} else { \n" \
+	" \n" \
+	"switch (InvOdt) \n" \
+	"{ \n" \
+	"case 0: \n" \
+	"{ \n" \
+	"} \n" \
+	"break; \n" \
+	" \n" \
+	"case 1: \n" \
+	"{ \n" \
+	"// Custom InvRRTODT \n" \
+	"float Y_MIN = Black_Luminance; \n" \
+	"float Y_MID = Midpoint_Luminance; \n" \
+	"float Y_MAX = Peak_white_Luminance; \n" \
+	" \n" \
+	"Chromaticities DISPLAY_PRI = Display == 0 ? REC2020_PRI : Display == 1 ? P3D60_PRI : Display == 2 ? P3D65_PRI : Display == 3 ? P3DCI_PRI : REC709_PRI; \n" \
+	"Chromaticities LIMITING_PRI = Limit == 0 ? REC2020_PRI : Limit == 1 ? P3D60_PRI : Limit == 2 ? P3D65_PRI : Limit == 3 ? P3DCI_PRI : REC709_PRI; \n" \
+	" \n" \
+	"int EOTF = Eotf; \n" \
+	"				 \n" \
+	"int SURROUND = Surround; \n" \
+	"					            \n" \
+	"bool STRETCH_BLACK = Stretch_Black_Luminance == 1; \n" \
+	"bool D60_SIM = D60sim == 1; \n" \
+	"bool LEGAL_RANGE = Legal_Range == 1; \n" \
+	" \n" \
+	"aces = invOutputTransform( aces, Y_MIN, Y_MID, Y_MAX, DISPLAY_PRI, LIMITING_PRI, EOTF, SURROUND, STRETCH_BLACK, D60_SIM, LEGAL_RANGE ); \n" \
+	" \n" \
+	"} \n" \
+	"break; \n" \
+	" \n" \
+	"case 2: \n" \
+	"{ \n" \
+	"aces = InvODT_Rec709_100nits_dim(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	" \n" \
+	"case 3: \n" \
+	"{ \n" \
+	"aces = InvODT_Rec2020_100nits_dim(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	" \n" \
+	"case 4: \n" \
+	"{ \n" \
+	"aces = InvODT_Rec2020_ST2084_1000nits(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	" \n" \
+	"case 5: \n" \
+	"{ \n" \
+	"aces = InvODT_RGBmonitor_100nits_dim(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	" \n" \
+	"case 6: \n" \
+	"{ \n" \
+	"aces = InvRRTODT_P3D65_108nits_7_2nits_ST2084(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	" \n" \
+	"case 7: \n" \
+	"{ \n" \
+	"aces = InvRRTODT_Rec2020_1000nits_15nits_HLG(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	" \n" \
+	"case 8: \n" \
+	"{ \n" \
+	"aces = InvRRTODT_Rec2020_1000nits_15nits_ST2084(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	" \n" \
+	"case 9: \n" \
+	"{ \n" \
+	"aces = InvRRTODT_Rec2020_2000nits_15nits_ST2084(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	" \n" \
+	"case 10: \n" \
+	"{ \n" \
+	"aces = InvRRTODT_Rec2020_4000nits_15nits_ST2084(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	" \n" \
+	"case 11: \n" \
+	"{ \n" \
+	"aces = InvRRTODT_Rec709_100nits_15nits_BT1886(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	" \n" \
+	"case 12: \n" \
+	"{ \n" \
+	"aces = InvRRTODT_Rec709_100nits_15nits_sRGB(aces); \n" \
+	"} \n" \
+	"} \n" \
+	" \n" \
+	"if(InvRrt == 1) \n" \
+	"{ \n" \
+	"aces = InvRRT(aces); \n" \
+	"} \n" \
+	"} \n" \
 	"\n" \
-	"__DEVICE__ float3 transform(int p_Width, int p_Height, int p_X, int p_Y, float p_R, float p_G, float p_B)\n" \
-	"{\n" \
-	"	float r = p_R;\n" \
-	"	float g = p_G;\n" \
-	"	float b = p_B;\n" \
-	"\n" \
-	"	return make_float3(r, g, b);\n" \
-	"}\n");
+	"return make_float3(aces.x, aces.y, aces.z); \n" \
+	"}\n", _direction, _idt, _acesin, _lmt, _acesout, _rrt, _invrrt, _odt, _invodt, _exposure, 
+	_lmtscale[0], _lmtscale[1], _lmtscale[2], _lmtscale[3], _lmtscale[4], _lmtscale[5], _lmtscale[6], _lmtscale[7], 
+	_lmtscale[8], _lmtscale[9], _lmtscale[10], _lmtscale[11], _lmtscale[12], _lmtscale[13], _lmtscale[14], _lmtscale[15], 
+	_lmtscale[16], _lmtscale[17], _lmtscale[18], _lmtscale[19], _lmtscale[20], _lmtscale[21], _lmtscale[22], _lmtscale[23], 
+	_lum[0], _lum[1], _lum[2], _display, _limit, _eotf, _surround, _switch[0], _switch[1], _switch[2]);
 	fclose (pFile);
 	} else {
      sendMessage(OFX::Message::eMessageError, "", string("Error: Cannot save " + NAME + ".dctl to " + PATH  + ". Check Permissions."));
@@ -1268,12 +1873,12 @@ void ACESPluginFactory::describeInContext(OFX::ImageEffectDescriptor& p_Desc, OF
 	param->setHint(kParamLMTHint);
 	assert(param->getNOptions() == (int)eLMTBypass);
 	param->appendOption(kParamLMTOptionBypass, kParamLMTOptionBypassHint);
+	assert(param->getNOptions() == (int)eLMTCustom);
+	param->appendOption(kParamLMTOptionCustom, kParamLMTOptionCustomHint);
 	assert(param->getNOptions() == (int)eLMTBleach);
 	param->appendOption(kParamLMTOptionBleach, kParamLMTOptionBleachHint);
 	assert(param->getNOptions() == (int)eLMTPFE);
 	param->appendOption(kParamLMTOptionPFE, kParamLMTOptionPFEHint);
-	assert(param->getNOptions() == (int)eLMTCustom);
-	param->appendOption(kParamLMTOptionCustom, kParamLMTOptionCustomHint);
 	param->setDefault( (int)eLMTBypass );
 	param->setAnimates(false);
 	param->setIsSecretAndDisabled(false);
@@ -1353,7 +1958,7 @@ void ACESPluginFactory::describeInContext(OFX::ImageEffectDescriptor& p_Desc, OF
     page->addChild(*param);
     
     param = defineScaleParam(p_Desc, "RotateH2", "hue rotation hue2", "rotate hue at hue in degrees", 0);
-    param->setDefault(180.0);
+    param->setDefault(150.0);
     param->setRange(0.0, 360.0);
     param->setIncrement(0.01);
     param->setDisplayRange(0.0, 360.0);
@@ -1449,7 +2054,7 @@ void ACESPluginFactory::describeInContext(OFX::ImageEffectDescriptor& p_Desc, OF
     page->addChild(*param);
     
     param = defineScaleParam(p_Desc, "HueCH2", "color scale hue2", "scale color at hue in degrees", 0);
-    param->setDefault(180.0);
+    param->setDefault(150.0);
     param->setRange(0.0, 360.0);
     param->setIncrement(0.01);
     param->setDisplayRange(0.0, 360.0);

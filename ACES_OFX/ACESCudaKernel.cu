@@ -152,23 +152,10 @@ switch (p_LMT)
 {
 case 0:
 {
-
 }
 break;
 
 case 1:
-{
-aces = LMT_Analytic_4(aces);
-}
-break;
-
-case 2:
-{
-aces = LMT_Analytic_3(aces);
-}
-break;
-
-case 3:
 {
 if(p_LMTScale1 != 1.0f)
 aces = scale_C(aces, p_LMTScale1);
@@ -202,13 +189,24 @@ aces = rotate_H_in_H(aces, p_LMTScale19, p_LMTScale20, p_LMTScale21);
 if(p_LMTScale24 != 1.0f)
 aces = scale_C_at_H(aces, p_LMTScale22, p_LMTScale23, p_LMTScale24);
 }
+break;
+
+case 2:
+{
+aces = LMT_Analytic_4(aces);
+}
+break;
+
+case 3:
+{
+aces = LMT_Analytic_3(aces);
+}
 }
 
 switch (p_ACESOUT)
 {
 case 0:
 {
-
 }
 break;
 
@@ -269,7 +267,7 @@ int SURROUND = p_SURROUND;
 					           
 bool STRETCH_BLACK = p_Switch0 == 1;
 bool D60_SIM = p_Switch1 == 1;
-bool LEGAL_RANGE = p_Switch1 == 1;
+bool LEGAL_RANGE = p_Switch2 == 1;
 
 aces = outputTransform( aces, Y_MIN, Y_MID, Y_MAX, DISPLAY_PRI, LIMITING_PRI, EOTF, SURROUND, STRETCH_BLACK, D60_SIM, LEGAL_RANGE );
 
@@ -378,7 +376,7 @@ int SURROUND = p_SURROUND;
 					           
 bool STRETCH_BLACK = p_Switch0 == 1;
 bool D60_SIM = p_Switch1 == 1;
-bool LEGAL_RANGE = p_Switch1 == 1;
+bool LEGAL_RANGE = p_Switch2 == 1;
 
 aces = invOutputTransform( aces, Y_MIN, Y_MID, Y_MAX, DISPLAY_PRI, LIMITING_PRI, EOTF, SURROUND, STRETCH_BLACK, D60_SIM, LEGAL_RANGE );
 
