@@ -56,7 +56,7 @@ __device__ inline float sigmoid_shaper( float x)
 {
     // Sigmoid function in the range 0 to 1 spanning -2 to +2.
 
-    float t = fmax( 1.0f - fabs( x / 2.0f), 0.0f);
+    float t = fmaxf( 1.0f - fabs( x / 2.0f), 0.0f);
     float y = 1.0f + sign(x) * (1.0f - t * t);
 
     return y / 2.0f;

@@ -73,9 +73,9 @@ __device__ inline float3 ODT_P3D65_D60sim_48nits( float3 oces)
     // allow the ODTs to simulate D60 within the D65 calibration white point. 
 
     // Scale and clamp white to avoid casted highlights due to D60 simulation
-    linearCV.x = fmin( linearCV.x, 1.0f) * SCALE;
-    linearCV.y = fmin( linearCV.y, 1.0f) * SCALE;
-    linearCV.z = fmin( linearCV.z, 1.0f) * SCALE;
+    linearCV.x = fminf( linearCV.x, 1.0f) * SCALE;
+    linearCV.y = fminf( linearCV.y, 1.0f) * SCALE;
+    linearCV.z = fminf( linearCV.z, 1.0f) * SCALE;
 
     // Convert to display primary encoding
     // Rendering space RGB to XYZ

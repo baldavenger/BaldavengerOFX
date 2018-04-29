@@ -85,9 +85,9 @@ __device__ inline float3 ODT_Rec709_D60sim_100nits_dim( float3 oces)
     // allow the ODT to simulate D60 within the D65 calibration white point. 
 
     // Scale and clamp white to avoid casted highlights due to D60 simulation
-    linearCV.x = fmin( linearCV.x, 1.0f) * SCALE;
-    linearCV.y = fmin( linearCV.y, 1.0f) * SCALE;
-    linearCV.z = fmin( linearCV.z, 1.0f) * SCALE;
+    linearCV.x = fminf( linearCV.x, 1.0f) * SCALE;
+    linearCV.y = fminf( linearCV.y, 1.0f) * SCALE;
+    linearCV.z = fminf( linearCV.z, 1.0f) * SCALE;
 
     // Apply gamma adjustment to compensate for dim surround
     linearCV = darkSurround_to_dimSurround( linearCV);

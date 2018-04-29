@@ -99,9 +99,9 @@ __device__ inline float3 XYZ_2_xyY( float3 XYZ)
 __device__ inline float3 xyY_2_XYZ( float3 xyY)
 {
   float3 XYZ;
-  XYZ.x = xyY.x * xyY.z / fmax( xyY.y, 1e-10);
+  XYZ.x = xyY.x * xyY.z / fmaxf( xyY.y, 1e-10);
   XYZ.y = xyY.z;  
-  XYZ.z = (1.0f - xyY.x - xyY.y) * xyY.z / fmax( xyY.y, 1e-10);
+  XYZ.z = (1.0f - xyY.x - xyY.y) * xyY.z / fmaxf( xyY.y, 1e-10);
 
   return XYZ;
 }
@@ -277,7 +277,7 @@ __device__ inline float bt1886_f( float V, float gamma, float Lw, float Lb)
   // L = a(max[(V+b),0])^g
   float a = powf( powf( Lw, 1.0f/gamma) - powf( Lb, 1.0f/gamma), gamma);
   float b = powf( Lb, 1.0f/gamma) / ( powf( Lw, 1.0f/gamma) - powf( Lb, 1.0f/gamma));
-  float L = a * powf( fmax( V + b, 0.0f), gamma);
+  float L = a * powf( fmaxf( V + b, 0.0f), gamma);
   return L;
 }
 
@@ -287,7 +287,7 @@ __device__ inline float bt1886_r( float L, float gamma, float Lw, float Lb)
   // L = a(max[(V+b),0])^g
   float a = powf( powf( Lw, 1.0f/gamma) - powf( Lb, 1.0f/gamma), gamma);
   float b = powf( Lb, 1.0f/gamma) / ( powf( Lw, 1.0f/gamma) - powf( Lb, 1.0f/gamma));
-  float V = powf( fmax( L / a, 0.0f), 1.0f/gamma) - b;
+  float V = powf( fmaxf( L / a, 0.0f), 1.0f/gamma) - b;
   return V;
 }
 

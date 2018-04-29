@@ -85,9 +85,9 @@ __device__ inline float3 ODT_P3DCI_D65sim_48nits( float3 oces)
     linearCV.z = roll_white_fwd( linearCV.z, NEW_WHT, ROLL_WIDTH);
 
     // Scale and clamp white to avoid casted highlights due to D65 simulation
-    linearCV.x = fmin( linearCV.x, NEW_WHT) * SCALE;
-    linearCV.y = fmin( linearCV.y, NEW_WHT) * SCALE;
-    linearCV.z = fmin( linearCV.z, NEW_WHT) * SCALE;
+    linearCV.x = fminf( linearCV.x, NEW_WHT) * SCALE;
+    linearCV.y = fminf( linearCV.y, NEW_WHT) * SCALE;
+    linearCV.z = fminf( linearCV.z, NEW_WHT) * SCALE;
 
     // Convert to display primary encoding
     // Rendering space RGB to XYZ

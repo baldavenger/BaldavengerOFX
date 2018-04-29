@@ -198,17 +198,17 @@ __device__ inline float max( float a, float b)
 
 __device__ inline float min_f3( float3 a)
 {
-  return fmin( a.x, fmin( a.y, a.z));
+  return fminf( a.x, fminf( a.y, a.z));
 }
 
 __device__ inline float max_f3( float3 a)
 {
-  return fmax( a.x, fmax( a.y, a.z));
+  return fmaxf( a.x, fmaxf( a.y, a.z));
 }
 
 __device__ inline float clip( float v)
 {
-  return fmin(v, 1.0f);
+  return fminf(v, 1.0f);
 }
 
 __device__ inline float3 clip_f3( float3 in)
@@ -226,7 +226,7 @@ __device__ inline float clamp( float in, float clampMin, float clampMax)
   // Note: Numeric constants can be used in place of a min or max value (i.e. 
   // use HALF_NEG_INF in place of clampMin or HALF_POS_INF in place of clampMax)
   
-  return fmax( clampMin, fmin(in, clampMax));
+  return fmaxf( clampMin, fminf(in, clampMax));
 }
 
 __device__ inline float3 add_f_f3( float a, float3 b)

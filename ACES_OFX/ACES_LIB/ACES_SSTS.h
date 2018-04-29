@@ -167,7 +167,7 @@ __device__ inline float ssts
 
     // Check for negatives or zero before taking the log. If negative or zero,
     // set to HALF_MIN.
-    float logx = log10f( fmax(x, HALF_MIN )); 
+    float logx = log10f( fmaxf(x, HALF_MIN )); 
 
     float logy;
 

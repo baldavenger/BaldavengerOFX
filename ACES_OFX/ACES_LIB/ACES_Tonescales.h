@@ -49,7 +49,7 @@ __device__ float inline segmented_spline_c5_fwd( float x)
 
   // Check for negatives or zero before taking the log. If negative or zero,
   // set to HALF_MIN.
-  float logx = log10f( fmax(x, HALF_MIN )); 
+  float logx = log10f( fmaxf(x, HALF_MIN )); 
 
   float logy;
 
@@ -112,7 +112,7 @@ __device__ float inline segmented_spline_c5_rev
     KNOT_Y_HIGH[ i] = ( C.coefsHigh[i] + C.coefsHigh[i+1]) / 2.;
   };
 
-  float logy = log10f( fmax(y,1e-10));
+  float logy = log10f( fmaxf(y,1e-10));
 
   float logx;
   if (logy <= log10f(C.minPoint.y)) {
@@ -239,7 +239,7 @@ __device__ inline float segmented_spline_c9_fwd
 
   // Check for negatives or zero before taking the log. If negative or zero,
   // set to HALF_MIN.
-  float logx = log10f( fmax(x, HALF_MIN )); 
+  float logx = log10f( fmaxf(x, HALF_MIN )); 
 
   float logy;
 
@@ -303,7 +303,7 @@ __device__ float inline segmented_spline_c9_rev
     KNOT_Y_HIGH[ i] = ( C.coefsHigh[i] + C.coefsHigh[i+1]) / 2.;
   };
 
-  float logy = log10f( fmax( y, 1e-10));
+  float logy = log10f( fmaxf( y, 1e-10));
 
   float logx;
   if (logy <= log10f(C.minPoint.y)) {
