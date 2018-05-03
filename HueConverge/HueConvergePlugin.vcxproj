@@ -133,7 +133,6 @@ copy /Y "$(TargetPath)" /B "$(OutDir)HueConvergePlugin.ofx.bundle\Contents\Win64
     <ClCompile Include="..\openfx\Support\Library\ofxsProperty.cpp" />
     <ClCompile Include="..\openfx\Support\Library\ofxsPropertyValidation.cpp" />
     <ClCompile Include="HueConvergePlugin.cpp" />
-    <ClCompile Include="HueConvergeOpenCLKernel.cpp" />
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="HueConvergeCudaKernel.cu" />

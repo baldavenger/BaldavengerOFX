@@ -1,5 +1,5 @@
 PLUGINNAME = HueConverge
-PLUGINOBJECTS = $(PLUGINNAME)Plugin.o $(PLUGINNAME)CudaKernel.o $(PLUGINNAME)OpenCLKernel.o
+PLUGINOBJECTS = $(PLUGINNAME)Plugin.o $(PLUGINNAME)CudaKernel.o #$(PLUGINNAME)OpenCLKernel.o
 RESOURCES = OpenFX.Yo.$(PLUGINNAME).png
 
 ## Select TRUE to install directly to OFX/Plugin folder, select FALSE for usual location. ##
