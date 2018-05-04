@@ -181,7 +181,7 @@ __device__ inline float Limiter(float val, float limiter)
 	float Alpha = limiter > 1.0f ? val + (1.0f - limiter) * (1.0f - val) : limiter >= 0.0f ? (val >= limiter ? 1.0f : 
 	val / limiter) : limiter < -1.0f ? (1.0f - val) + (limiter + 1.0f) * val : val <= (1.0f + limiter) ? 1.0f : 
 	(1.0 - val) / (1.0f - (limiter + 1.0f));
-	Alpha = fminf(Alpha, 1.0f);
+	Alpha = clamp(Alpha, 0.0f, 1.0f);
 	return Alpha;
 }
 

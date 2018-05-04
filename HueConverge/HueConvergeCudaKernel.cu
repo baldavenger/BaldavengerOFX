@@ -64,10 +64,10 @@ float p_Hue1, float p_Hue2, float p_Hue3, float p_Hue4, float p_Hue5, float p_Lu
 	float lumaAlpha = 1.0f;
 	float satAlpha = 1.0f;
 	
-	if(p_LumaLimit != 0.0f && p_SwitchHue == 1)
+	if(p_LumaLimit != 0.0f && p_SwitchHue1 == 1)
 	lumaAlpha = Limiter(p_In[index + 3], p_LumaLimit);
 	
-	if(p_SatLimit != 0.0f && p_SwitchHue == 1)
+	if(p_SatLimit != 0.0f && p_SwitchHue1 == 1)
 	satAlpha = Limiter(ych.y * 10.0f, p_SatLimit);
 	
 	float3 new_ych = modify_hue( ych, p_Hue1, p_Hue2, p_Hue3, p_Hue4, p_Hue5);
