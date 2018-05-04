@@ -1,12 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
-    <ProjectConfiguration Include="Debug|x64">
-      <Configuration>Debug</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
     <ProjectConfiguration Include="Release|x64">
       <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
@@ -41,14 +41,14 @@
   <PropertyGroup>
     <_ProjectFileVersion>12.0.30501.0</_ProjectFileVersion>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(Platform)\$(Configuration)\</IntDir>
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(CUDA_INC_PATH);$(AMDAPPSDKROOT)/include;../openfx/include;../openfx/Support/include;../SupportExt</IncludePath>
     <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(CUDA_LIB_PATH);$(AMDAPPSDKROOT)/lib/x86_64</LibraryPath>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(Platform)\$(Configuration)\</IntDir>
     <LinkIncremental>false</LinkIncremental>
@@ -81,10 +81,10 @@
     </Link>
     <PostBuildEvent>
       <Message>Creating bundle...</Message>
-      <Command>if not exist "$(OutDir)HueConvergePlugin.ofx.bundle\Contents\Resources" mkdir "$(OutDir)HueConvergePlugin.ofx.bundle\Contents\Resources"
-       copy "(OutDir)../../OpenFX.Yo.HueConverge.png" "$(OutDir)HueConvergePlugin.ofx.bundle\Contents\Resources"
-if not exist "$(OutDir)HueConvergePlugin.ofx.bundle\Contents\Win64" mkdir "$(OutDir)HueConvergePlugin.ofx.bundle\Contents\Win64"
-copy /Y "$(TargetPath)" /B "$(OutDir)HueConvergePlugin.ofx.bundle\Contents\Win64\HueConvergePlugin.ofx" /B
+      <Command>if not exist "$(OutDir)HueConverge.ofx.bundle\Contents\Resources" mkdir "$(OutDir)HueConverge.ofx.bundle\Contents\Resources"
+       copy "(OutDir)../../OpenFX.Yo.HueConverge.png" "$(OutDir)HueConverge.ofx.bundle\Contents\Resources"
+if not exist "$(OutDir)HueConverge.ofx.bundle\Contents\Win64" mkdir "$(OutDir)HueConverge.ofx.bundle\Contents\Win64"
+copy /Y "$(TargetPath)" /B "$(OutDir)HueConverge.ofx.bundle\Contents\Win64\HueConverge.ofx" /B
 </Command>
     </PostBuildEvent>
     <CudaCompile>
@@ -113,10 +113,10 @@ copy /Y "$(TargetPath)" /B "$(OutDir)HueConvergePlugin.ofx.bundle\Contents\Win64
     </Link>
     <PostBuildEvent>
       <Message>Creating bundle...</Message>
-      <Command>if not exist "$(OutDir)HueConvergePlugin.ofx.bundle\Contents\Resources" mkdir "$(OutDir)HueConvergePlugin.ofx.bundle\Contents\Resources"
-      copy "(OutDir)../../OpenFX.Yo.HueConverge.png" "$(OutDir)HueConvergePlugin.ofx.bundle\Contents\Resources"
-if not exist "$(OutDir)HueConvergePlugin.ofx.bundle\Contents\Win64" mkdir "$(OutDir)HueConvergePlugin.ofx.bundle\Contents\Win64"
-copy /Y "$(TargetPath)" /B "$(OutDir)HueConvergePlugin.ofx.bundle\Contents\Win64\HueConvergePlugin.ofx" /B
+      <Command>if not exist "$(OutDir)HueConverge.ofx.bundle\Contents\Resources" mkdir "$(OutDir)HueConverge.ofx.bundle\Contents\Resources"
+      copy "(OutDir)../../OpenFX.Yo.HueConverge.png" "$(OutDir)HueConverge.ofx.bundle\Contents\Resources"
+if not exist "$(OutDir)HueConverge.ofx.bundle\Contents\Win64" mkdir "$(OutDir)HueConverge.ofx.bundle\Contents\Win64"
+copy /Y "$(TargetPath)" /B "$(OutDir)HueConverge.ofx.bundle\Contents\Win64\HueConverge.ofx" /B
 </Command>
     </PostBuildEvent>
     <CudaCompile>

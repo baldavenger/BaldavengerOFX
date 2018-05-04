@@ -4,7 +4,7 @@
 cudaError_t cudaError;
 
 __global__ void LogStageKernel( float* p_Input, float* p_Output, int p_Width, int p_Height, int p_SwitchLog, int p_SwitchHue,
-float p_LogA, float p_LogB, float p_LogC, float p_LogD, float p_SatA, float p_LumaLimit, float p_SatLimit)
+float p_LogA, float p_LogB, float p_LogC, float p_LogD, float p_SatA, float p_LumaLimit, float p_SatLimit, int p_Math)
 {	
 	const int x = blockIdx.x * blockDim.x + threadIdx.x;
 	const int y = blockIdx.y * blockDim.y + threadIdx.y;
@@ -25,22 +25,23 @@ float p_LogA, float p_LogB, float p_LogC, float p_LogD, float p_SatA, float p_Lu
 	HSV_to_RGB( HSV.x, HSV.y, HSV.z, &RGB.x, &RGB.y, &RGB.z);
 	}
 	
+	float luma = Luma(RGB.x, RGB.y, RGB.z, p_Math);
 	float lumaAlpha = 1.0f;
 	float satAlpha = 1.0f;
 	
-	if((p_LumaLimit != 0.0f || p_SatLimit != 0.0f) && p_SwitchHue == 1)
+	if(p_LumaLimit != 0.0f && p_SwitchHue == 1)
+	lumaAlpha = Limiter(luma, p_LumaLimit);
+	
+	if(p_SatLimit != 0.0f && p_SwitchHue == 1)
 	{
 	float3 ych = rgb_2_ych( RGB);
-	if(p_LumaLimit != 0.0f)
-	lumaAlpha = Limiter(ych.x, p_LumaLimit);
-	if(p_SatLimit != 0.0f)
 	satAlpha = Limiter(ych.y * 10.0f, p_SatLimit);
-	RGB = ych_2_rgb( ych);
 	}
 	
 	p_Output[index + 0] = RGB.x;
 	p_Output[index + 1] = RGB.y;
 	p_Output[index + 2] = RGB.z;
+	p_Output[index + 3] = luma;
 	
 	p_Input[index + 0] = 1.0f * lumaAlpha * satAlpha;
 	
@@ -63,13 +64,11 @@ float p_Hue1, float p_Hue2, float p_Hue3, float p_Hue4, float p_Hue5, float p_Lu
 	float lumaAlpha = 1.0f;
 	float satAlpha = 1.0f;
 	
-	if(p_SwitchHue1 == 1)
-	{
-	if(p_LumaLimit != 0.0f)
-	lumaAlpha = Limiter(ych.x, p_LumaLimit);
-	if(p_SatLimit != 0.0f)
+	if(p_LumaLimit != 0.0f && p_SwitchHue == 1)
+	lumaAlpha = Limiter(p_In[index + 3], p_LumaLimit);
+	
+	if(p_SatLimit != 0.0f && p_SwitchHue == 1)
 	satAlpha = Limiter(ych.y * 10.0f, p_SatLimit);
-	}
 	
 	float3 new_ych = modify_hue( ych, p_Hue1, p_Hue2, p_Hue3, p_Hue4, p_Hue5);
 	RGB = ych_2_rgb( new_ych);
@@ -109,9 +108,12 @@ __global__ void FinalStageKernel(float* p_In, float* p_ALPHA, int p_Width, int p
 	
 	float3 rgb = ych_2_rgb( ych);
 	
+	float luma = p_In[index + 3];
+	
 	if(p_Display != 0)
 	{
-	float displayAlpha = p_Display == 1 ? p_ALPHA[index + 0] : p_Display == 2 ? p_ALPHA[index + 1] : p_Display == 3 ? p_ALPHA[index + 2] : alpha;  
+	float displayAlpha = p_Display == 1 ? p_ALPHA[index + 0] : p_Display == 2 ? 
+	p_ALPHA[index + 1] : p_Display == 3 ? p_ALPHA[index + 2] :  p_Display == 4 ? alpha : luma;  
 	p_In[index + 0] = displayAlpha;
 	p_In[index + 1] = displayAlpha;
 	p_In[index + 2] = displayAlpha;
@@ -127,7 +129,7 @@ __global__ void FinalStageKernel(float* p_In, float* p_ALPHA, int p_Width, int p
 }
 
 void  RunCudaKernel(float* p_Input, float* p_Output, int p_Width, int p_Height, int* p_Switch, 
-float* p_Log, float* p_Sat, float *p_Hue1, float *p_Hue2, float *p_Hue3, int p_Display, float *p_Blur)
+float* p_Log, float* p_Sat, float *p_Hue1, float *p_Hue2, float *p_Hue3, int p_Display, float *p_Blur, int p_Math)
 {
 	int nthreads = 128;
 	float* tempBuffer;
@@ -141,7 +143,7 @@ float* p_Log, float* p_Sat, float *p_Hue1, float *p_Hue2, float *p_Hue3, int p_D
 	dim3 threads(BLOCK_DIM, BLOCK_DIM);
 	
     LogStageKernel<<<blocks, threadsT>>>(p_Input, p_Output, p_Width, p_Height, p_Switch[0], p_Switch[1],
-	p_Log[0], p_Log[1], p_Log[2], p_Log[3], p_Sat[0], p_Hue1[5], p_Hue1[6]);
+	p_Log[0], p_Log[1], p_Log[2], p_Log[3], p_Sat[0], p_Hue1[5], p_Hue1[6], p_Math);
 	
 	if (p_Blur[0] > 0.0f && p_Switch[1] == 1) {
     d_recursiveGaussian<<< iDivUp(p_Width, nthreads), nthreads >>>(p_Input, tempBuffer, p_Width, p_Height, p_Blur[0]);

@@ -103,6 +103,19 @@ __device__ inline mat3 invert_f33 (mat3 A)
   return R;
 }
 
+__device__ inline float Luma(float R, float G, float B, int L)
+{
+  float lumaRec709 = R * 0.2126f + G * 0.7152f + B * 0.0722f;
+  float lumaRec2020 = R * 0.2627f + G * 0.6780f + B * 0.0593f;
+  float lumaDCIP3 = R * 0.209492f + G * 0.721595f + B * 0.0689131f;
+  float lumaACESAP0 = R * 0.3439664498f + G * 0.7281660966f + B * -0.0721325464f;
+  float lumaACESAP1 = R * 0.2722287168f + G * 0.6740817658f + B * 0.0536895174f;
+  float lumaAvg = (R + G + B) / 3.0f;
+  float lumaMax = fmaxf(fmaxf(R, G), B);
+  float Lu = L == 0 ? lumaRec709 : L == 1 ? lumaRec2020 : L == 2 ? lumaDCIP3 : L == 3 ? lumaACESAP0 : L == 4 ? lumaACESAP1 : L == 5 ? lumaAvg : lumaMax;
+  return Lu;
+  }
+
 __device__ inline float3 Sigmoid( float3 In, float peak, float curve, float pivot, float offset)
 {
   float3 out;
@@ -156,8 +169,6 @@ __device__ inline void HSV_to_RGB(float H, float S, float V, float *r, float *g,
   *b = i == 0 ? p : i == 1 ? p : i == 2 ? t : i == 3 ? V : i == 4 ? V : q;
   }
 }
-
-// Soft Clip Saturation
 
 __device__ inline float Sat_Soft_Clip(float S, float softclip)
 {
@@ -303,35 +314,6 @@ __device__ inline float3 ych_2_rgb( float3 ych)
   return yab_2_rgb( ych_2_yab( ych));
 }
 
-__device__ inline float3 scale_C_at_H
-( 
-    float3 rgb, 
-    float centerH,
-    float widthH,
-    float percentC
-)
-{
-    float3 new_rgb = rgb;
-    float3 ych = rgb_2_ych( rgb);
-
-    if (ych.y > 0.0f) {
-
-        float centeredHue = center_hue( ych.z, centerH);
-        float f_H = cubic_basis_shaper( centeredHue, widthH);
-
-        if (f_H > 0.0f) {
-            float3 new_ych = ych;
-            new_ych.y = ych.y * (f_H * (percentC - 1.0f) + 1.0f);
-            new_rgb = ych_2_rgb( new_ych);
-        } else { 
-            new_rgb = rgb; 
-        }
-    }
-
-    return new_rgb;
-}
-
-
 __device__ inline float3 modify_hue
 ( 
     float3 ych,
@@ -366,7 +348,7 @@ __device__ inline float3 modify_hue
     H = h;
     hue = (Hue + Shift) / 360.0f;
     hue = hue > 1.0f ? hue - 1.0f : hue < 0.0f ? hue + 1.0f : hue;
-    range = Range / 360.0f;
+    range = Range / 720.0f;
 	h = h - (hue - 0.5f) < 0.0f ? h - (hue - 0.5f) + 1.0f : h - (hue - 0.5f) >
 	1.0f ? h - (hue - 0.5f) - 1.0f : h - (hue - 0.5f);
 
