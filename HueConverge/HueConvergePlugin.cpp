@@ -178,9 +178,9 @@ public:
 
 private:
     OFX::Image* _srcImg;
-	int _switch[4];
+	int _switch[5];
     float _log[4];
-    float _sat[3];
+    float _sat[4];
     float _hue1[7];
     float _hue2[7];
     float _hue3[7];
@@ -269,6 +269,7 @@ float *p_Hue2, float *p_Hue3, int p_Display, float* p_Blur, int p_Math)
     _switch[1] = p_Switch[1];
     _switch[2] = p_Switch[2];
     _switch[3] = p_Switch[3];
+    _switch[4] = p_Switch[4];
     
     _log[0] = p_Log[0];
     _log[1] = p_Log[1];
@@ -278,6 +279,7 @@ float *p_Hue2, float *p_Hue3, int p_Display, float* p_Blur, int p_Math)
     _sat[0] = p_Sat[0];
     _sat[1] = p_Sat[1];
     _sat[2] = p_Sat[2];
+    _sat[3] = p_Sat[3];
     
     _hue1[0] = p_Hue1[0];
     _hue1[1] = p_Hue1[1];
@@ -343,7 +345,8 @@ private:
     OFX::DoubleParam* m_Log3;
     OFX::DoubleParam* m_Log4;
     OFX::BooleanParam* m_SwitchLog;
-    OFX::DoubleParam* m_Sat;
+    OFX::DoubleParam* m_SatAdd;
+    OFX::DoubleParam* m_SatMinus;
     
     OFX::BooleanParam* m_SwitchHue1;
     OFX::RGBParam *m_HueA;
@@ -384,6 +387,7 @@ private:
     
     OFX::ChoiceParam* m_LuminanceMath;
     OFX::ChoiceParam* m_DisplayAlpha;
+    OFX::BooleanParam* m_HueChart;
     
     OFX::StringParam* m_Path;
     OFX::StringParam* m_Name;
@@ -404,7 +408,8 @@ HueConvergePlugin::HueConvergePlugin(OfxImageEffectHandle p_Handle)
     m_Log3 = fetchDoubleParam("Pivot");
     m_Log4 = fetchDoubleParam("Offset");
     m_SwitchLog = fetchBooleanParam("LogSwitch");
-    m_Sat = fetchDoubleParam("ScaleC");
+    m_SatAdd = fetchDoubleParam("SatAdd");
+    m_SatMinus = fetchDoubleParam("SatMinus");
     
     m_SwitchHue1 = fetchBooleanParam("HueSwitch1");
     m_HueA = fetchRGBParam("HueA");
@@ -445,6 +450,7 @@ HueConvergePlugin::HueConvergePlugin(OfxImageEffectHandle p_Handle)
     
     m_LuminanceMath = fetchChoiceParam(kParamLuminanceMath);
     m_DisplayAlpha = fetchChoiceParam(kParamDisplayAlpha);
+    m_HueChart = fetchBooleanParam("HueChart");
     
     m_Path = fetchStringParam("Path");
     m_Name = fetchStringParam("Name");
@@ -642,12 +648,14 @@ void HueConvergePlugin::setupAndProcess(HueConverge& p_HueConverge, const OFX::R
     bool hue1Switch = m_SwitchHue1->getValueAtTime(p_Args.time);
     bool hue2Switch = m_SwitchHue2->getValueAtTime(p_Args.time);
     bool hue3Switch = m_SwitchHue3->getValueAtTime(p_Args.time);
+    bool chartSwitch = m_HueChart->getValueAtTime(p_Args.time);
     
-    int _switch[4];
+    int _switch[5];
 	_switch[0] = (logSwitch) ? 1 : 0;
 	_switch[1] = (hue1Switch) ? 1 : 0;
 	_switch[2] = (hue2Switch) ? 1 : 0;
 	_switch[3] = (hue3Switch) ? 1 : 0;
+	_switch[4] = (chartSwitch) ? 1 : 0;
 	
 	float _log[4];
 	_log[0] = m_Log1->getValueAtTime(p_Args.time);
@@ -655,18 +663,19 @@ void HueConvergePlugin::setupAndProcess(HueConverge& p_HueConverge, const OFX::R
     _log[2] = m_Log3->getValueAtTime(p_Args.time);
     _log[3] = m_Log4->getValueAtTime(p_Args.time);
     
-    float _sat[3];
-    _sat[0] = m_Sat->getValueAtTime(p_Args.time);
-    _sat[1] = m_SatSoft->getValueAtTime(p_Args.time);
-    _sat[2] = m_SatSoftLumaAlpha->getValueAtTime(p_Args.time);
+    float _sat[4];
+    _sat[0] = m_SatAdd->getValueAtTime(p_Args.time);
+    _sat[1] = m_SatMinus->getValueAtTime(p_Args.time);
+    _sat[2] = m_SatSoft->getValueAtTime(p_Args.time);
+    _sat[3] = m_SatSoftLumaAlpha->getValueAtTime(p_Args.time);
     
     float _hue1[7];
     _hue1[0] = m_Hue1->getValueAtTime(p_Args.time);
     _hue1[1] = m_Range1->getValueAtTime(p_Args.time);
     _hue1[2] = m_Shift1->getValueAtTime(p_Args.time);
-    _hue1[3] = m_Converge1->getValueAtTime(p_Args.time);
+    _hue1[3] = m_Converge1->getValueAtTime(p_Args.time) + 1.0f;
 	
-	_hue1[3] = _hue1[3] >= 0.0f ? _hue1[3] + 1.0f : _hue1[3] < 0.0f ? -1.0f/(_hue1[3] - 1.0f) : _hue1[3];
+	_hue1[3] = _hue1[3] < 1.0f ? -1.0f/(_hue1[3] - 2.0f) : _hue1[3];
 	
     _hue1[4] = m_ScaleCH1->getValueAtTime(p_Args.time);
     _hue1[5] = m_LumaAlpha1->getValueAtTime(p_Args.time);
@@ -676,9 +685,9 @@ void HueConvergePlugin::setupAndProcess(HueConverge& p_HueConverge, const OFX::R
     _hue2[0] = m_Hue2->getValueAtTime(p_Args.time);
     _hue2[1] = m_Range2->getValueAtTime(p_Args.time);
     _hue2[2] = m_Shift2->getValueAtTime(p_Args.time);
-    _hue2[3] = m_Converge2->getValueAtTime(p_Args.time);
+    _hue2[3] = m_Converge2->getValueAtTime(p_Args.time) + 1.0f;
     
-    _hue2[3] = _hue2[3] >= 0.0f ? _hue2[3] + 1.0f : _hue2[3] < 0.0f ? -1.0f/(_hue2[3] - 1.0f) : _hue2[3];
+    _hue2[3] = _hue2[3] < 1.0f ? -1.0f/(_hue2[3] - 2.0f) : _hue2[3];
     
     _hue2[4] = m_ScaleCH2->getValueAtTime(p_Args.time);
     _hue2[5] = m_LumaAlpha2->getValueAtTime(p_Args.time);
@@ -688,9 +697,9 @@ void HueConvergePlugin::setupAndProcess(HueConverge& p_HueConverge, const OFX::R
     _hue3[0] = m_Hue3->getValueAtTime(p_Args.time);
     _hue3[1] = m_Range3->getValueAtTime(p_Args.time);
     _hue3[2] = m_Shift3->getValueAtTime(p_Args.time);
-    _hue3[3] = m_Converge3->getValueAtTime(p_Args.time);
+    _hue3[3] = m_Converge3->getValueAtTime(p_Args.time) + 1.0f;
     
-    _hue3[3] = _hue3[3] >= 0.0f ? _hue3[3] + 1.0f : _hue3[3] < 0.0f ? -1.0f/(_hue3[3] - 1.0f) : _hue3[3];
+    _hue3[3] = _hue3[3] < 1.0f ? -1.0f/(_hue3[3] - 2.0f) : _hue3[3];
     
     _hue3[4] = m_ScaleCH3->getValueAtTime(p_Args.time);
     _hue3[5] = m_LumaAlpha3->getValueAtTime(p_Args.time);
@@ -847,7 +856,14 @@ void HueConvergePluginFactory::describeInContext(OFX::ImageEffectDescriptor& p_D
     boolParam->setParent(*log1);
     page->addChild(*boolParam);
     
-    param = defineScaleParam(p_Desc, "ScaleC", "saturation", "saturation via subtractive process", log1);
+    param = defineScaleParam(p_Desc, "SatAdd", "additive saturation", "saturation via additive process", log1);
+    param->setDefault(1.0);
+    param->setRange(0.0, 5.0);
+    param->setIncrement(0.001);
+    param->setDisplayRange(0.0, 3.0);
+    page->addChild(*param);
+    
+    param = defineScaleParam(p_Desc, "SatMinus", "subtractive saturation", "saturation via subtractive process", log1);
     param->setDefault(1.0);
     param->setRange(0.0, 5.0);
     param->setIncrement(0.001);
@@ -1151,6 +1167,12 @@ void HueConvergePluginFactory::describeInContext(OFX::ImageEffectDescriptor& p_D
     choiceParam->setDefault(eLuminanceMathRec709);
 	choiceParam->setAnimates(false);
 	page->addChild(*choiceParam);
+	
+	boolParam = p_Desc.defineBooleanParam("HueChart");
+    boolParam->setDefault(false);
+    boolParam->setHint("display hue chart");
+    boolParam->setLabel("display hue chart");
+    page->addChild(*boolParam);
     
     PushButtonParamDescriptor* pushparam = p_Desc.definePushButtonParam("Info");
     pushparam->setLabel("Info");

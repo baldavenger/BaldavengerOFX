@@ -170,6 +170,27 @@ __device__ inline void HSV_to_RGB(float H, float S, float V, float *r, float *g,
   }
 }
 
+__device__ inline float3 Hue_Chart( int width, int height, int X, int Y)
+{
+  float H, S, V, r, g, b;
+  H = (float)X / (width - 1.0f);
+  S = (float)Y / (height - 1.0f);
+  S = powf(S, 0.4f);
+  V = 0.75f;
+  HSV_to_RGB(H, S, V, &r, &g, &b);
+  return make_float3(r, g, b);
+}
+
+
+__device__ inline float3 saturation_f3( float3 In, float luma, float sat)
+{
+	float3 out;
+	out.x = (1.0f - sat) * luma + sat * In.x;
+	out.y = (1.0f - sat) * luma + sat * In.y;
+	out.z = (1.0f - sat) * luma + sat * In.z;
+	return out;
+}
+
 __device__ inline float Sat_Soft_Clip(float S, float softclip)
 {
 	float ss = S > softclip ? (-1.0f / ((S - softclip) / (1.0f - softclip) + 1.0f) + 1.0f) * (1.0f - softclip) + softclip : S;

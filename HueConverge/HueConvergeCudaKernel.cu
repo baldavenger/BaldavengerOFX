@@ -4,7 +4,7 @@
 cudaError_t cudaError;
 
 __global__ void LogStageKernel( float* p_Input, float* p_Output, int p_Width, int p_Height, int p_SwitchLog, int p_SwitchHue,
-float p_LogA, float p_LogB, float p_LogC, float p_LogD, float p_SatA, float p_LumaLimit, float p_SatLimit, int p_Math)
+float p_LogA, float p_LogB, float p_LogC, float p_LogD, float p_SatA, float p_SatB, float p_LumaLimit, float p_SatLimit, int p_Math, int p_Chart)
 {	
 	const int x = blockIdx.x * blockDim.x + threadIdx.x;
 	const int y = blockIdx.y * blockDim.y + threadIdx.y;
@@ -15,17 +15,26 @@ float p_LogA, float p_LogB, float p_LogC, float p_LogD, float p_SatA, float p_Lu
 	
 	float3 RGB = make_float3(p_Input[index + 0], p_Input[index + 1], p_Input[index + 2]);
 	
+	if(p_Chart == 1)
+	RGB = Hue_Chart( p_Width, p_Height, x, y);
+	
 	if(p_SwitchLog == 1)
 	RGB = Sigmoid( RGB, p_LogA, p_LogB, p_LogC, p_LogD);
 	
-	if(p_SatA != 1.0f){
-	float3 HSV;
-	RGB_to_HSV( RGB.x, RGB.y, RGB.z, &HSV.x, &HSV.y, &HSV.z);
-	HSV.y *= p_SatA;
-	HSV_to_RGB( HSV.x, HSV.y, HSV.z, &RGB.x, &RGB.y, &RGB.z);
+	float luma = Luma(RGB.x, RGB.y, RGB.z, p_Math);
+	
+	if(p_SatA != 1.0f)
+	{
+	float minluma = fminf(RGB.x, fminf(RGB.y, RGB.z));
+	RGB = saturation_f3( RGB, minluma, p_SatA);
 	}
 	
-	float luma = Luma(RGB.x, RGB.y, RGB.z, p_Math);
+	if(p_SatB != 1.0f)
+	{
+	float maxluma = fmaxf(RGB.x, fmaxf(RGB.y, RGB.z));
+	RGB = saturation_f3( RGB, maxluma, p_SatB);
+	}
+	
 	float lumaAlpha = 1.0f;
 	float satAlpha = 1.0f;
 	
@@ -143,7 +152,7 @@ float* p_Log, float* p_Sat, float *p_Hue1, float *p_Hue2, float *p_Hue3, int p_D
 	dim3 threads(BLOCK_DIM, BLOCK_DIM);
 	
     LogStageKernel<<<blocks, threadsT>>>(p_Input, p_Output, p_Width, p_Height, p_Switch[0], p_Switch[1],
-	p_Log[0], p_Log[1], p_Log[2], p_Log[3], p_Sat[0], p_Hue1[5], p_Hue1[6], p_Math);
+	p_Log[0], p_Log[1], p_Log[2], p_Log[3], p_Sat[0], p_Sat[1], p_Hue1[5], p_Hue1[6], p_Math, p_Switch[4]);
 	
 	if (p_Blur[0] > 0.0f && p_Switch[1] == 1) {
     d_recursiveGaussian<<< iDivUp(p_Width, nthreads), nthreads >>>(p_Input, tempBuffer, p_Width, p_Height, p_Blur[0]);
@@ -173,7 +182,7 @@ float* p_Log, float* p_Sat, float *p_Hue1, float *p_Hue2, float *p_Hue3, int p_D
     }
 	
 	HueStageKernel<<<blocks, threadsT>>>(p_Output, p_Input, p_Width, p_Height, p_Switch[3], 1, p_Hue3[0], p_Hue3[1], 
-	p_Hue3[2], p_Hue3[3], p_Hue3[4], p_Sat[2], 0.0f, 2);
+	p_Hue3[2], p_Hue3[3], p_Hue3[4], p_Sat[3], 0.0f, 2);
 	
 	if (p_Blur[3] > 0.0f) {
     d_recursiveGaussian<<< iDivUp(p_Width, nthreads), nthreads >>>(p_Input + 3, tempBuffer, p_Width, p_Height, p_Blur[3]);
@@ -182,7 +191,7 @@ float* p_Log, float* p_Sat, float *p_Hue1, float *p_Hue2, float *p_Hue3, int p_D
 	d_transpose<<< gridT, threads >>>(tempBuffer, p_Input + 3, p_Height, p_Width);
     }
 	
-	FinalStageKernel<<<blocks, threadsT>>>(p_Output, p_Input, p_Width, p_Height, p_Sat[1], p_Display);
+	FinalStageKernel<<<blocks, threadsT>>>(p_Output, p_Input, p_Width, p_Height, p_Sat[2], p_Display);
 	
 	cudaError = cudaFree(tempBuffer);
 	
