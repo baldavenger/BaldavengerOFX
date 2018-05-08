@@ -108,14 +108,17 @@ __global__ void FinalStageKernel(float* p_In, float* p_ALPHA, int p_Width, int p
 	{
 	const int index = (y * p_Width + x) * 4;
 	
-	float3 RGB = make_float3(p_In[index + 0], p_In[index + 1], p_In[index + 2]);
-	float3 ych = rgb_2_ych( RGB);
+	float3 rgb = make_float3(p_In[index + 0], p_In[index + 1], p_In[index + 2]);
 	
 	float alpha = p_ALPHA[index + 3];
+	
+	if(p_SatSoft != 1.0f)
+	{
+	float3 ych = rgb_2_ych( rgb);
 	float soft = Sat_Soft_Clip(ych.y, p_SatSoft);
 	ych.y = soft * alpha + ych.y * (1.0f - alpha);
-	
-	float3 rgb = ych_2_rgb( ych);
+	rgb = ych_2_rgb( ych);
+	}
 	
 	float luma = p_In[index + 3];
 	

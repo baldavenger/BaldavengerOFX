@@ -193,6 +193,7 @@ __device__ inline float3 saturation_f3( float3 In, float luma, float sat)
 
 __device__ inline float Sat_Soft_Clip(float S, float softclip)
 {
+	softclip *= 0.3f;
 	float ss = S > softclip ? (-1.0f / ((S - softclip) / (1.0f - softclip) + 1.0f) + 1.0f) * (1.0f - softclip) + softclip : S;
 	return ss;
 }
