@@ -1264,76 +1264,220 @@ void ACESPlugin::changedParam(const OFX::InstanceChangedArgs& p_Args, const std:
 	"if(Direction == 0) \n" \
 	"{ \n" \
 	" \n" \
-	"switch (Idt) \n" \
+	"switch (p_IDT) \n" \
 	"{ \n" \
 	"case 0: \n" \
 	"{ \n" \
 	"} \n" \
 	"break; \n" \
-	" \n" \
 	"case 1: \n" \
 	"{ \n" \
 	"aces = ACEScc_to_ACES(aces); \n" \
 	"} \n" \
 	"break; \n" \
-	" \n" \
 	"case 2: \n" \
 	"{ \n" \
 	"aces = ACEScct_to_ACES(aces); \n" \
 	"} \n" \
 	"break; \n" \
-	" \n" \
 	"case 3: \n" \
 	"{ \n" \
 	"aces = IDT_Alexa_v3_logC_EI800(aces); \n" \
 	"} \n" \
 	"break; \n" \
-	" \n" \
 	"case 4: \n" \
 	"{ \n" \
 	"aces = IDT_Alexa_v3_raw_EI800_CCT65(aces); \n" \
 	"} \n" \
 	"break; \n" \
-	" \n" \
 	"case 5: \n" \
 	"{ \n" \
 	"aces = ADX10_to_ACES(aces); \n" \
 	"} \n" \
 	"break; \n" \
-	" \n" \
 	"case 6: \n" \
 	"{ \n" \
 	"aces = ADX16_to_ACES(aces); \n" \
 	"} \n" \
 	"break; \n" \
-	" \n" \
 	"case 7: \n" \
-	"{ \n" \
-	"aces = IDT_Sony_SLog3_SGamut3(aces); \n" \
-	"} \n" \
-	"break; \n" \
-	" \n" \
-	"case 8: \n" \
-	"{ \n" \
-	"aces = IDT_Sony_SLog3_SGamut3Cine(aces); \n" \
-	"} \n" \
-	"break; \n" \
-	" \n" \
-	"case 9: \n" \
 	"{ \n" \
 	"aces = IDT_Panasonic_V35(aces); \n" \
 	"} \n" \
 	"break; \n" \
-	" \n" \
+	"case 8: \n" \
+	"{ \n" \
+	"aces = IDT_REDWideGamutRGB_Log3G10(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	"case 9: \n" \
+	"{ \n" \
+	"aces = IDT_Canon_C100_A_D55(aces); \n" \
+	"} \n" \
+	"break; \n" \
 	"case 10: \n" \
+	"{ \n" \
+	"aces = IDT_Canon_C100_A_Tng(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	"case 11: \n" \
+	"{ \n" \
+	"aces = IDT_Canon_C100mk2_A_D55(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	"case 12: \n" \
+	"{ \n" \
+	"aces = IDT_Canon_C100mk2_A_Tng(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	"case 13: \n" \
+	"{ \n" \
+	"aces = IDT_Canon_C300_A_D55(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	"case 14: \n" \
+	"{ \n" \
+	"aces = IDT_Canon_C300_A_Tng(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	"case 15: \n" \
 	"{ \n" \
 	"aces = IDT_Canon_C500_A_D55(aces); \n" \
 	"} \n" \
 	"break; \n" \
-	" \n" \
-	"case 11: \n" \
+	"case 16: \n" \
 	"{ \n" \
-	"aces = IDT_Canon_C500_A_Trig(aces); \n" \
+	"aces = IDT_Canon_C500_A_Tng(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	"case 17: \n" \
+	"{ \n" \
+	"aces = IDT_Canon_C500_B_D55(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	"case 18: \n" \
+	"{ \n" \
+	"aces = IDT_Canon_C500_B_Tng(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	"case 19: \n" \
+	"{ \n" \
+	"aces = IDT_Canon_C500_CinemaGamut_A_D55(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	"case 20: \n" \
+	"{ \n" \
+	"aces = IDT_Canon_C500_CinemaGamut_A_Tng(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	"case 21: \n" \
+	"{ \n" \
+	"aces = IDT_Canon_C500_DCI_P3_A_D55(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	"case 22: \n" \
+	"{ \n" \
+	"aces = IDT_Canon_C500_DCI_P3_A_Tng(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	"case 23: \n" \
+	"{ \n" \
+	"aces = IDT_Canon_C300mk2_CanonLog_BT2020_D_D55(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	"case 24: \n" \
+	"{ \n" \
+	"aces = IDT_Canon_C300mk2_CanonLog_BT2020_D_Tng(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	"case 25: \n" \
+	"{ \n" \
+	"aces = IDT_Canon_C300mk2_CanonLog_CinemaGamut_C_D55(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	"case 26: \n" \
+	"{ \n" \
+	"aces = IDT_Canon_C300mk2_CanonLog_CinemaGamut_C_Tng(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	"case 27: \n" \
+	"{ \n" \
+	"aces = IDT_Canon_C300mk2_CanonLog2_BT2020_B_D55(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	"case 28: \n" \
+	"{ \n" \
+	"aces = IDT_Canon_C300mk2_CanonLog2_BT2020_B_Tng(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	"case 29: \n" \
+	"{ \n" \
+	"aces = IDT_Canon_C300mk2_CanonLog2_CinemaGamut_A_D55(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	"case 30: \n" \
+	"{ \n" \
+	"aces = IDT_Canon_C300mk2_CanonLog2_CinemaGamut_A_Tng(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	"case 31: \n" \
+	"{ \n" \
+	"aces = IDT_Canon_C300mk2_CanonLog3_BT2020_F_D55(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	"case 32: \n" \
+	"{ \n" \
+	"aces = IDT_Canon_C300mk2_CanonLog3_BT2020_F_Tng(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	"case 33: \n" \
+	"{ \n" \
+	"aces = IDT_Canon_C300mk2_CanonLog3_CinemaGamut_E_D55(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	"case 34: \n" \
+	"{ \n" \
+	"aces = IDT_Canon_C300mk2_CanonLog3_CinemaGamut_E_Tng(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	"case 35: \n" \
+	"{ \n" \
+	"aces = IDT_Sony_SLog1_SGamut_10(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	"case 36: \n" \
+	"{ \n" \
+	"aces = IDT_Sony_SLog1_SGamut_12(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	"case 37: \n" \
+	"{ \n" \
+	"aces = IDT_Sony_SLog2_SGamut_Daylight_10(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	"case 38: \n" \
+	"{ \n" \
+	"aces = IDT_Sony_SLog2_SGamut_Daylight_12(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	"case 39: \n" \
+	"{ \n" \
+	"aces = IDT_Sony_SLog2_SGamut_Tungsten_10(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	"case 40: \n" \
+	"{ \n" \
+	"aces = IDT_Sony_SLog2_SGamut_Tungsten_12(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	"case 41: \n" \
+	"{ \n" \
+	"aces = IDT_Sony_SLog3_SGamut3(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	"case 42: \n" \
+	"{ \n" \
+	"aces = IDT_Sony_SLog3_SGamut3Cine(aces); \n" \
 	"} \n" \
 	"} \n" \
 	" \n" \
@@ -1514,74 +1658,137 @@ void ACESPlugin::changedParam(const OFX::InstanceChangedArgs& p_Args, const std:
 	"aces = ACES_to_ACEScc(aces); \n" \
 	"} \n" \
 	"break; \n" \
-	" \n" \
 	"case 3: \n" \
 	"{ \n" \
 	"aces = ACES_to_ACEScct(aces); \n" \
 	"} \n" \
 	"break; \n" \
-	" \n" \
 	"case 4: \n" \
 	"{ \n" \
 	"aces = ODT_Rec709_100nits_dim(aces); \n" \
 	"} \n" \
 	"break; \n" \
-	" \n" \
 	"case 5: \n" \
+	"{ \n" \
+	"aces = ODT_Rec709_D60sim_100nits_dim(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	"case 6: \n" \
+	"{ \n" \
+	"aces = ODT_sRGB_100nits_dim(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	"case 7: \n" \
+	"{ \n" \
+	"aces = ODT_sRGB_D60sim_100nits_dim(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	"case 8: \n" \
 	"{ \n" \
 	"aces = ODT_Rec2020_100nits_dim(aces); \n" \
 	"} \n" \
 	"break; \n" \
-	" \n" \
-	"case 6: \n" \
+	"case 9: \n" \
+	"{ \n" \
+	"aces = ODT_Rec2020_Rec709limited_100nits_dim(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	"case 10: \n" \
+	"{ \n" \
+	"aces = ODT_Rec2020_P3D65limited_100nits_dim(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	"case 11: \n" \
 	"{ \n" \
 	"aces = ODT_Rec2020_ST2084_1000nits(aces); \n" \
 	"} \n" \
 	"break; \n" \
-	" \n" \
-	"case 7: \n" \
+	"case 12: \n" \
+	"{ \n" \
+	"aces = ODT_P3DCI_48nits(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	"case 13: \n" \
+	"{ \n" \
+	"aces = ODT_P3DCI_D65sim_48nits(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	"case 14: \n" \
+	"{ \n" \
+	"aces = ODT_P3D60_48nits(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	"case 15: \n" \
+	"{ \n" \
+	"aces = ODT_P3D65_48nits(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	"case 16: \n" \
+	"{ \n" \
+	"aces = ODT_P3D65_D60sim_48nits(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	"case 17: \n" \
+	"{ \n" \
+	"aces = ODT_P3D65_Rec709limited_48nits(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	"case 18: \n" \
+	"{ \n" \
+	"aces = ODT_DCDM(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	"case 19: \n" \
+	"{ \n" \
+	"aces = ODT_DCDM_P3D60limited(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	"case 20: \n" \
+	"{ \n" \
+	"aces = ODT_DCDM_P3D65limited(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	"case 21: \n" \
 	"{ \n" \
 	"aces = ODT_RGBmonitor_100nits_dim(aces); \n" \
 	"} \n" \
 	"break; \n" \
-	" \n" \
-	"case 8: \n" \
+	"case 22: \n" \
+	"{ \n" \
+	"aces = ODT_RGBmonitor_D60sim_100nits_dim(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	"case 23: \n" \
 	"{ \n" \
 	"aces = RRTODT_P3D65_108nits_7_2nits_ST2084(aces); \n" \
 	"} \n" \
 	"break; \n" \
-	" \n" \
-	"case 9: \n" \
+	"case 24: \n" \
 	"{ \n" \
 	"aces = RRTODT_Rec2020_1000nits_15nits_HLG(aces); \n" \
 	"} \n" \
 	"break; \n" \
-	" \n" \
-	"case 10: \n" \
+	"case 25: \n" \
 	"{ \n" \
 	"aces = RRTODT_Rec2020_1000nits_15nits_ST2084(aces); \n" \
 	"} \n" \
 	"break; \n" \
-	" \n" \
-	"case 11: \n" \
+	"case 26: \n" \
 	"{ \n" \
 	"aces = RRTODT_Rec2020_2000nits_15nits_ST2084(aces); \n" \
 	"} \n" \
 	"break; \n" \
-	" \n" \
-	"case 12: \n" \
+	"case 27: \n" \
 	"{ \n" \
 	"aces = RRTODT_Rec2020_4000nits_15nits_ST2084(aces); \n" \
 	"} \n" \
 	"break; \n" \
-	" \n" \
-	"case 13: \n" \
+	"case 28: \n" \
 	"{ \n" \
 	"aces = RRTODT_Rec709_100nits_15nits_BT1886(aces); \n" \
 	"} \n" \
 	"break; \n" \
-	" \n" \
-	"case 14: \n" \
+	"case 29: \n" \
 	"{ \n" \
 	"aces = RRTODT_Rec709_100nits_15nits_sRGB(aces); \n" \
 	"} \n" \
@@ -1624,62 +1831,107 @@ void ACESPlugin::changedParam(const OFX::InstanceChangedArgs& p_Args, const std:
 	"aces = InvODT_Rec709_100nits_dim(aces); \n" \
 	"} \n" \
 	"break; \n" \
-	" \n" \
 	"case 3: \n" \
+	"{ \n" \
+	"aces = InvODT_Rec709_D60sim_100nits_dim(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	"case 4: \n" \
+	"{ \n" \
+	"aces = InvODT_sRGB_100nits_dim(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	"case 5: \n" \
+	"{ \n" \
+	"aces = InvODT_sRGB_D60sim_100nits_dim(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	"case 6: \n" \
 	"{ \n" \
 	"aces = InvODT_Rec2020_100nits_dim(aces); \n" \
 	"} \n" \
 	"break; \n" \
-	" \n" \
-	"case 4: \n" \
+	"case 7: \n" \
 	"{ \n" \
 	"aces = InvODT_Rec2020_ST2084_1000nits(aces); \n" \
 	"} \n" \
 	"break; \n" \
-	" \n" \
-	"case 5: \n" \
+	"case 8: \n" \
+	"{ \n" \
+	"aces = InvODT_P3DCI_48nits(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	"case 9: \n" \
+	"{ \n" \
+	"aces = InvODT_P3DCI_D65sim_48nits(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	"case 10: \n" \
+	"{ \n" \
+	"aces = InvODT_P3D60_48nits(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	"case 11: \n" \
+	"{ \n" \
+	"aces = InvODT_P3D65_48nits(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	"case 12: \n" \
+	"{ \n" \
+	"aces = InvODT_P3D65_D60sim_48nits(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	"case 13: \n" \
+	"{ \n" \
+	"aces = InvODT_DCDM(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	"case 14: \n" \
+	"{ \n" \
+	"aces = InvODT_DCDM_P3D65limited(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	"case 15: \n" \
 	"{ \n" \
 	"aces = InvODT_RGBmonitor_100nits_dim(aces); \n" \
 	"} \n" \
 	"break; \n" \
-	" \n" \
-	"case 6: \n" \
+	"case 16: \n" \
+	"{ \n" \
+	"aces = InvODT_RGBmonitor_D60sim_100nits_dim(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	"case 17: \n" \
 	"{ \n" \
 	"aces = InvRRTODT_P3D65_108nits_7_2nits_ST2084(aces); \n" \
 	"} \n" \
 	"break; \n" \
-	" \n" \
-	"case 7: \n" \
+	"case 18: \n" \
 	"{ \n" \
 	"aces = InvRRTODT_Rec2020_1000nits_15nits_HLG(aces); \n" \
 	"} \n" \
 	"break; \n" \
-	" \n" \
-	"case 8: \n" \
+	"case 19: \n" \
 	"{ \n" \
 	"aces = InvRRTODT_Rec2020_1000nits_15nits_ST2084(aces); \n" \
 	"} \n" \
 	"break; \n" \
-	" \n" \
-	"case 9: \n" \
+	"case 20: \n" \
 	"{ \n" \
 	"aces = InvRRTODT_Rec2020_2000nits_15nits_ST2084(aces); \n" \
 	"} \n" \
 	"break; \n" \
-	" \n" \
-	"case 10: \n" \
+	"case 21: \n" \
 	"{ \n" \
 	"aces = InvRRTODT_Rec2020_4000nits_15nits_ST2084(aces); \n" \
 	"} \n" \
 	"break; \n" \
-	" \n" \
-	"case 11: \n" \
+	"case 22: \n" \
 	"{ \n" \
 	"aces = InvRRTODT_Rec709_100nits_15nits_BT1886(aces); \n" \
 	"} \n" \
 	"break; \n" \
-	" \n" \
-	"case 12: \n" \
+	"case 23: \n" \
 	"{ \n" \
 	"aces = InvRRTODT_Rec709_100nits_15nits_sRGB(aces); \n" \
 	"} \n" \
@@ -2172,7 +2424,7 @@ void ACESPluginFactory::describeInContext(OFX::ImageEffectDescriptor& p_Desc, OF
     page->addChild(*param);
     
     param = defineScaleParam(p_Desc, "RotateH1", "hue rotation hue1", "rotate hue at hue in degrees", 0);
-    param->setDefault(330.0);
+    param->setDefault(30.0);
     param->setRange(0.0, 360.0);
     param->setIncrement(0.01);
     param->setDisplayRange(0.0, 360.0);
@@ -2196,7 +2448,7 @@ void ACESPluginFactory::describeInContext(OFX::ImageEffectDescriptor& p_Desc, OF
     page->addChild(*param);
     
     param = defineScaleParam(p_Desc, "RotateH2", "hue rotation hue2", "rotate hue at hue in degrees", 0);
-    param->setDefault(150.0);
+    param->setDefault(210.0);
     param->setRange(0.0, 360.0);
     param->setIncrement(0.01);
     param->setDisplayRange(0.0, 360.0);
@@ -2220,7 +2472,7 @@ void ACESPluginFactory::describeInContext(OFX::ImageEffectDescriptor& p_Desc, OF
     page->addChild(*param);
     
     param = defineScaleParam(p_Desc, "RotateH3", "hue rotation hue3", "rotate hue at hue in degrees", 0);
-    param->setDefault(240.0);
+    param->setDefault(120.0);
     param->setRange(0.0, 360.0);
     param->setIncrement(0.01);
     param->setDisplayRange(0.0, 360.0);
@@ -2244,7 +2496,7 @@ void ACESPluginFactory::describeInContext(OFX::ImageEffectDescriptor& p_Desc, OF
     page->addChild(*param);
     
     param = defineScaleParam(p_Desc, "HueCH1", "color scale hue1", "scale color at hue in degrees", 0);
-    param->setDefault(330.0);
+    param->setDefault(30.0);
     param->setRange(0.0, 360.0);
     param->setIncrement(0.01);
     param->setDisplayRange(0.0, 360.0);
@@ -2292,7 +2544,7 @@ void ACESPluginFactory::describeInContext(OFX::ImageEffectDescriptor& p_Desc, OF
     page->addChild(*param);
     
     param = defineScaleParam(p_Desc, "HueCH2", "color scale hue2", "scale color at hue in degrees", 0);
-    param->setDefault(150.0);
+    param->setDefault(210.0);
     param->setRange(0.0, 360.0);
     param->setIncrement(0.01);
     param->setDisplayRange(0.0, 360.0);

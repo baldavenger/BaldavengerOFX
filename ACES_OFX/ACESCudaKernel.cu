@@ -436,32 +436,32 @@ aces = ODT_Rec709_D60sim_100nits_dim(aces);
 break;
 case 6:
 {
-aces = ODT_Rec2020_100nits_dim(aces);
+aces = ODT_sRGB_100nits_dim(aces);
 }
 break;
 case 7:
 {
-aces = ODT_Rec2020_ST2084_1000nits(aces);
+aces = ODT_sRGB_D60sim_100nits_dim(aces);
 }
 break;
 case 8:
 {
-aces = ODT_sRGB_100nits_dim(aces);
+aces = ODT_Rec2020_100nits_dim(aces);
 }
 break;
 case 9:
 {
-aces = ODT_sRGB_D60sim_100nits_dim(aces);
+aces = ODT_Rec2020_Rec709limited_100nits_dim(aces);
 }
 break;
 case 10:
 {
-aces = ODT_Rec2020_Rec709limited_100nits_dim(aces);
+aces = ODT_Rec2020_P3D65limited_100nits_dim(aces);
 }
 break;
 case 11:
 {
-aces = ODT_Rec2020_P3D65limited_100nits_dim(aces);
+aces = ODT_Rec2020_ST2084_1000nits(aces);
 }
 break;
 case 12:
@@ -596,22 +596,22 @@ aces = InvODT_Rec709_D60sim_100nits_dim(aces);
 break;
 case 4:
 {
-aces = InvODT_Rec2020_100nits_dim(aces);
+aces = InvODT_sRGB_100nits_dim(aces);
 }
 break;
 case 5:
 {
-aces = InvODT_Rec2020_ST2084_1000nits(aces);
+aces = InvODT_sRGB_D60sim_100nits_dim(aces);
 }
 break;
 case 6:
 {
-aces = InvODT_sRGB_100nits_dim(aces);
+aces = InvODT_Rec2020_100nits_dim(aces);
 }
 break;
 case 7:
 {
-aces = InvODT_sRGB_D60sim_100nits_dim(aces);
+aces = InvODT_Rec2020_ST2084_1000nits(aces);
 }
 break;
 case 8:
