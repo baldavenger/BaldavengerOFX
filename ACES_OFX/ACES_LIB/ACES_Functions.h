@@ -339,7 +339,7 @@ __device__ inline float lookupCubic1D (float table[], float pMin, float pMax, fl
   if( p > pMax ) return table[ Size - 1 ];
   
   float t = (p - pMin) / (pMax - pMin) * (Size - 1 );
-  int i = floor (t);
+  int i = floor( t);
   float s = t - i;
   float m0;
   float m1;
@@ -1107,9 +1107,85 @@ __device__ inline float vLogToLinScene( float x)
 		return powf(10.0f, (x - d) / c) - b;
 }
 
-__device__ inline float CanonLog_to_linear ( float clog_ire)
+__device__ inline float SLog1_to_lin( float SLog, float b, float ab, float w)
 {
-return (powf(10.0f, (clog_ire - 0.0730597f) / 0.529136f) - 1) / 10.1596f;
+  float lin;
+  if (SLog >= ab)
+    lin = ( powf(10.0f, ( ( ( SLog - b) / ( w - b) - 0.616596f - 0.03f) / 0.432699f)) - 0.037584f) * 0.9f;
+  else if (SLog < ab) 
+    lin = ( ( ( SLog - b) / ( w - b) - 0.030001222851889303f) / 5.0f) * 0.9f;
+  return lin;
+}
+
+__device__ inline float SLog2_to_lin( float SLog, float b, float ab, float w)
+{
+  float lin;
+  if (SLog >= ab)
+    lin = ( 219.0f * ( powf(10.0f, ( ( ( SLog - b) / ( w - b) - 0.616596f - 0.03f) / 0.432699f)) - 0.037584f) / 155.0f) * 0.9f;
+  else if (SLog < ab) 
+    lin = ( ( ( SLog - b) / ( w - b) - 0.030001222851889303f) / 3.53881278538813f) * 0.9f;
+  return lin;
+}
+
+__device__ inline float CanonLog_to_linear ( float clog)
+{
+	float out;
+	if(clog < 0.12512248f)
+		out = -( powf( 10.0f, ( 0.12512248f - clog ) / 0.45310179f ) - 1.0f ) / 10.1596f;
+	else
+		out = ( powf( 10.0f, ( clog - 0.12512248f ) / 0.45310179f ) - 1.0f ) / 10.1596f;
+	return out;
+	//return (powf(10.0f, (clog - 0.0730597f) / 0.529136f) - 1) / 10.1596f;
+}
+
+__device__ inline float CanonLog2_to_linear ( float clog2)
+{
+	float out;
+	if(clog2 < 0.092864125f)
+		out = -( powf( 10.0f, ( 0.092864125f - clog2 ) / 0.24136077f ) - 1.0f ) / 87.099375f;
+	else
+		out = ( powf( 10.0f, ( clog2 - 0.092864125f ) / 0.24136077f ) - 1.0f ) / 87.099375f;
+	return out;
+}
+
+__device__ inline float CanonLog3_to_linear ( float clog3)
+{
+	float out;
+	if(clog3 < 0.097465473f)
+		out = -( powf( 10.0f, ( 0.12783901f - clog3 ) / 0.36726845f ) - 1.0f ) / 14.98325f;
+	else if(clog3 <= 0.15277891f)
+		out = ( clog3 - 0.12512219f ) / 1.9754798f;
+	else
+		out = ( powf( 10.0f, ( clog3 - 0.12240537f ) / 0.36726845f ) - 1.0f ) / 14.98325f;
+	return out;
+}
+
+__device__ inline float Log3G10_to_linear ( float log3g10)
+{
+	float a, b, c, mirror, linear;
+	a = 0.224282f;
+	b = 155.975327f;
+	c = 0.01f;
+	mirror = 1.0f;
+	if (log3g10 < 0.0f)
+	{
+	mirror = -1.0f;
+	log3g10 = -log3g10;
+	}
+	linear = (powf(10.0f, log3g10 / a) - 1.0f) / b;
+	linear = linear * mirror - c;
+	return linear;
+}
+
+__device__ inline float Clip ( float in)
+{
+	float out;
+	if(in > 65535.0f)
+		out = 65535.0f;
+	else
+		out = in;
+
+	return out;
 }
 
 #endif
