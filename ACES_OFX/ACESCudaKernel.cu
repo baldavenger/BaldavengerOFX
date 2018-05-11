@@ -32,73 +32,216 @@ switch (p_IDT)
 {
 case 0:
 {
-
 }
 break;
-
 case 1:
 {
 aces = ACEScc_to_ACES(aces);
 }
 break;
-
 case 2:
 {
 aces = ACEScct_to_ACES(aces);
 }
 break;
-
 case 3:
 {
 aces = IDT_Alexa_v3_logC_EI800(aces);
 }
 break;
-
 case 4:
 {
 aces = IDT_Alexa_v3_raw_EI800_CCT65(aces);
 }
 break;
-
 case 5:
 {
 aces = ADX10_to_ACES(aces);
 }
 break;
-
 case 6:
 {
 aces = ADX16_to_ACES(aces);
 }
 break;
-
 case 7:
-{
-aces = IDT_Sony_SLog3_SGamut3(aces);
-}
-break;
-
-case 8:
-{
-aces = IDT_Sony_SLog3_SGamut3Cine(aces);
-}
-break;
-
-case 9:
 {
 aces = IDT_Panasonic_V35(aces);
 }
 break;
-
+case 8:
+{
+aces = IDT_REDWideGamutRGB_Log3G10(aces);
+}
+break;
+case 9:
+{
+aces = IDT_Canon_C100_A_D55(aces);
+}
+break;
 case 10:
+{
+aces = IDT_Canon_C100_A_Tng(aces);
+}
+break;
+case 11:
+{
+aces = IDT_Canon_C100mk2_A_D55(aces);
+}
+break;
+case 12:
+{
+aces = IDT_Canon_C100mk2_A_Tng(aces);
+}
+break;
+case 13:
+{
+aces = IDT_Canon_C300_A_D55(aces);
+}
+break;
+case 14:
+{
+aces = IDT_Canon_C300_A_Tng(aces);
+}
+break;
+case 15:
 {
 aces = IDT_Canon_C500_A_D55(aces);
 }
 break;
-
-case 11:
+case 16:
 {
-aces = IDT_Canon_C500_A_Trig(aces);
+aces = IDT_Canon_C500_A_Tng(aces);
+}
+break;
+case 17:
+{
+aces = IDT_Canon_C500_B_D55(aces);
+}
+break;
+case 18:
+{
+aces = IDT_Canon_C500_B_Tng(aces);
+}
+break;
+case 19:
+{
+aces = IDT_Canon_C500_CinemaGamut_A_D55(aces);
+}
+break;
+case 20:
+{
+aces = IDT_Canon_C500_CinemaGamut_A_Tng(aces);
+}
+break;
+case 21:
+{
+aces = IDT_Canon_C500_DCI_P3_A_D55(aces);
+}
+break;
+case 22:
+{
+aces = IDT_Canon_C500_DCI_P3_A_Tng(aces);
+}
+break;
+case 23:
+{
+aces = IDT_Canon_C300mk2_CanonLog_BT2020_D_D55(aces);
+}
+break;
+case 24:
+{
+aces = IDT_Canon_C300mk2_CanonLog_BT2020_D_Tng(aces);
+}
+break;
+case 25:
+{
+aces = IDT_Canon_C300mk2_CanonLog_CinemaGamut_C_D55(aces);
+}
+break;
+case 26:
+{
+aces = IDT_Canon_C300mk2_CanonLog_CinemaGamut_C_Tng(aces);
+}
+break;
+case 27:
+{
+aces = IDT_Canon_C300mk2_CanonLog2_BT2020_B_D55(aces);
+}
+break;
+case 28:
+{
+aces = IDT_Canon_C300mk2_CanonLog2_BT2020_B_Tng(aces);
+}
+break;
+case 29:
+{
+aces = IDT_Canon_C300mk2_CanonLog2_CinemaGamut_A_D55(aces);
+}
+break;
+case 30:
+{
+aces = IDT_Canon_C300mk2_CanonLog2_CinemaGamut_A_Tng(aces);
+}
+break;
+case 31:
+{
+aces = IDT_Canon_C300mk2_CanonLog3_BT2020_F_D55(aces);
+}
+break;
+case 32:
+{
+aces = IDT_Canon_C300mk2_CanonLog3_BT2020_F_Tng(aces);
+}
+break;
+case 33:
+{
+aces = IDT_Canon_C300mk2_CanonLog3_CinemaGamut_E_D55(aces);
+}
+break;
+case 34:
+{
+aces = IDT_Canon_C300mk2_CanonLog3_CinemaGamut_E_Tng(aces);
+}
+break;
+case 35:
+{
+aces = IDT_Sony_SLog1_SGamut_10(aces);
+}
+break;
+case 36:
+{
+aces = IDT_Sony_SLog1_SGamut_12(aces);
+}
+break;
+case 37:
+{
+aces = IDT_Sony_SLog2_SGamut_Daylight_10(aces);
+}
+break;
+case 38:
+{
+aces = IDT_Sony_SLog2_SGamut_Daylight_12(aces);
+}
+break;
+case 39:
+{
+aces = IDT_Sony_SLog2_SGamut_Tungsten_10(aces);
+}
+break;
+case 40:
+{
+aces = IDT_Sony_SLog2_SGamut_Tungsten_12(aces);
+}
+break;
+case 41:
+{
+aces = IDT_Sony_SLog3_SGamut3(aces);
+}
+break;
+case 42:
+{
+aces = IDT_Sony_SLog3_SGamut3Cine(aces);
 }
 }
 
@@ -250,7 +393,6 @@ case 0:
 {
 }
 break;
-
 case 1:
 {
 float Y_MIN = p_Lum0 * 0.0001f;
@@ -272,80 +414,142 @@ aces = outputTransform( aces, Y_MIN, Y_MID, Y_MAX, DISPLAY_PRI, LIMITING_PRI, EO
 
 }
 break;
-
 case 2:
 {
 aces = ACES_to_ACEScc(aces);
 }
 break;
-
 case 3:
 {
 aces = ACES_to_ACEScct(aces);
 }
 break;
-
 case 4:
 {
 aces = ODT_Rec709_100nits_dim(aces);
 }
 break;
-
 case 5:
+{
+aces = ODT_Rec709_D60sim_100nits_dim(aces);
+}
+break;
+case 6:
 {
 aces = ODT_Rec2020_100nits_dim(aces);
 }
 break;
-
-case 6:
+case 7:
 {
 aces = ODT_Rec2020_ST2084_1000nits(aces);
 }
 break;
-
-case 7:
+case 8:
+{
+aces = ODT_sRGB_100nits_dim(aces);
+}
+break;
+case 9:
+{
+aces = ODT_sRGB_D60sim_100nits_dim(aces);
+}
+break;
+case 10:
+{
+aces = ODT_Rec2020_Rec709limited_100nits_dim(aces);
+}
+break;
+case 11:
+{
+aces = ODT_Rec2020_P3D65limited_100nits_dim(aces);
+}
+break;
+case 12:
+{
+aces = ODT_P3DCI_48nits(aces);
+}
+break;
+case 13:
+{
+aces = ODT_P3DCI_D65sim_48nits(aces);
+}
+break;
+case 14:
+{
+aces = ODT_P3D60_48nits(aces);
+}
+break;
+case 15:
+{
+aces = ODT_P3D65_48nits(aces);
+}
+break;
+case 16:
+{
+aces = ODT_P3D65_D60sim_48nits(aces);
+}
+break;
+case 17:
+{
+aces = ODT_P3D65_Rec709limited_48nits(aces);
+}
+break;
+case 18:
+{
+aces = ODT_DCDM(aces);
+}
+break;
+case 19:
+{
+aces = ODT_DCDM_P3D60limited(aces);
+}
+break;
+case 20:
+{
+aces = ODT_DCDM_P3D65limited(aces);
+}
+break;
+case 21:
 {
 aces = ODT_RGBmonitor_100nits_dim(aces);
 }
 break;
-
-case 8:
+case 22:
+{
+aces = ODT_RGBmonitor_D60sim_100nits_dim(aces);
+}
+break;
+case 23:
 {
 aces = RRTODT_P3D65_108nits_7_2nits_ST2084(aces);
 }
 break;
-
-case 9:
+case 24:
 {
 aces = RRTODT_Rec2020_1000nits_15nits_HLG(aces);
 }
 break;
-
-case 10:
+case 25:
 {
 aces = RRTODT_Rec2020_1000nits_15nits_ST2084(aces);
 }
 break;
-
-case 11:
+case 26:
 {
 aces = RRTODT_Rec2020_2000nits_15nits_ST2084(aces);
 }
 break;
-
-case 12:
+case 27:
 {
 aces = RRTODT_Rec2020_4000nits_15nits_ST2084(aces);
 }
 break;
-
-case 13:
+case 28:
 {
 aces = RRTODT_Rec709_100nits_15nits_BT1886(aces);
 }
 break;
-
-case 14:
+case 29:
 {
 aces = RRTODT_Rec709_100nits_15nits_sRGB(aces);
 }
@@ -359,7 +563,6 @@ case 0:
 {
 }
 break;
-
 case 1:
 {
 float Y_MIN = p_Lum0 * 0.0001f;
@@ -381,68 +584,112 @@ aces = invOutputTransform( aces, Y_MIN, Y_MID, Y_MAX, DISPLAY_PRI, LIMITING_PRI,
 
 }
 break;
-
 case 2:
 {
 aces = InvODT_Rec709_100nits_dim(aces);
 }
 break;
-
 case 3:
+{
+aces = InvODT_Rec709_D60sim_100nits_dim(aces);
+}
+break;
+case 4:
 {
 aces = InvODT_Rec2020_100nits_dim(aces);
 }
 break;
-
-case 4:
+case 5:
 {
 aces = InvODT_Rec2020_ST2084_1000nits(aces);
 }
 break;
-
-case 5:
+case 6:
+{
+aces = InvODT_sRGB_100nits_dim(aces);
+}
+break;
+case 7:
+{
+aces = InvODT_sRGB_D60sim_100nits_dim(aces);
+}
+break;
+case 8:
+{
+aces = InvODT_P3DCI_48nits(aces);
+}
+break;
+case 9:
+{
+aces = InvODT_P3DCI_D65sim_48nits(aces);
+}
+break;
+case 10:
+{
+aces = InvODT_P3D60_48nits(aces);
+}
+break;
+case 11:
+{
+aces = InvODT_P3D65_48nits(aces);
+}
+break;
+case 12:
+{
+aces = InvODT_P3D65_D60sim_48nits(aces);
+}
+break;
+case 13:
+{
+aces = InvODT_DCDM(aces);
+}
+break;
+case 14:
+{
+aces = InvODT_DCDM_P3D65limited(aces);
+}
+break;
+case 15:
 {
 aces = InvODT_RGBmonitor_100nits_dim(aces);
 }
 break;
-
-case 6:
+case 16:
+{
+aces = InvODT_RGBmonitor_D60sim_100nits_dim(aces);
+}
+break;
+case 17:
 {
 aces = InvRRTODT_P3D65_108nits_7_2nits_ST2084(aces);
 }
 break;
-
-case 7:
+case 18:
 {
 aces = InvRRTODT_Rec2020_1000nits_15nits_HLG(aces);
 }
 break;
-
-case 8:
+case 19:
 {
 aces = InvRRTODT_Rec2020_1000nits_15nits_ST2084(aces);
 }
 break;
-
-case 9:
+case 20:
 {
 aces = InvRRTODT_Rec2020_2000nits_15nits_ST2084(aces);
 }
 break;
-
-case 10:
+case 21:
 {
 aces = InvRRTODT_Rec2020_4000nits_15nits_ST2084(aces);
 }
 break;
-
-case 11:
+case 22:
 {
 aces = InvRRTODT_Rec709_100nits_15nits_BT1886(aces);
 }
 break;
-
-case 12:
+case 23:
 {
 aces = InvRRTODT_Rec709_100nits_15nits_sRGB(aces);
 }

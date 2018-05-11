@@ -65,16 +65,83 @@ enum InputEnum
 #define kParamIDTOptionADX10Hint "ADX10 to ACES"
 #define kParamIDTOptionADX16 "ADX16"
 #define kParamIDTOptionADX16Hint "ADX16 to ACES"
+#define kParamIDTOptionPanasonicV35 "Panasonic V35 VLog"
+#define kParamIDTOptionPanasonicV35Hint "Panasonic V35 VLog"
+#define kParamIDTOptionREDWideGamutRGBLog3G10 "Log3G10 REDWideGamutRGB"
+#define kParamIDTOptionREDWideGamutRGBLog3G10Hint "Log3G10 REDWideGamutRGB"
+
+#define kParamIDTOptionCanonC100AD55 "Canon C100 A D55"
+#define kParamIDTOptionCanonC100AD55Hint "Canon CLog C100 A D55"
+#define kParamIDTOptionCanonC100ATNG "Canon C100 A Tungsten"
+#define kParamIDTOptionCanonC100ATNGHint "Canon CLog C100 A Tungsten"
+#define kParamIDTOptionCanonC100mk2AD55 "Canon C100mk2 A D55"
+#define kParamIDTOptionCanonC100mk2AD55Hint "Canon CLog C100mk2 A D55"
+#define kParamIDTOptionCanonC100mk2ATNG "Canon C100mk2 A Tungsten"
+#define kParamIDTOptionCanonC100mk2ATNGHint "Canon CLog C100mk2 A Tungsten"
+
+#define kParamIDTOptionCanonC300AD55 "Canon C300 A D55"
+#define kParamIDTOptionCanonC300AD55Hint "Canon CLog C300 A D55"
+#define kParamIDTOptionCanonC300ATNG "Canon C300 A Tungsten"
+#define kParamIDTOptionCanonC300ATNGHint "Canon CLog C300 A Tungsten"
+
+#define kParamIDTOptionCanonC500AD55 "Canon C500 A D55"
+#define kParamIDTOptionCanonC500AD55Hint "Canon CLog C500 A D55"
+#define kParamIDTOptionCanonC500ATNG "Canon C500 A Tungsten"
+#define kParamIDTOptionCanonC500ATNGHint "Canon CLog C500 A Tungsten"
+#define kParamIDTOptionCanonC500BD55 "Canon C500 B D55"
+#define kParamIDTOptionCanonC500BD55Hint "Canon CLog C500 B D55"
+#define kParamIDTOptionCanonC500BTNG "Canon C500 B Tungsten"
+#define kParamIDTOptionCanonC500BTNGHint "Canon CLog C500 B Tungsten"
+#define kParamIDTOptionCanonC500CinemaGamutAD55 "Canon C500 CinemaGamut A D55"
+#define kParamIDTOptionCanonC500CinemaGamutAD55Hint "Canon CLog C500 CinemaGamut A D55"
+#define kParamIDTOptionCanonC500CinemaGamutATNG "Canon C500 CinemaGamut A Tungsten"
+#define kParamIDTOptionCanonC500CinemaGamutATNGHint "Canon CLog C500 CinemaGamut A Tungsten"
+#define kParamIDTOptionCanonC500DCIP3AD55 "Canon C500 DCI P3 A D55"
+#define kParamIDTOptionCanonC500DCIP3AD55Hint "Canon CLog C500 DCI P3 A D55"
+#define kParamIDTOptionCanonC500DCIP3ATNG "Canon C500 DCI P3 A Tungsten"
+#define kParamIDTOptionCanonC500DCIP3ATNGHint "Canon CLog C500 DCI P3 A Tungsten"
+
+#define kParamIDTOptionCanonC300mk2CanonLogBT2020DD55 "Canon C300mk2 BT2020 D D55"
+#define kParamIDTOptionCanonC300mk2CanonLogBT2020DD55Hint "Canon CLog C300mk2 BT2020 D D55"
+#define kParamIDTOptionCanonC300mk2CanonLogBT2020DTNG "Canon C300mk2 BT2020 D Tungsten"
+#define kParamIDTOptionCanonC300mk2CanonLogBT2020DTNGHint "Canon CLog C300mk2 BT2020 D Tungsten"
+#define kParamIDTOptionCanonC300mk2CanonLogCinemaGamutCD55 "Canon C300mk2 CinemaGamut C D55"
+#define kParamIDTOptionCanonC300mk2CanonLogCinemaGamutCD55Hint "Canon CLog C300mk2 CinemaGamut C D55"
+#define kParamIDTOptionCanonC300mk2CanonLogCinemaGamutCTNG "Canon C300mk2 CinemaGamut C Tungsten"
+#define kParamIDTOptionCanonC300mk2CanonLogCinemaGamutCTNGHint "Canon CLog C300mk2 CinemaGamut C Tungsten"
+#define kParamIDTOptionCanonC300mk2CanonLog2BT2020BD55 "Canon CLog2 C300mk2 BT2020 B D55"
+#define kParamIDTOptionCanonC300mk2CanonLog2BT2020BD55Hint "Canon CLog2 C300mk2 BT2020 B D55"
+#define kParamIDTOptionCanonC300mk2CanonLog2BT2020BTNG "Canon CLog2 C300mk2 BT2020 B Tungsten"
+#define kParamIDTOptionCanonC300mk2CanonLog2BT2020BTNGHint "Canon CLog2 C300mk2 BT2020 B Tungsten"
+#define kParamIDTOptionCanonC300mk2CanonLog2CinemaGamutAD55 "Canon CLog2 C300mk2 CinemaGamut A D55"
+#define kParamIDTOptionCanonC300mk2CanonLog2CinemaGamutAD55Hint "Canon CLog2 C300mk2 CinemaGamut A D55"
+#define kParamIDTOptionCanonC300mk2CanonLog2CinemaGamutATNG "Canon CLog2 C300mk2 CinemaGamut A Tungsten"
+#define kParamIDTOptionCanonC300mk2CanonLog2CinemaGamutATNGHint "Canon CLog2 C300mk2 CinemaGamut A Tungsten"
+#define kParamIDTOptionCanonC300mk2CanonLog3BT2020FD55 "Canon CLog3 C300mk2 BT2020 F D55"
+#define kParamIDTOptionCanonC300mk2CanonLog3BT2020FD55Hint "Canon CLog3 C300mk2 BT2020 F D55"
+#define kParamIDTOptionCanonC300mk2CanonLog3BT2020FTNG "Canon CLog3 C300mk2 BT2020 F Tungsten"
+#define kParamIDTOptionCanonC300mk2CanonLog3BT2020FTNGHint "Canon CLog3 C300mk2 BT2020 F Tungsten"
+#define kParamIDTOptionCanonC300mk2CanonLog3CinemaGamutED55 "Canon CLog3 C300mk2 CinemaGamut E D55"
+#define kParamIDTOptionCanonC300mk2CanonLog3CinemaGamutED55Hint "Canon CLog3 C300mk2 CinemaGamut E D55"
+#define kParamIDTOptionCanonC300mk2CanonLog3CinemaGamutETNG "Canon CLog3 C300mk2 CinemaGamut E Tungsten"
+#define kParamIDTOptionCanonC300mk2CanonLog3CinemaGamutETNGHint "Canon CLog3 C300mk2 CinemaGamut E Tungsten"
+
+#define kParamIDTOptionSonySLog1SGamut10 "Sony SLog1 SGamut 10"
+#define kParamIDTOptionSonySLog1SGamut10Hint "Sony SLog1 SGamut 10"
+#define kParamIDTOptionSonySLog1SGamut12 "Sony SLog1 SGamut 12"
+#define kParamIDTOptionSonySLog1SGamut12Hint "Sony SLog1 SGamut 12"
+#define kParamIDTOptionSonySLog2SGamutDaylight10 "Sony SLog2 SGamut Daylight 10"
+#define kParamIDTOptionSonySLog2SGamutDaylight10Hint "Sony SLog2 SGamut Daylight 10"
+#define kParamIDTOptionSonySLog2SGamutDaylight12 "Sony SLog2 SGamut Daylight 12"
+#define kParamIDTOptionSonySLog2SGamutDaylight12Hint "Sony SLog2 SGamut Daylight 12"
+#define kParamIDTOptionSonySLog2SGamutTungsten10 "Sony SLog2 SGamut Tungsten 10"
+#define kParamIDTOptionSonySLog2SGamutTungsten10Hint "Sony SLog2 SGamut Tungsten 10"
+#define kParamIDTOptionSonySLog2SGamutTungsten12 "Sony SLog2 SGamut Tungsten 12"
+#define kParamIDTOptionSonySLog2SGamutTungsten12Hint "Sony SLog2 SGamut Tungsten 12"
 #define kParamIDTOptionSonySLog3SGamut3 "Sony SLog3 SGamut3"
 #define kParamIDTOptionSonySLog3SGamut3Hint "Sony SLog3 SGamut3"
 #define kParamIDTOptionSonySLog3SGamut3Cine "Sony SLog3 SGamut3Cine"
 #define kParamIDTOptionSonySLog3SGamut3CineHint "Sony SLog3 SGamut3Cine"
-#define kParamIDTOptionPanasonicV35 "Panasonic V35 VLog"
-#define kParamIDTOptionPanasonicV35Hint "Panasonic V35 VLog"
-#define kParamIDTOptionCanonC500AD55 "Canon C500 A D55"
-#define kParamIDTOptionCanonC500AD55Hint "Canon CLog C500 A D55"
-#define kParamIDTOptionCanonC500ATRIG "Canon C500 A Trig"
-#define kParamIDTOptionCanonC500ATRIGHint "Canon CLog C500 A Tungsten"
 
 enum IDTEnum
 {
@@ -85,11 +152,42 @@ enum IDTEnum
     eIDTAlexaRaw800,
     eIDTADX10,
     eIDTADX16,
+    eIDTPanasonicV35,
+    eIDTREDWideGamutRGBLog3G10,
+    eIDTCanonC100AD55,
+    eIDTCanonC100ATNG,
+    eIDTCanonC100mk2AD55,
+    eIDTCanonC100mk2ATNG,
+    eIDTCanonC300AD55,
+    eIDTCanonC300ATNG,
+    eIDTCanonC500AD55,
+    eIDTCanonC500ATNG,
+    eIDTCanonC500BD55,
+    eIDTCanonC500BTNG,
+    eIDTCanonC500CinemaGamutAD55,
+    eIDTCanonC500CinemaGamutATNG,
+    eIDTCanonC500DCIP3AD55,
+    eIDTCanonC500DCIP3ATNG,
+    eIDTCanonC300mk2CanonLogBT2020DD55,
+    eIDTCanonC300mk2CanonLogBT2020DTNG,
+    eIDTCanonC300mk2CanonLogCinemaGamutCD55,
+    eIDTCanonC300mk2CanonLogCinemaGamutCTNG,
+    eIDTCanonC300mk2CanonLog2BT2020BD55,
+    eIDTCanonC300mk2CanonLog2BT2020BTNG,
+    eIDTCanonC300mk2CanonLog2CinemaGamutAD55,
+    eIDTCanonC300mk2CanonLog2CinemaGamutATNG,
+    eIDTCanonC300mk2CanonLog3BT2020FD55,
+    eIDTCanonC300mk2CanonLog3BT2020FTNG,
+    eIDTCanonC300mk2CanonLog3CinemaGamutED55,
+    eIDTCanonC300mk2CanonLog3CinemaGamutETNG,
+    eIDTSonySLog1SGamut10,
+    eIDTSonySLog1SGamut12,
+    eIDTSonySLog2SGamutDaylight10,
+    eIDTSonySLog2SGamutDaylight12,
+    eIDTSonySLog2SGamutTungsten10,
+    eIDTSonySLog2SGamutTungsten12,
     eIDTSonySLog3SGamut3,
     eIDTSonySLog3SGamut3Cine,
-    eIDTPanasonicV35,
-    eIDTCanonC500AD55,
-    eIDTCanonC500ATRIG,
 };
 
 #define kParamACESIN "ACESIN"
@@ -207,12 +305,42 @@ enum InvRRTEnum
 #define kParamODTOptionACEScctHint "ACES to ACEScct"
 #define kParamODTOptionRec709_100dim "Rec709 100nits Dim"
 #define kParamODTOptionRec709_100dimHint "Rec.709 100nits Dim"
+#define kParamODTOptionRec709_D60sim_100dim "Rec709 D60sim 100nits Dim"
+#define kParamODTOptionRec709_D60sim_100dimHint "Rec.709 D60sim 100nits Dim"
+#define kParamODTOptionSRGB_100dim "sRGB 100nits Dim"
+#define kParamODTOptionSRGB_100dimHint "sRGB 100nits Dim"
+#define kParamODTOptionSRGB_D60sim_100dim "sRGB D60sim 100nits Dim"
+#define kParamODTOptionSRGB_D60sim_100dimHint "sRGB D60sim 100nits Dim"
 #define kParamODTOptionRec2020_100dim "Rec2020 100nits Dim"
 #define kParamODTOptionRec2020_100dimHint "Rec.2020 100nits Dim"
+#define kParamODTOptionRec2020_Rec709limited_100dim "Rec2020 Rec709limited 100nits Dim"
+#define kParamODTOptionRec2020_Rec709limited_100dimHint "Rec.2020 Rec709limited 100nits Dim"
+#define kParamODTOptionRec2020_P3D65limited_100dim "Rec2020 P3D65limited 100nits Dim"
+#define kParamODTOptionRec2020_P3D65limited_100dimHint "Rec.2020 P3D65limited 100nits Dim"
 #define kParamODTOptionRec2020_ST2084_1000 "Rec2020 ST2084 1000nits"
 #define kParamODTOptionRec2020_ST2084_1000Hint "Rec.2020 ST2084 1000nits"
+#define kParamODTOptionP3DCI_48 "P3DCI 48nits"
+#define kParamODTOptionP3DCI_48Hint "P3DCI 48nits"
+#define kParamODTOptionP3DCI_D65sim_48 "P3DCI D65sim 48nits"
+#define kParamODTOptionP3DCI_D65sim_48Hint "P3DCI D65sim 48nits"
+#define kParamODTOptionP3D60_48 "P3D60 48nits"
+#define kParamODTOptionP3D60_48Hint "P3D60 48nits"
+#define kParamODTOptionP3D65_48 "P3D65 48nits"
+#define kParamODTOptionP3D65_48Hint "P3D65 48nits"
+#define kParamODTOptionP3D65_D60sim_48 "P3D65 D60sim 48nits"
+#define kParamODTOptionP3D65_D60sim_48Hint "P3D65 D60sim 48nits"
+#define kParamODTOptionP3D65_Rec709limited_48 "P3D65 Rec709limited 48nits"
+#define kParamODTOptionP3D65_Rec709limited_48Hint "P3D65 Rec709limited 48nits"
+#define kParamODTOptionDCDM "DCDM"
+#define kParamODTOptionDCDMHint "DCDM"
+#define kParamODTOptionDCDM_P3D60limited "DCDM P3D60limited"
+#define kParamODTOptionDCDM_P3D60limitedHint "DCDM P3D60limited"
+#define kParamODTOptionDCDM_P3D65limited "DCDM P3D65limited"
+#define kParamODTOptionDCDM_P3D65limitedHint "DCDM P3D65limited"
 #define kParamODTOptionRGBmonitor_100dim "RGB monitor 100nits Dim"
 #define kParamODTOptionRGBmonitor_100dimHint "RGB monitor 100nits Dim"
+#define kParamODTOptionRGBmonitor_D60sim_100dim "RGB monitor D60sim 100nits Dim"
+#define kParamODTOptionRGBmonitor_D60sim_100dimHint "RGB monitor D60sim 100nits Dim"
 #define kParamODTOptionRRTODT_P3D65_108nits_7_2nits_ST2084 "RRTODT P3D65 108nits 7.2nits ST2084"
 #define kParamODTOptionRRTODT_P3D65_108nits_7_2nits_ST2084Hint "RRTODT P3D65 108nits 7.2nits ST2084"
 #define kParamODTOptionRRTODT_Rec2020_1000nits_15nits_HLG "RRTODT Rec2020 1000nits 15nits HLG"
@@ -236,9 +364,24 @@ enum ODTEnum
     eODTACEScc,
     eODTACEScct,
     eODTRec709_100dim,
+    eODTRec709_D60sim_100dim,
+    eODTSRGB_100dim,
+    eODTSRGB_D60sim_100dim,
     eODTRec2020_100dim,
+    eODTRec2020_Rec709limited_100dim,
+	eODTRec2020_P3D65limited_100dim,
     eODTRec2020_ST2084_1000,
+    eODTP3DCI_48,
+    eODTP3DCI_D65sim_48,
+    eODTP3D60_48,
+    eODTP3D65_48,
+    eODTP3D65_D60sim_48,
+    eODTP3D65_Rec709limited_48,
+	eODTDCDM,
+	eODTDCDM_P3D60limited,
+	eODTDCDM_P3D65limited,
     eODTRGBmonitor_100dim,
+    eODTRGBmonitor_D60sim_100dim,
     eODTRRTODT_P3D65_108nits_7_2nits_ST2084,
     eODTRRTODT_Rec2020_1000nits_15nits_HLG,
     eODTRRTODT_Rec2020_1000nits_15nits_ST2084,
@@ -258,12 +401,34 @@ enum ODTEnum
 #define kParamInvODTOptionCustomHint "Custom Inverse ODT"
 #define kParamInvODTOptionRec709_100dim "Rec709 100nits Dim"
 #define kParamInvODTOptionRec709_100dimHint "Rec.709 100nits Dim"
+#define kParamInvODTOptionRec709_D60sim_100dim "Rec709 D60sim 100nits Dim"
+#define kParamInvODTOptionRec709_D60sim_100dimHint "Rec.709 D60sim 100nits Dim"
+#define kParamInvODTOptionSRGB_100dim "sRGB 100nits Dim"
+#define kParamInvODTOptionSRGB_100dimHint "sRGB 100nits Dim"
+#define kParamInvODTOptionSRGB_D60sim_100dim "sRGB D60sim 100nits Dim"
+#define kParamInvODTOptionSRGB_D60sim_100dimHint "sRGB D60sim 100nits Dim"
 #define kParamInvODTOptionRec2020_100dim "Rec2020 100nits Dim"
 #define kParamInvODTOptionRec2020_100dimHint "Rec.2020 100nits Dim"
 #define kParamInvODTOptionRec2020_ST2084_1000 "Rec2020 ST2084 1000nits"
 #define kParamInvODTOptionRec2020_ST2084_1000Hint "Rec.2020 ST2084 1000nits"
+#define kParamInvODTOptionP3DCI_48 "P3DCI 48nits"
+#define kParamInvODTOptionP3DCI_48Hint "P3DCI 48nits"
+#define kParamInvODTOptionP3DCI_D65sim_48 "P3DCI D65sim 48nits"
+#define kParamInvODTOptionP3DCI_D65sim_48Hint "P3DCI D65sim 48nits"
+#define kParamInvODTOptionP3D60_48 "P3D60 48nits"
+#define kParamInvODTOptionP3D60_48Hint "P3D60 48nits"
+#define kParamInvODTOptionP3D65_48 "P3D65 48nits"
+#define kParamInvODTOptionP3D65_48Hint "P3D65 48nits"
+#define kParamInvODTOptionP3D65_D60sim_48 "P3D65 D60sim 48nits"
+#define kParamInvODTOptionP3D65_D60sim_48Hint "P3D65 D60sim 48nits"
+#define kParamInvODTOptionDCDM "DCDM"
+#define kParamInvODTOptionDCDMHint "DCDM"
+#define kParamInvODTOptionDCDM_P3D65limited "DCDM P3D65limited"
+#define kParamInvODTOptionDCDM_P3D65limitedHint "DCDM P3D65limited"
 #define kParamInvODTOptionRGBmonitor_100dim "RGB monitor 100nits Dim"
 #define kParamInvODTOptionRGBmonitor_100dimHint "RGB monitor 100nits Dim"
+#define kParamInvODTOptionRGBmonitor_D60sim_100dim "RGB monitor D60sim 100nits Dim"
+#define kParamInvODTOptionRGBmonitor_D60sim_100dimHint "RGB monitor D60sim 100nits Dim"
 #define kParamInvODTOptionRRTODT_P3D65_108nits_7_2nits_ST2084 "RRTODT P3D65 108nits 7.2nits ST2084"
 #define kParamInvODTOptionRRTODT_P3D65_108nits_7_2nits_ST2084Hint "RRTODT P3D65 108nits 7.2nits ST2084"
 #define kParamInvODTOptionRRTODT_Rec2020_1000nits_15nits_HLG "RRTODT Rec2020 1000nits 15nits HLG"
@@ -284,9 +449,20 @@ enum InvODTEnum
     eInvODTBypass,
     eInvODTCustom,
     eInvODTRec709_100dim,
+    eInvODTRec709_D60sim_100dim,
+    eInvODTSRGB_100dim,
+    eInvODTSRGB_D60sim_100dim,
     eInvODTRec2020_100dim,
     eInvODTRec2020_ST2084_1000,
+    eInvODTP3DCI_48,
+    eInvODTP3DCI_D65sim_48,
+    eInvODTP3D60_48,
+    eInvODTP3D65_48,
+	eInvODTP3D65_D60sim_48,
+	eInvODTDCDM,
+	eInvODTDCDM_P3D65limited,
     eInvODTRGBmonitor_100dim,
+    eInvODTRGBmonitor_D60sim_100dim,
     eInvODTRRTODT_P3D65_108nits_7_2nits_ST2084,
     eInvODTRRTODT_Rec2020_1000nits_15nits_HLG,
     eInvODTRRTODT_Rec2020_1000nits_15nits_ST2084,
@@ -1821,16 +1997,78 @@ void ACESPluginFactory::describeInContext(OFX::ImageEffectDescriptor& p_Desc, OF
 	param->appendOption(kParamIDTOptionADX10, kParamIDTOptionADX10Hint);
 	assert(param->getNOptions() == (int)eIDTADX16);
 	param->appendOption(kParamIDTOptionADX16, kParamIDTOptionADX16Hint);
+	assert(param->getNOptions() == (int)eIDTPanasonicV35);
+	param->appendOption(kParamIDTOptionPanasonicV35, kParamIDTOptionPanasonicV35Hint);
+	assert(param->getNOptions() == (int)eIDTREDWideGamutRGBLog3G10);
+	param->appendOption(kParamIDTOptionREDWideGamutRGBLog3G10, kParamIDTOptionREDWideGamutRGBLog3G10Hint);
+	assert(param->getNOptions() == (int)eIDTCanonC100AD55);
+	param->appendOption(kParamIDTOptionCanonC100AD55, kParamIDTOptionCanonC100AD55Hint);
+	assert(param->getNOptions() == (int)eIDTCanonC100ATNG);
+	param->appendOption(kParamIDTOptionCanonC100ATNG, kParamIDTOptionCanonC100ATNGHint);
+	assert(param->getNOptions() == (int)eIDTCanonC100mk2AD55);
+	param->appendOption(kParamIDTOptionCanonC100mk2AD55, kParamIDTOptionCanonC100mk2AD55Hint);
+	assert(param->getNOptions() == (int)eIDTCanonC100mk2ATNG);
+	param->appendOption(kParamIDTOptionCanonC100mk2ATNG, kParamIDTOptionCanonC100mk2ATNGHint);
+	assert(param->getNOptions() == (int)eIDTCanonC300AD55);
+	param->appendOption(kParamIDTOptionCanonC300AD55, kParamIDTOptionCanonC300AD55Hint);
+	assert(param->getNOptions() == (int)eIDTCanonC300ATNG);
+	param->appendOption(kParamIDTOptionCanonC300ATNG, kParamIDTOptionCanonC300ATNGHint);
+	assert(param->getNOptions() == (int)eIDTCanonC500AD55);
+	param->appendOption(kParamIDTOptionCanonC500AD55, kParamIDTOptionCanonC500AD55Hint);
+	assert(param->getNOptions() == (int)eIDTCanonC500ATNG);
+	param->appendOption(kParamIDTOptionCanonC500ATNG, kParamIDTOptionCanonC500ATNGHint);
+	assert(param->getNOptions() == (int)eIDTCanonC500BD55);
+	param->appendOption(kParamIDTOptionCanonC500BD55, kParamIDTOptionCanonC500BD55Hint);
+	assert(param->getNOptions() == (int)eIDTCanonC500BTNG);
+	param->appendOption(kParamIDTOptionCanonC500BTNG, kParamIDTOptionCanonC500BTNGHint);
+	assert(param->getNOptions() == (int)eIDTCanonC500CinemaGamutAD55);
+	param->appendOption(kParamIDTOptionCanonC500CinemaGamutAD55, kParamIDTOptionCanonC500CinemaGamutAD55Hint);
+	assert(param->getNOptions() == (int)eIDTCanonC500CinemaGamutATNG);
+	param->appendOption(kParamIDTOptionCanonC500CinemaGamutATNG, kParamIDTOptionCanonC500CinemaGamutATNGHint);
+	assert(param->getNOptions() == (int)eIDTCanonC500DCIP3AD55);
+	param->appendOption(kParamIDTOptionCanonC500DCIP3AD55, kParamIDTOptionCanonC500DCIP3AD55Hint);
+	assert(param->getNOptions() == (int)eIDTCanonC500DCIP3ATNG);
+	param->appendOption(kParamIDTOptionCanonC500DCIP3ATNG, kParamIDTOptionCanonC500DCIP3ATNGHint);
+	assert(param->getNOptions() == (int)eIDTCanonC300mk2CanonLogBT2020DD55);
+	param->appendOption(kParamIDTOptionCanonC300mk2CanonLogBT2020DD55, kParamIDTOptionCanonC300mk2CanonLogBT2020DD55Hint);
+	assert(param->getNOptions() == (int)eIDTCanonC300mk2CanonLogBT2020DTNG);
+	param->appendOption(kParamIDTOptionCanonC300mk2CanonLogBT2020DTNG, kParamIDTOptionCanonC300mk2CanonLogBT2020DTNGHint);
+	assert(param->getNOptions() == (int)eIDTCanonC300mk2CanonLogCinemaGamutCD55);
+	param->appendOption(kParamIDTOptionCanonC300mk2CanonLogCinemaGamutCD55, kParamIDTOptionCanonC300mk2CanonLogCinemaGamutCD55Hint);
+	assert(param->getNOptions() == (int)eIDTCanonC300mk2CanonLogCinemaGamutCTNG);
+	param->appendOption(kParamIDTOptionCanonC300mk2CanonLogCinemaGamutCTNG, kParamIDTOptionCanonC300mk2CanonLogCinemaGamutCTNGHint);
+	assert(param->getNOptions() == (int)eIDTCanonC300mk2CanonLog2BT2020BD55);
+	param->appendOption(kParamIDTOptionCanonC300mk2CanonLog2BT2020BD55, kParamIDTOptionCanonC300mk2CanonLog2BT2020BD55Hint);
+	assert(param->getNOptions() == (int)eIDTCanonC300mk2CanonLog2BT2020BTNG);
+	param->appendOption(kParamIDTOptionCanonC300mk2CanonLog2BT2020BTNG, kParamIDTOptionCanonC300mk2CanonLog2BT2020BTNGHint);
+	assert(param->getNOptions() == (int)eIDTCanonC300mk2CanonLog2CinemaGamutAD55);
+	param->appendOption(kParamIDTOptionCanonC300mk2CanonLog2CinemaGamutAD55, kParamIDTOptionCanonC300mk2CanonLog2CinemaGamutAD55Hint);
+	assert(param->getNOptions() == (int)eIDTCanonC300mk2CanonLog2CinemaGamutATNG);
+	param->appendOption(kParamIDTOptionCanonC300mk2CanonLog2CinemaGamutATNG, kParamIDTOptionCanonC300mk2CanonLog2CinemaGamutATNGHint);
+	assert(param->getNOptions() == (int)eIDTCanonC300mk2CanonLog3BT2020FD55);
+	param->appendOption(kParamIDTOptionCanonC300mk2CanonLog3BT2020FD55, kParamIDTOptionCanonC300mk2CanonLog3BT2020FD55Hint);
+	assert(param->getNOptions() == (int)eIDTCanonC300mk2CanonLog3BT2020FTNG);
+	param->appendOption(kParamIDTOptionCanonC300mk2CanonLog3BT2020FTNG, kParamIDTOptionCanonC300mk2CanonLog3BT2020FTNGHint);
+	assert(param->getNOptions() == (int)eIDTCanonC300mk2CanonLog3CinemaGamutED55);
+	param->appendOption(kParamIDTOptionCanonC300mk2CanonLog3CinemaGamutED55, kParamIDTOptionCanonC300mk2CanonLog3CinemaGamutED55Hint);
+	assert(param->getNOptions() == (int)eIDTCanonC300mk2CanonLog3CinemaGamutETNG);
+	param->appendOption(kParamIDTOptionCanonC300mk2CanonLog3CinemaGamutETNG, kParamIDTOptionCanonC300mk2CanonLog3CinemaGamutETNGHint);
+	assert(param->getNOptions() == (int)eIDTSonySLog1SGamut10);
+	param->appendOption(kParamIDTOptionSonySLog1SGamut10, kParamIDTOptionSonySLog1SGamut10Hint);
+	assert(param->getNOptions() == (int)eIDTSonySLog1SGamut12);
+	param->appendOption(kParamIDTOptionSonySLog1SGamut12, kParamIDTOptionSonySLog1SGamut12Hint);
+	assert(param->getNOptions() == (int)eIDTSonySLog2SGamutDaylight10);
+	param->appendOption(kParamIDTOptionSonySLog2SGamutDaylight10, kParamIDTOptionSonySLog2SGamutDaylight10Hint);
+	assert(param->getNOptions() == (int)eIDTSonySLog2SGamutDaylight12);
+	param->appendOption(kParamIDTOptionSonySLog2SGamutDaylight12, kParamIDTOptionSonySLog2SGamutDaylight12Hint);
+	assert(param->getNOptions() == (int)eIDTSonySLog2SGamutTungsten10);
+	param->appendOption(kParamIDTOptionSonySLog2SGamutTungsten10, kParamIDTOptionSonySLog2SGamutTungsten10Hint);
+	assert(param->getNOptions() == (int)eIDTSonySLog2SGamutTungsten12);
+	param->appendOption(kParamIDTOptionSonySLog2SGamutTungsten12, kParamIDTOptionSonySLog2SGamutTungsten12Hint);
 	assert(param->getNOptions() == (int)eIDTSonySLog3SGamut3);
 	param->appendOption(kParamIDTOptionSonySLog3SGamut3, kParamIDTOptionSonySLog3SGamut3Hint);
 	assert(param->getNOptions() == (int)eIDTSonySLog3SGamut3Cine);
 	param->appendOption(kParamIDTOptionSonySLog3SGamut3Cine, kParamIDTOptionSonySLog3SGamut3CineHint);
-	assert(param->getNOptions() == (int)eIDTPanasonicV35);
-	param->appendOption(kParamIDTOptionPanasonicV35, kParamIDTOptionPanasonicV35Hint);
-	assert(param->getNOptions() == (int)eIDTCanonC500AD55);
-	param->appendOption(kParamIDTOptionCanonC500AD55, kParamIDTOptionCanonC500AD55Hint);
-	assert(param->getNOptions() == (int)eIDTCanonC500ATRIG);
-	param->appendOption(kParamIDTOptionCanonC500ATRIG, kParamIDTOptionCanonC500ATRIGHint);
 	param->setDefault( (int)eIDTBypass );
 	param->setAnimates(false);
 	param->setIsSecretAndDisabled(false);
@@ -2127,12 +2365,42 @@ void ACESPluginFactory::describeInContext(OFX::ImageEffectDescriptor& p_Desc, OF
 	param->appendOption(kParamODTOptionACEScct, kParamODTOptionACEScctHint);
 	assert(param->getNOptions() == (int)eODTRec709_100dim);
 	param->appendOption(kParamODTOptionRec709_100dim, kParamODTOptionRec709_100dimHint);
+	assert(param->getNOptions() == (int)eODTRec709_D60sim_100dim);
+	param->appendOption(kParamODTOptionRec709_D60sim_100dim, kParamODTOptionRec709_D60sim_100dimHint);
+	assert(param->getNOptions() == (int)eODTSRGB_100dim);
+	param->appendOption(kParamODTOptionSRGB_100dim, kParamODTOptionSRGB_100dimHint);
+	assert(param->getNOptions() == (int)eODTSRGB_D60sim_100dim);
+	param->appendOption(kParamODTOptionSRGB_D60sim_100dim, kParamODTOptionSRGB_D60sim_100dimHint);
 	assert(param->getNOptions() == (int)eODTRec2020_100dim);
 	param->appendOption(kParamODTOptionRec2020_100dim, kParamODTOptionRec2020_100dimHint);
+	assert(param->getNOptions() == (int)eODTRec2020_Rec709limited_100dim);
+	param->appendOption(kParamODTOptionRec2020_Rec709limited_100dim, kParamODTOptionRec2020_Rec709limited_100dimHint);
+	assert(param->getNOptions() == (int)eODTRec2020_P3D65limited_100dim);
+	param->appendOption(kParamODTOptionRec2020_P3D65limited_100dim, kParamODTOptionRec2020_P3D65limited_100dimHint);
 	assert(param->getNOptions() == (int)eODTRec2020_ST2084_1000);
 	param->appendOption(kParamODTOptionRec2020_ST2084_1000, kParamODTOptionRec2020_ST2084_1000Hint);
+	assert(param->getNOptions() == (int)eODTP3DCI_48);
+	param->appendOption(kParamODTOptionP3DCI_48, kParamODTOptionP3DCI_48Hint);
+	assert(param->getNOptions() == (int)eODTP3DCI_D65sim_48);
+	param->appendOption(kParamODTOptionP3DCI_D65sim_48, kParamODTOptionP3DCI_D65sim_48Hint);
+	assert(param->getNOptions() == (int)eODTP3D60_48);
+	param->appendOption(kParamODTOptionP3D60_48, kParamODTOptionP3D60_48Hint);
+	assert(param->getNOptions() == (int)eODTP3D65_48);
+	param->appendOption(kParamODTOptionP3D65_48, kParamODTOptionP3D65_48Hint);
+	assert(param->getNOptions() == (int)eODTP3D65_D60sim_48);
+	param->appendOption(kParamODTOptionP3D65_D60sim_48, kParamODTOptionP3D65_D60sim_48Hint);
+	assert(param->getNOptions() == (int)eODTP3D65_Rec709limited_48);
+	param->appendOption(kParamODTOptionP3D65_Rec709limited_48, kParamODTOptionP3D65_Rec709limited_48Hint);
+	assert(param->getNOptions() == (int)eODTDCDM);
+	param->appendOption(kParamODTOptionDCDM, kParamODTOptionDCDMHint);
+	assert(param->getNOptions() == (int)eODTDCDM_P3D60limited);
+	param->appendOption(kParamODTOptionDCDM_P3D60limited, kParamODTOptionDCDM_P3D60limitedHint);
+	assert(param->getNOptions() == (int)eODTDCDM_P3D65limited);
+	param->appendOption(kParamODTOptionDCDM_P3D65limited, kParamODTOptionDCDM_P3D65limitedHint);
 	assert(param->getNOptions() == (int)eODTRGBmonitor_100dim);
 	param->appendOption(kParamODTOptionRGBmonitor_100dim, kParamODTOptionRGBmonitor_100dimHint);
+	assert(param->getNOptions() == (int)eODTRGBmonitor_D60sim_100dim);
+	param->appendOption(kParamODTOptionRGBmonitor_D60sim_100dim, kParamODTOptionRGBmonitor_D60sim_100dimHint);
 	assert(param->getNOptions() == (int)eODTRRTODT_P3D65_108nits_7_2nits_ST2084);
 	param->appendOption(kParamODTOptionRRTODT_P3D65_108nits_7_2nits_ST2084, kParamODTOptionRRTODT_P3D65_108nits_7_2nits_ST2084Hint);
 	assert(param->getNOptions() == (int)eODTRRTODT_Rec2020_1000nits_15nits_HLG);
@@ -2163,12 +2431,34 @@ void ACESPluginFactory::describeInContext(OFX::ImageEffectDescriptor& p_Desc, OF
 	param->appendOption(kParamInvODTOptionCustom, kParamInvODTOptionCustomHint);
 	assert(param->getNOptions() == (int)eInvODTRec709_100dim);
 	param->appendOption(kParamInvODTOptionRec709_100dim, kParamInvODTOptionRec709_100dimHint);
+	assert(param->getNOptions() == (int)eInvODTRec709_D60sim_100dim);
+	param->appendOption(kParamInvODTOptionRec709_D60sim_100dim, kParamInvODTOptionRec709_D60sim_100dimHint);
+	assert(param->getNOptions() == (int)eInvODTSRGB_100dim);
+	param->appendOption(kParamInvODTOptionSRGB_100dim, kParamInvODTOptionSRGB_100dimHint);
+	assert(param->getNOptions() == (int)eInvODTSRGB_D60sim_100dim);
+	param->appendOption(kParamInvODTOptionSRGB_D60sim_100dim, kParamInvODTOptionSRGB_D60sim_100dimHint);
 	assert(param->getNOptions() == (int)eInvODTRec2020_100dim);
 	param->appendOption(kParamInvODTOptionRec2020_100dim, kParamInvODTOptionRec2020_100dimHint);
 	assert(param->getNOptions() == (int)eInvODTRec2020_ST2084_1000);
 	param->appendOption(kParamInvODTOptionRec2020_ST2084_1000, kParamInvODTOptionRec2020_ST2084_1000Hint);
+	assert(param->getNOptions() == (int)eInvODTP3DCI_48);
+	param->appendOption(kParamInvODTOptionP3DCI_48, kParamInvODTOptionP3DCI_48Hint);
+	assert(param->getNOptions() == (int)eInvODTP3DCI_D65sim_48);
+	param->appendOption(kParamInvODTOptionP3DCI_D65sim_48, kParamInvODTOptionP3DCI_D65sim_48Hint);
+	assert(param->getNOptions() == (int)eInvODTP3D60_48);
+	param->appendOption(kParamInvODTOptionP3D60_48, kParamInvODTOptionP3D60_48Hint);
+	assert(param->getNOptions() == (int)eInvODTP3D65_48);
+	param->appendOption(kParamInvODTOptionP3D65_48, kParamInvODTOptionP3D65_48Hint);
+	assert(param->getNOptions() == (int)eInvODTP3D65_D60sim_48);
+	param->appendOption(kParamInvODTOptionP3D65_D60sim_48, kParamInvODTOptionP3D65_D60sim_48Hint);
+	assert(param->getNOptions() == (int)eInvODTDCDM);
+	param->appendOption(kParamInvODTOptionDCDM, kParamInvODTOptionDCDMHint);
+	assert(param->getNOptions() == (int)eInvODTDCDM_P3D65limited);
+	param->appendOption(kParamInvODTOptionDCDM_P3D65limited, kParamInvODTOptionDCDM_P3D65limitedHint);
 	assert(param->getNOptions() == (int)eInvODTRGBmonitor_100dim);
 	param->appendOption(kParamInvODTOptionRGBmonitor_100dim, kParamInvODTOptionRGBmonitor_100dimHint);
+	assert(param->getNOptions() == (int)eInvODTRGBmonitor_D60sim_100dim);
+	param->appendOption(kParamInvODTOptionRGBmonitor_D60sim_100dim, kParamInvODTOptionRGBmonitor_D60sim_100dimHint);
 	assert(param->getNOptions() == (int)eInvODTRRTODT_P3D65_108nits_7_2nits_ST2084);
 	param->appendOption(kParamInvODTOptionRRTODT_P3D65_108nits_7_2nits_ST2084, kParamInvODTOptionRRTODT_P3D65_108nits_7_2nits_ST2084Hint);
 	assert(param->getNOptions() == (int)eInvODTRRTODT_Rec2020_1000nits_15nits_HLG);

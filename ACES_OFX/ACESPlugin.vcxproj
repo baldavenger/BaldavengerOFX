@@ -81,10 +81,10 @@
     </Link>
     <PostBuildEvent>
       <Message>Creating bundle...</Message>
-      <Command>if not exist "$(OutDir)ACESPlugin.ofx.bundle\Contents\Resources" mkdir "$(OutDir)ACESPlugin.ofx.bundle\Contents\Resources"
-       copy "(OutDir)../../OpenFX.Yo.ACES.png" "$(OutDir)ACESPlugin.ofx.bundle\Contents\Resources"
-if not exist "$(OutDir)ACESPlugin.ofx.bundle\Contents\Win64" mkdir "$(OutDir)ACESPlugin.ofx.bundle\Contents\Win64"
-copy /Y "$(TargetPath)" /B "$(OutDir)ACESPlugin.ofx.bundle\Contents\Win64\ACESPlugin.ofx" /B
+      <Command>if not exist "$(OutDir)ACES.ofx.bundle\Contents\Resources" mkdir "$(OutDir)ACES.ofx.bundle\Contents\Resources"
+       copy "(OutDir)../../OpenFX.Yo.ACES.png" "$(OutDir)ACES.ofx.bundle\Contents\Resources"
+if not exist "$(OutDir)ACES.ofx.bundle\Contents\Win64" mkdir "$(OutDir)ACES.ofx.bundle\Contents\Win64"
+copy /Y "$(TargetPath)" /B "$(OutDir)ACES.ofx.bundle\Contents\Win64\ACES.ofx" /B
 </Command>
     </PostBuildEvent>
     <CudaCompile>
@@ -113,10 +113,10 @@ copy /Y "$(TargetPath)" /B "$(OutDir)ACESPlugin.ofx.bundle\Contents\Win64\ACESPl
     </Link>
     <PostBuildEvent>
       <Message>Creating bundle...</Message>
-      <Command>if not exist "$(OutDir)ACESPlugin.ofx.bundle\Contents\Resources" mkdir "$(OutDir)ACESPlugin.ofx.bundle\Contents\Resources"
-      copy "(OutDir)../../OpenFX.Yo.ACES.png" "$(OutDir)ACESPlugin.ofx.bundle\Contents\Resources"
-if not exist "$(OutDir)ACESPlugin.ofx.bundle\Contents\Win64" mkdir "$(OutDir)ACESPlugin.ofx.bundle\Contents\Win64"
-copy /Y "$(TargetPath)" /B "$(OutDir)ACESPlugin.ofx.bundle\Contents\Win64\ACESPlugin.ofx" /B
+      <Command>if not exist "$(OutDir)ACES.ofx.bundle\Contents\Resources" mkdir "$(OutDir)ACES.ofx.bundle\Contents\Resources"
+      copy "(OutDir)../../OpenFX.Yo.ACES.png" "$(OutDir)ACES.ofx.bundle\Contents\Resources"
+if not exist "$(OutDir)ACES.ofx.bundle\Contents\Win64" mkdir "$(OutDir)ACES.ofx.bundle\Contents\Win64"
+copy /Y "$(TargetPath)" /B "$(OutDir)ACES.ofx.bundle\Contents\Win64\ACES.ofx" /B
 </Command>
     </PostBuildEvent>
     <CudaCompile>
@@ -133,7 +133,6 @@ copy /Y "$(TargetPath)" /B "$(OutDir)ACESPlugin.ofx.bundle\Contents\Win64\ACESPl
     <ClCompile Include="..\openfx\Support\Library\ofxsProperty.cpp" />
     <ClCompile Include="..\openfx\Support\Library\ofxsPropertyValidation.cpp" />
     <ClCompile Include="ACESPlugin.cpp" />
-    <ClCompile Include="ACESOpenCLKernel.cpp" />
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="ACESCudaKernel.cu" />
