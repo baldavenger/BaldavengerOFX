@@ -351,10 +351,10 @@ enum InvRRTEnum
 #define kParamODTOptionRRTODT_Rec2020_2000nits_15nits_ST2084Hint "RRTODT Rec.2020 2000nits 15nits ST2084"
 #define kParamODTOptionRRTODT_Rec2020_4000nits_15nits_ST2084 "RRTODT Rec2020 4000nits 15nits ST2084"
 #define kParamODTOptionRRTODT_Rec2020_4000nits_15nits_ST2084Hint "RRTODT Rec.2020 4000nits 15nits ST2084"
-#define kParamODTOptionRRTODT_Rec709_100nits_15nits_BT1886 "RRTODT Rec709 100nits 15nits BT1886"
-#define kParamODTOptionRRTODT_Rec709_100nits_15nits_BT1886Hint "RRTODT Rec.709 100nits 15nits BT1886"
-#define kParamODTOptionRRTODT_Rec709_100nits_15nits_sRGB "RRTODT Rec709 100nits 15nits sRGB"
-#define kParamODTOptionRRTODT_Rec709_100nits_15nits_sRGBHint "RRTODT Rec.709 100nits 15nits sRGB"
+#define kParamODTOptionRRTODT_Rec709_100nits_10nits_BT1886 "RRTODT Rec709 100nits 10nits BT1886"
+#define kParamODTOptionRRTODT_Rec709_100nits_10nits_BT1886Hint "RRTODT Rec.709 100nits 10nits BT1886"
+#define kParamODTOptionRRTODT_Rec709_100nits_10nits_sRGB "RRTODT Rec709 100nits 10nits sRGB"
+#define kParamODTOptionRRTODT_Rec709_100nits_10nits_sRGBHint "RRTODT Rec.709 100nits 10nits sRGB"
 
 
 enum ODTEnum
@@ -387,8 +387,8 @@ enum ODTEnum
     eODTRRTODT_Rec2020_1000nits_15nits_ST2084,
     eODTRRTODT_Rec2020_2000nits_15nits_ST2084,
     eODTRRTODT_Rec2020_4000nits_15nits_ST2084,
-    eODTRRTODT_Rec709_100nits_15nits_BT1886,
-    eODTRRTODT_Rec709_100nits_15nits_sRGB,
+    eODTRRTODT_Rec709_100nits_10nits_BT1886,
+    eODTRRTODT_Rec709_100nits_10nits_sRGB,
 };
 
 
@@ -439,10 +439,10 @@ enum ODTEnum
 #define kParamInvODTOptionRRTODT_Rec2020_2000nits_15nits_ST2084Hint "RRTODT Rec2020 2000nits 15nits ST2084"
 #define kParamInvODTOptionRRTODT_Rec2020_4000nits_15nits_ST2084 "RRTODT Rec2020 4000nits 15nits ST2084"
 #define kParamInvODTOptionRRTODT_Rec2020_4000nits_15nits_ST2084Hint "RRTODT Rec2020 4000nits 15nits ST2084"
-#define kParamInvODTOptionRRTODT_Rec709_100nits_15nits_BT1886 "RRTODT Rec709 100nits 15nits BT1886"
-#define kParamInvODTOptionRRTODT_Rec709_100nits_15nits_BT1886Hint "RRTODT Rec.709 100nits 15nits BT1886"
-#define kParamInvODTOptionRRTODT_Rec709_100nits_15nits_sRGB "RRTODT Rec709 100nits 15nits sRGB"
-#define kParamInvODTOptionRRTODT_Rec709_100nits_15nits_sRGBHint "RRTODT Rec.709 100nits 15nits sRGB"
+#define kParamInvODTOptionRRTODT_Rec709_100nits_10nits_BT1886 "RRTODT Rec709 100nits 10nits BT1886"
+#define kParamInvODTOptionRRTODT_Rec709_100nits_10nits_BT1886Hint "RRTODT Rec.709 100nits 10nits BT1886"
+#define kParamInvODTOptionRRTODT_Rec709_100nits_10nits_sRGB "RRTODT Rec709 100nits 10nits sRGB"
+#define kParamInvODTOptionRRTODT_Rec709_100nits_10nits_sRGBHint "RRTODT Rec.709 100nits 10nits sRGB"
 
 enum InvODTEnum
 {
@@ -468,8 +468,8 @@ enum InvODTEnum
     eInvODTRRTODT_Rec2020_1000nits_15nits_ST2084,
     eInvODTRRTODT_Rec2020_2000nits_15nits_ST2084,
     eInvODTRRTODT_Rec2020_4000nits_15nits_ST2084,
-    eInvODTRRTODT_Rec709_100nits_15nits_BT1886,
-    eInvODTRRTODT_Rec709_100nits_15nits_sRGB,
+    eInvODTRRTODT_Rec709_100nits_10nits_BT1886,
+    eInvODTRRTODT_Rec709_100nits_10nits_sRGB,
 };
 
 #define kParamDISPLAY "DISPLAY"
@@ -1785,12 +1785,12 @@ void ACESPlugin::changedParam(const OFX::InstanceChangedArgs& p_Args, const std:
 	"break; \n" \
 	"case 28: \n" \
 	"{ \n" \
-	"aces = RRTODT_Rec709_100nits_15nits_BT1886(aces); \n" \
+	"aces = RRTODT_Rec709_100nits_10nits_BT1886(aces); \n" \
 	"} \n" \
 	"break; \n" \
 	"case 29: \n" \
 	"{ \n" \
-	"aces = RRTODT_Rec709_100nits_15nits_sRGB(aces); \n" \
+	"aces = RRTODT_Rec709_100nits_10nits_sRGB(aces); \n" \
 	"} \n" \
 	"} \n" \
 	" \n" \
@@ -1928,12 +1928,12 @@ void ACESPlugin::changedParam(const OFX::InstanceChangedArgs& p_Args, const std:
 	"break; \n" \
 	"case 22: \n" \
 	"{ \n" \
-	"aces = InvRRTODT_Rec709_100nits_15nits_BT1886(aces); \n" \
+	"aces = InvRRTODT_Rec709_100nits_10nits_BT1886(aces); \n" \
 	"} \n" \
 	"break; \n" \
 	"case 23: \n" \
 	"{ \n" \
-	"aces = InvRRTODT_Rec709_100nits_15nits_sRGB(aces); \n" \
+	"aces = InvRRTODT_Rec709_100nits_10nits_sRGB(aces); \n" \
 	"} \n" \
 	"} \n" \
 	" \n" \
@@ -2663,10 +2663,10 @@ void ACESPluginFactory::describeInContext(OFX::ImageEffectDescriptor& p_Desc, OF
 	param->appendOption(kParamODTOptionRRTODT_Rec2020_2000nits_15nits_ST2084, kParamODTOptionRRTODT_Rec2020_2000nits_15nits_ST2084Hint);
 	assert(param->getNOptions() == (int)eODTRRTODT_Rec2020_4000nits_15nits_ST2084);
 	param->appendOption(kParamODTOptionRRTODT_Rec2020_4000nits_15nits_ST2084, kParamODTOptionRRTODT_Rec2020_4000nits_15nits_ST2084Hint);
-	assert(param->getNOptions() == (int)eODTRRTODT_Rec709_100nits_15nits_BT1886);
-	param->appendOption(kParamODTOptionRRTODT_Rec709_100nits_15nits_BT1886, kParamODTOptionRRTODT_Rec709_100nits_15nits_BT1886Hint);
-	assert(param->getNOptions() == (int)eODTRRTODT_Rec709_100nits_15nits_sRGB);
-	param->appendOption(kParamODTOptionRRTODT_Rec709_100nits_15nits_sRGB, kParamODTOptionRRTODT_Rec709_100nits_15nits_sRGBHint);
+	assert(param->getNOptions() == (int)eODTRRTODT_Rec709_100nits_10nits_BT1886);
+	param->appendOption(kParamODTOptionRRTODT_Rec709_100nits_10nits_BT1886, kParamODTOptionRRTODT_Rec709_100nits_10nits_BT1886Hint);
+	assert(param->getNOptions() == (int)eODTRRTODT_Rec709_100nits_10nits_sRGB);
+	param->appendOption(kParamODTOptionRRTODT_Rec709_100nits_10nits_sRGB, kParamODTOptionRRTODT_Rec709_100nits_10nits_sRGBHint);
 	param->setDefault( (int)eODTBypass );
 	param->setAnimates(false);
 	param->setIsSecretAndDisabled(false);
@@ -2721,10 +2721,10 @@ void ACESPluginFactory::describeInContext(OFX::ImageEffectDescriptor& p_Desc, OF
 	param->appendOption(kParamInvODTOptionRRTODT_Rec2020_2000nits_15nits_ST2084, kParamInvODTOptionRRTODT_Rec2020_2000nits_15nits_ST2084Hint);
 	assert(param->getNOptions() == (int)eInvODTRRTODT_Rec2020_4000nits_15nits_ST2084);
 	param->appendOption(kParamInvODTOptionRRTODT_Rec2020_4000nits_15nits_ST2084, kParamInvODTOptionRRTODT_Rec2020_4000nits_15nits_ST2084Hint);
-	assert(param->getNOptions() == (int)eInvODTRRTODT_Rec709_100nits_15nits_BT1886);
-	param->appendOption(kParamInvODTOptionRRTODT_Rec709_100nits_15nits_BT1886, kParamInvODTOptionRRTODT_Rec709_100nits_15nits_BT1886Hint);
-	assert(param->getNOptions() == (int)eInvODTRRTODT_Rec709_100nits_15nits_sRGB);
-	param->appendOption(kParamInvODTOptionRRTODT_Rec709_100nits_15nits_sRGB, kParamInvODTOptionRRTODT_Rec709_100nits_15nits_sRGBHint);
+	assert(param->getNOptions() == (int)eInvODTRRTODT_Rec709_100nits_10nits_BT1886);
+	param->appendOption(kParamInvODTOptionRRTODT_Rec709_100nits_10nits_BT1886, kParamInvODTOptionRRTODT_Rec709_100nits_10nits_BT1886Hint);
+	assert(param->getNOptions() == (int)eInvODTRRTODT_Rec709_100nits_10nits_sRGB);
+	param->appendOption(kParamInvODTOptionRRTODT_Rec709_100nits_10nits_sRGB, kParamInvODTOptionRRTODT_Rec709_100nits_10nits_sRGBHint);
 	param->setDefault( (int)eInvODTBypass );
 	param->setAnimates(false);
 	param->setIsSecretAndDisabled(true);

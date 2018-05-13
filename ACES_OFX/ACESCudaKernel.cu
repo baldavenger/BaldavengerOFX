@@ -546,12 +546,12 @@ aces = RRTODT_Rec2020_4000nits_15nits_ST2084(aces);
 break;
 case 28:
 {
-aces = RRTODT_Rec709_100nits_15nits_BT1886(aces);
+aces = RRTODT_Rec709_100nits_10nits_BT1886(aces);
 }
 break;
 case 29:
 {
-aces = RRTODT_Rec709_100nits_15nits_sRGB(aces);
+aces = RRTODT_Rec709_100nits_10nits_sRGB(aces);
 }
 }
 
@@ -686,12 +686,12 @@ aces = InvRRTODT_Rec2020_4000nits_15nits_ST2084(aces);
 break;
 case 22:
 {
-aces = InvRRTODT_Rec709_100nits_15nits_BT1886(aces);
+aces = InvRRTODT_Rec709_100nits_10nits_BT1886(aces);
 }
 break;
 case 23:
 {
-aces = InvRRTODT_Rec709_100nits_15nits_sRGB(aces);
+aces = InvRRTODT_Rec709_100nits_10nits_sRGB(aces);
 }
 }
 
