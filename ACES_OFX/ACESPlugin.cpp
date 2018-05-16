@@ -1264,7 +1264,7 @@ void ACESPlugin::changedParam(const OFX::InstanceChangedArgs& p_Args, const std:
 	"if(Direction == 0) \n" \
 	"{ \n" \
 	" \n" \
-	"switch (p_IDT) \n" \
+	"switch (Idt) \n" \
 	"{ \n" \
 	"case 0: \n" \
 	"{ \n" \
