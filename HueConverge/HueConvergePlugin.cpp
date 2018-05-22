@@ -34,6 +34,23 @@ using std::string;
 #define kSupportsMultiResolution false
 #define kSupportsMultipleClipPARs false
 
+#define kParamHueMedian "hueMedian"
+#define kParamHueMedianLabel "hue median"
+#define kParamHueMedianHint "apply median filter to hue channel"
+#define kParamHueMedianOptionOff "Off"
+#define kParamHueMedianOptionOffHint "no median filter"
+#define kParamHueMedianOption3x3 "3x3 Median Filter"
+#define kParamHueMedianOption3x3Hint "apply 3x3 median filter to hue channel"
+#define kParamHueMedianOption5x5 "5x5 Median Filter"
+#define kParamHueMedianOption5x5Hint "apply 5x5 median filter to hue channel"
+
+enum HueMedianEnum
+{
+    eHueMedianOff,
+    eHueMedian3x3,
+    eHueMedian5x5,
+};
+
 #define kParamLuminanceMath "luminanceMath"
 #define kParamLuminanceMathLabel "luma math"
 #define kParamLuminanceMathHint "Formula used to compute luminance from RGB values"
@@ -64,21 +81,45 @@ enum LuminanceMathEnum
     eLuminanceMathMaximum,
 };
 
+#define kParamIsolate "isolate"
+#define kParamIsolateLabel "isolate hue range"
+#define kParamIsolateHint "isolate hue range"
+#define kParamIsolateOptionOff "Off"
+#define kParamIsolateOptionOffHint "off"
+#define kParamIsolateOptionHue1 "Isolate Hue1 Range"
+#define kParamIsolateOptionHue1Hint "isolate hue1 range"
+#define kParamIsolateOptionHue2 "Isolate Hue2 Range"
+#define kParamIsolateOptionHue2Hint "isolate hue2 range"
+#define kParamIsolateOptionHue3 "Isolate Hue3 Range"
+#define kParamIsolateOptionHue3Hint "isolate hue1 range"
+
+enum IsolateEnum
+{
+    eIsolateOff,
+    eIsolateHue1,
+    eIsolateHue2,
+    eIsolateHue3,
+};
+
 #define kParamDisplayAlpha "displayAlpha"
 #define kParamDisplayAlphaLabel "display alpha"
 #define kParamDisplayAlphaHint "display process specific alpha channel "
 #define kParamDisplayAlphaOptionOff "Off"
-#define kParamDisplayAlphaOptionOffHint "Off"
+#define kParamDisplayAlphaOptionOffHint "off"
 #define kParamDisplayAlphaOptionHue1 "Hue One Luma and Saturation limiter"
-#define kParamDisplayAlphaOptionHue1Hint "Hue One Luma and Saturation limiter"
+#define kParamDisplayAlphaOptionHue1Hint "hue one luma and saturation limiter"
 #define kParamDisplayAlphaOptionHue2 "Hue Two Luma and Saturation limiter"
-#define kParamDisplayAlphaOptionHue2Hint "Hue Two Luma and Saturation limiter"
+#define kParamDisplayAlphaOptionHue2Hint "hue two luma and saturation limiter"
 #define kParamDisplayAlphaOptionHue3 "Hue Three Luma and Saturation limiter"
-#define kParamDisplayAlphaOptionHue3Hint "Hue Three Luma and Saturation limiter"
+#define kParamDisplayAlphaOptionHue3Hint "hue three luma and saturation limiter"
 #define kParamDisplayAlphaOptionSatSoft "Saturation Soft-Clip Luma limiter"
-#define kParamDisplayAlphaOptionSatSoftHint "Saturation Soft-Clip Luma limiter"
+#define kParamDisplayAlphaOptionSatSoftHint "saturation soft-clip luma limiter"
+#define kParamDisplayAlphaOptionHue "Hue Channel"
+#define kParamDisplayAlphaOptionHueHint "hue channel"
+#define kParamDisplayAlphaOptionSat "Saturation Channel"
+#define kParamDisplayAlphaOptionSatHint "saturation channel"
 #define kParamDisplayAlphaOptionLuma "Luma Channel"
-#define kParamDisplayAlphaOptionLumaHint "Luma Channel based on co-efficients"
+#define kParamDisplayAlphaOptionLumaHint "luma channel based on co-efficients"
 
 enum DisplayAlphaEnum
 {
@@ -87,6 +128,8 @@ enum DisplayAlphaEnum
     eDisplayAlphaHue2,
     eDisplayAlphaHue3,
     eDisplayAlphaSatSoft,
+    eDisplayAlphaHue,
+    eDisplayAlphaSat,
     eDisplayAlphaLuma,
 };
 
@@ -173,8 +216,8 @@ public:
     virtual void multiThreadProcessImages(OfxRectI p_ProcWindow);
 
     void setSrcImg(OFX::Image* p_SrcImg);
-	void setScales(int *p_Switch, float *p_Log, float *p_Sat, float *p_Hue1, 
-	float *p_Hue2, float *p_Hue3, int p_Display, float* p_Blur, int p_Math);
+	void setScales(int *p_Switch, float *p_Log, float *p_Sat, float *p_Hue1, float *p_Hue2, 
+	float *p_Hue3, int p_Display, float* p_Blur, int p_Math, int p_HueMedian, int p_Isolate);
 
 private:
     OFX::Image* _srcImg;
@@ -187,6 +230,8 @@ private:
     int _display;
     float _blur[4];
     int _math;
+    int _hueMedian;
+    int _isolate;
 };
 
 HueConverge::HueConverge(OFX::ImageEffect& p_Instance)
@@ -194,8 +239,8 @@ HueConverge::HueConverge(OFX::ImageEffect& p_Instance)
 {
 }
 
-extern void RunCudaKernel(float* p_Input, float* p_Output, int p_Width, int p_Height, int* p_Switch, 
-float* p_Log, float* p_Sat, float *p_Hue1, float *p_Hue2, float *p_Hue3, int p_Display, float* p_Blur, int p_Math);
+extern void RunCudaKernel(float* p_Input, float* p_Output, int p_Width, int p_Height, int* p_Switch, float* p_Log, float* p_Sat, 
+float *p_Hue1, float *p_Hue2, float *p_Hue3, int p_Display, float* p_Blur, int p_Math, int p_HueMedian, int p_Isolate);
 
 void HueConverge::processImagesCUDA()
 {
@@ -206,7 +251,7 @@ void HueConverge::processImagesCUDA()
     float* input = static_cast<float*>(_srcImg->getPixelData());
     float* output = static_cast<float*>(_dstImg->getPixelData());
 
-    RunCudaKernel(input, output, width, height, _switch, _log, _sat, _hue1, _hue2, _hue3, _display, _blur, _math);
+    RunCudaKernel(input, output, width, height, _switch, _log, _sat, _hue1, _hue2, _hue3, _display, _blur, _math, _hueMedian, _isolate);
 }
 /*
 extern void RunOpenCLKernel(void* p_CmdQ, float* p_Input, float* p_Output, int p_Width, int p_Height, int* p_Switch, 
@@ -263,7 +308,7 @@ void HueConverge::setSrcImg(OFX::Image* p_SrcImg)
 }
 
 void HueConverge::setScales(int *p_Switch, float *p_Log, float *p_Sat, float *p_Hue1, 
-float *p_Hue2, float *p_Hue3, int p_Display, float* p_Blur, int p_Math)
+float *p_Hue2, float *p_Hue3, int p_Display, float* p_Blur, int p_Math, int p_HueMedian, int p_Isolate)
 {
     _switch[0] = p_Switch[0];
     _switch[1] = p_Switch[1];
@@ -312,7 +357,8 @@ float *p_Hue2, float *p_Hue3, int p_Display, float* p_Blur, int p_Math)
     
     _math = p_Math;
     _display = p_Display;
-    
+    _hueMedian = p_HueMedian;
+    _isolate = p_Isolate;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -347,6 +393,8 @@ private:
     OFX::BooleanParam* m_SwitchLog;
     OFX::DoubleParam* m_SatAdd;
     OFX::DoubleParam* m_SatMinus;
+    
+    OFX::ChoiceParam* m_HueMedian;
     
     OFX::BooleanParam* m_SwitchHue1;
     OFX::RGBParam *m_HueA;
@@ -386,6 +434,7 @@ private:
     OFX::DoubleParam* m_Blur4;
     
     OFX::ChoiceParam* m_LuminanceMath;
+    OFX::ChoiceParam* m_Isolate;
     OFX::ChoiceParam* m_DisplayAlpha;
     OFX::BooleanParam* m_HueChart;
     
@@ -410,6 +459,8 @@ HueConvergePlugin::HueConvergePlugin(OfxImageEffectHandle p_Handle)
     m_SwitchLog = fetchBooleanParam("LogSwitch");
     m_SatAdd = fetchDoubleParam("SatAdd");
     m_SatMinus = fetchDoubleParam("SatMinus");
+    
+    m_HueMedian = fetchChoiceParam(kParamHueMedian);
     
     m_SwitchHue1 = fetchBooleanParam("HueSwitch1");
     m_HueA = fetchRGBParam("HueA");
@@ -449,6 +500,7 @@ HueConvergePlugin::HueConvergePlugin(OfxImageEffectHandle p_Handle)
     m_Blur4 = fetchDoubleParam("Blur4");
     
     m_LuminanceMath = fetchChoiceParam(kParamLuminanceMath);
+    m_Isolate = fetchChoiceParam(kParamIsolate);
     m_DisplayAlpha = fetchChoiceParam(kParamDisplayAlpha);
     m_HueChart = fetchBooleanParam("HueChart");
     
@@ -669,6 +721,11 @@ void HueConvergePlugin::setupAndProcess(HueConverge& p_HueConverge, const OFX::R
     _sat[2] = m_SatSoft->getValueAtTime(p_Args.time);
     _sat[3] = m_SatSoftLumaAlpha->getValueAtTime(p_Args.time);
     
+    int hueMedian_i;
+    m_HueMedian->getValueAtTime(p_Args.time, hueMedian_i);
+    HueMedianEnum hueMedian = (HueMedianEnum)hueMedian_i;
+    int _hueMedian = hueMedian_i;
+    
     float _hue1[7];
     _hue1[0] = m_Hue1->getValueAtTime(p_Args.time);
     _hue1[1] = m_Range1->getValueAtTime(p_Args.time);
@@ -716,6 +773,11 @@ void HueConvergePlugin::setupAndProcess(HueConverge& p_HueConverge, const OFX::R
     LuminanceMathEnum luminanceMath = (LuminanceMathEnum)luminanceMath_i;
     int _math = luminanceMath_i;
     
+    int isolate_i;
+    m_Isolate->getValueAtTime(p_Args.time, isolate_i);
+    IsolateEnum isolate = (IsolateEnum)isolate_i;
+    int _isolate = isolate_i;
+    
     int displayAlpha_i;
     m_DisplayAlpha->getValueAtTime(p_Args.time, displayAlpha_i);
     DisplayAlphaEnum displayAlpha = (DisplayAlphaEnum)displayAlpha_i;
@@ -733,7 +795,7 @@ void HueConvergePlugin::setupAndProcess(HueConverge& p_HueConverge, const OFX::R
     p_HueConverge.setRenderWindow(p_Args.renderWindow);
     
     // Set the scales
-    p_HueConverge.setScales(_switch, _log, _sat, _hue1, _hue2, _hue3, _display, _blur, _math);
+    p_HueConverge.setScales(_switch, _log, _sat, _hue1, _hue2, _hue3, _display, _blur, _math, _hueMedian, _isolate);
 
     // Call the base class process member, this will call the derived templated process code
     p_HueConverge.process();
@@ -869,7 +931,20 @@ void HueConvergePluginFactory::describeInContext(OFX::ImageEffectDescriptor& p_D
     param->setIncrement(0.001);
     param->setDisplayRange(0.0, 3.0);
     page->addChild(*param);
-     
+    
+    ChoiceParamDescriptor* choiceParam = p_Desc.defineChoiceParam(kParamHueMedian);
+	choiceParam->setLabel(kParamHueMedianLabel);
+	choiceParam->setHint(kParamHueMedianHint);
+	assert(choiceParam->getNOptions() == eHueMedianOff);
+	choiceParam->appendOption(kParamHueMedianOptionOff, kParamHueMedianOptionOffHint);
+	assert(choiceParam->getNOptions() == eHueMedian3x3);
+	choiceParam->appendOption(kParamHueMedianOption3x3, kParamHueMedianOption3x3Hint);
+	assert(choiceParam->getNOptions() == eHueMedian5x5);
+	choiceParam->appendOption(kParamHueMedianOption5x5, kParamHueMedianOption5x5Hint);
+    choiceParam->setDefault(eHueMedianOff);
+	choiceParam->setAnimates(false);
+	page->addChild(*choiceParam);
+    
     GroupParamDescriptor* hue1 = p_Desc.defineGroupParam("Hue One");
     hue1->setOpen(true);
     hue1->setHint("hue based modifiers");
@@ -1128,7 +1203,7 @@ void HueConvergePluginFactory::describeInContext(OFX::ImageEffectDescriptor& p_D
     param->setDisplayRange(0.0, 1.0);
     page->addChild(*param);
     
-    ChoiceParamDescriptor* choiceParam = p_Desc.defineChoiceParam(kParamLuminanceMath);
+    choiceParam = p_Desc.defineChoiceParam(kParamLuminanceMath);
 	choiceParam->setLabel(kParamLuminanceMathLabel);
 	choiceParam->setHint(kParamLuminanceMathHint);
 	assert(choiceParam->getNOptions() == eLuminanceMathRec709);
@@ -1149,6 +1224,21 @@ void HueConvergePluginFactory::describeInContext(OFX::ImageEffectDescriptor& p_D
     choiceParam->setAnimates(false);
     page->addChild(*choiceParam);
     
+    choiceParam = p_Desc.defineChoiceParam(kParamIsolate);
+	choiceParam->setLabel(kParamIsolateLabel);
+	choiceParam->setHint(kParamIsolateHint);
+	assert(choiceParam->getNOptions() == eIsolateOff);
+	choiceParam->appendOption(kParamIsolateOptionOff, kParamIsolateOptionOffHint);
+	assert(choiceParam->getNOptions() == eIsolateHue1);
+	choiceParam->appendOption(kParamIsolateOptionHue1, kParamIsolateOptionHue1Hint);
+	assert(choiceParam->getNOptions() == eIsolateHue2);
+	choiceParam->appendOption(kParamIsolateOptionHue2, kParamIsolateOptionHue2Hint);
+	assert(choiceParam->getNOptions() == eIsolateHue3);
+	choiceParam->appendOption(kParamIsolateOptionHue3, kParamIsolateOptionHue3Hint);
+    choiceParam->setDefault(eIsolateOff);
+	choiceParam->setAnimates(false);
+	page->addChild(*choiceParam);
+    
     choiceParam = p_Desc.defineChoiceParam(kParamDisplayAlpha);
 	choiceParam->setLabel(kParamDisplayAlphaLabel);
 	choiceParam->setHint(kParamDisplayAlphaHint);
@@ -1162,9 +1252,13 @@ void HueConvergePluginFactory::describeInContext(OFX::ImageEffectDescriptor& p_D
 	choiceParam->appendOption(kParamDisplayAlphaOptionHue3, kParamDisplayAlphaOptionHue3Hint);
 	assert(choiceParam->getNOptions() == eDisplayAlphaSatSoft);
 	choiceParam->appendOption(kParamDisplayAlphaOptionSatSoft, kParamDisplayAlphaOptionSatSoftHint);
+	assert(choiceParam->getNOptions() == eDisplayAlphaHue);
+	choiceParam->appendOption(kParamDisplayAlphaOptionHue, kParamDisplayAlphaOptionHueHint);
+	assert(choiceParam->getNOptions() == eDisplayAlphaSat);
+	choiceParam->appendOption(kParamDisplayAlphaOptionSat, kParamDisplayAlphaOptionSatHint);
 	assert(choiceParam->getNOptions() == eDisplayAlphaLuma);
 	choiceParam->appendOption(kParamDisplayAlphaOptionLuma, kParamDisplayAlphaOptionLumaHint);
-    choiceParam->setDefault(eLuminanceMathRec709);
+    choiceParam->setDefault(eDisplayAlphaOff);
 	choiceParam->setAnimates(false);
 	page->addChild(*choiceParam);
 	

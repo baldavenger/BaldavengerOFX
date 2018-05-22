@@ -384,4 +384,47 @@ __device__ inline float3 modify_hue
 	
 }
 
+__device__ inline float median(float p_Table[], int m)
+{
+	float temp;
+	int i, j;
+	for(i = 0; i < m - 1; i++) {
+	for(j = i + 1; j < m; j++) {
+	if(p_Table[j] < p_Table[i]) {
+	temp = p_Table[i];
+	p_Table[i] = p_Table[j];
+	p_Table[j] = temp; }}}
+	return p_Table[(m - 1) / 2];
+}
+
+__device__ inline void median3x3(float* p_In, float* p_Out, int p_Width, int p_X, int p_Y)
+{
+	int length = 3;
+	int area = 9;
+	int offset = 1;
+	float Table[9];
+	for (int i = 0; i < area; ++i)
+	{
+	int xx = (i >= length ? fmodf(i, (float)length) : i) - offset;
+	int yy = floorf(i / (length)) - offset;
+	Table[i] = p_In[(((p_Y + yy) * p_Width + p_X + xx) * 4) + 2];
+	}
+	p_Out[p_Y * p_Width + p_X] = median(Table, area);
+}
+
+__device__ inline void median5x5(float* p_In, float* p_Out, int p_Width, int p_X, int p_Y)
+{
+	int length = 5;
+	int area = 25;
+	int offset = 2;
+	float Table[25];
+	for (int i = 0; i < area; ++i)
+	{
+	int xx = (i >= length ? fmodf(i, (float)length) : i) - offset;
+	int yy = floorf(i / (length)) - offset;
+	Table[i] = p_In[(((p_Y + yy) * p_Width + p_X + xx) * 4) + 2];
+	}
+	p_Out[p_Y * p_Width + p_X] = median(Table, area);
+}
+
 #endif // #ifndef _HUECONVERGECUDAKERNEL_H_INCLUDED
