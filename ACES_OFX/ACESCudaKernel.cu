@@ -343,6 +343,12 @@ case 3:
 {
 aces = LMT_Analytic_3(aces);
 }
+break;
+
+case 4:
+{
+aces = LMT_BlueLightArtifactFix(aces);
+}
 }
 
 switch (p_ACESOUT)
@@ -471,85 +477,90 @@ aces = ODT_P3DCI_48nits(aces);
 break;
 case 13:
 {
-aces = ODT_P3DCI_D65sim_48nits(aces);
+aces = ODT_P3DCI_D60sim_48nits(aces);
 }
 break;
 case 14:
 {
-aces = ODT_P3D60_48nits(aces);
+aces = ODT_P3DCI_D65sim_48nits(aces);
 }
 break;
 case 15:
 {
-aces = ODT_P3D65_48nits(aces);
+aces = ODT_P3D60_48nits(aces);
 }
 break;
 case 16:
 {
-aces = ODT_P3D65_D60sim_48nits(aces);
+aces = ODT_P3D65_48nits(aces);
 }
 break;
 case 17:
 {
-aces = ODT_P3D65_Rec709limited_48nits(aces);
+aces = ODT_P3D65_D60sim_48nits(aces);
 }
 break;
 case 18:
 {
-aces = ODT_DCDM(aces);
+aces = ODT_P3D65_Rec709limited_48nits(aces);
 }
 break;
 case 19:
 {
-aces = ODT_DCDM_P3D60limited(aces);
+aces = ODT_DCDM(aces);
 }
 break;
 case 20:
 {
-aces = ODT_DCDM_P3D65limited(aces);
+aces = ODT_DCDM_P3D60limited(aces);
 }
 break;
 case 21:
 {
-aces = ODT_RGBmonitor_100nits_dim(aces);
+aces = ODT_DCDM_P3D65limited(aces);
 }
 break;
 case 22:
 {
-aces = ODT_RGBmonitor_D60sim_100nits_dim(aces);
+aces = ODT_RGBmonitor_100nits_dim(aces);
 }
 break;
 case 23:
 {
-aces = RRTODT_P3D65_108nits_7_2nits_ST2084(aces);
+aces = ODT_RGBmonitor_D60sim_100nits_dim(aces);
 }
 break;
 case 24:
 {
-aces = RRTODT_Rec2020_1000nits_15nits_HLG(aces);
+aces = RRTODT_P3D65_108nits_7_2nits_ST2084(aces);
 }
 break;
 case 25:
 {
-aces = RRTODT_Rec2020_1000nits_15nits_ST2084(aces);
+aces = RRTODT_Rec2020_1000nits_15nits_HLG(aces);
 }
 break;
 case 26:
 {
-aces = RRTODT_Rec2020_2000nits_15nits_ST2084(aces);
+aces = RRTODT_Rec2020_1000nits_15nits_ST2084(aces);
 }
 break;
 case 27:
 {
-aces = RRTODT_Rec2020_4000nits_15nits_ST2084(aces);
+aces = RRTODT_Rec2020_2000nits_15nits_ST2084(aces);
 }
 break;
 case 28:
 {
-aces = RRTODT_Rec709_100nits_10nits_BT1886(aces);
+aces = RRTODT_Rec2020_4000nits_15nits_ST2084(aces);
 }
 break;
 case 29:
+{
+aces = RRTODT_Rec709_100nits_10nits_BT1886(aces);
+}
+break;
+case 30:
 {
 aces = RRTODT_Rec709_100nits_10nits_sRGB(aces);
 }
@@ -621,75 +632,80 @@ aces = InvODT_P3DCI_48nits(aces);
 break;
 case 9:
 {
-aces = InvODT_P3DCI_D65sim_48nits(aces);
+aces = InvODT_P3DCI_D60sim_48nits(aces);
 }
 break;
 case 10:
 {
-aces = InvODT_P3D60_48nits(aces);
+aces = InvODT_P3DCI_D65sim_48nits(aces);
 }
 break;
 case 11:
 {
-aces = InvODT_P3D65_48nits(aces);
+aces = InvODT_P3D60_48nits(aces);
 }
 break;
 case 12:
 {
-aces = InvODT_P3D65_D60sim_48nits(aces);
+aces = InvODT_P3D65_48nits(aces);
 }
 break;
 case 13:
 {
-aces = InvODT_DCDM(aces);
+aces = InvODT_P3D65_D60sim_48nits(aces);
 }
 break;
 case 14:
 {
-aces = InvODT_DCDM_P3D65limited(aces);
+aces = InvODT_DCDM(aces);
 }
 break;
 case 15:
 {
-aces = InvODT_RGBmonitor_100nits_dim(aces);
+aces = InvODT_DCDM_P3D65limited(aces);
 }
 break;
 case 16:
 {
-aces = InvODT_RGBmonitor_D60sim_100nits_dim(aces);
+aces = InvODT_RGBmonitor_100nits_dim(aces);
 }
 break;
 case 17:
 {
-aces = InvRRTODT_P3D65_108nits_7_2nits_ST2084(aces);
+aces = InvODT_RGBmonitor_D60sim_100nits_dim(aces);
 }
 break;
 case 18:
 {
-aces = InvRRTODT_Rec2020_1000nits_15nits_HLG(aces);
+aces = InvRRTODT_P3D65_108nits_7_2nits_ST2084(aces);
 }
 break;
 case 19:
 {
-aces = InvRRTODT_Rec2020_1000nits_15nits_ST2084(aces);
+aces = InvRRTODT_Rec2020_1000nits_15nits_HLG(aces);
 }
 break;
 case 20:
 {
-aces = InvRRTODT_Rec2020_2000nits_15nits_ST2084(aces);
+aces = InvRRTODT_Rec2020_1000nits_15nits_ST2084(aces);
 }
 break;
 case 21:
 {
-aces = InvRRTODT_Rec2020_4000nits_15nits_ST2084(aces);
+aces = InvRRTODT_Rec2020_2000nits_15nits_ST2084(aces);
 }
 break;
 case 22:
 {
-aces = InvRRTODT_Rec709_100nits_10nits_BT1886(aces);
+aces = InvRRTODT_Rec2020_4000nits_15nits_ST2084(aces);
 }
 break;
 case 23:
+{
+aces = InvRRTODT_Rec709_100nits_10nits_BT1886(aces);
+}
+break;
+case 24:
 {
 aces = InvRRTODT_Rec709_100nits_10nits_sRGB(aces);
 }

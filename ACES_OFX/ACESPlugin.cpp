@@ -20,15 +20,15 @@ using std::string;
 #define kPluginScript "/home/resolve/LUT/ACES_DCTL"
 #endif
 
-#define kPluginName "ACES"
+#define kPluginName "ACES 1.1"
 #define kPluginGrouping "OpenFX Yo"
 #define kPluginDescription \
 "------------------------------------------------------------------------------------------------------------------ \n" \
-"ACES"
+"ACES 1.1"
 
 #define kPluginIdentifier "OpenFX.Yo.ACES"
 #define kPluginVersionMajor 1
-#define kPluginVersionMinor 1
+#define kPluginVersionMinor 2
 
 #define kSupportsTiles false
 #define kSupportsMultiResolution false
@@ -228,6 +228,8 @@ enum ACESINEnum
 #define kParamLMTOptionBleachHint "Bleach Bypass"
 #define kParamLMTOptionPFE "PFE"
 #define kParamLMTOptionPFEHint "Print Film Emulation"
+#define kParamLMTOptionFix "Blue Light Fix"
+#define kParamLMTOptionFixHint "Blue Light Artifact Fix"
 
 enum LMTEnum
 {
@@ -235,6 +237,7 @@ enum LMTEnum
     eLMTCustom,
     eLMTBleach,
     eLMTPFE,
+    eLMTFix,
 };
 
 #define kParamACESOUT "ACESOUT"
@@ -321,6 +324,8 @@ enum InvRRTEnum
 #define kParamODTOptionRec2020_ST2084_1000Hint "Rec.2020 ST2084 1000nits"
 #define kParamODTOptionP3DCI_48 "P3DCI 48nits"
 #define kParamODTOptionP3DCI_48Hint "P3DCI 48nits"
+#define kParamODTOptionP3DCI_D60sim_48 "P3DCI D60sim 48nits"
+#define kParamODTOptionP3DCI_D60sim_48Hint "P3DCI D60sim 48nits"
 #define kParamODTOptionP3DCI_D65sim_48 "P3DCI D65sim 48nits"
 #define kParamODTOptionP3DCI_D65sim_48Hint "P3DCI D65sim 48nits"
 #define kParamODTOptionP3D60_48 "P3D60 48nits"
@@ -372,6 +377,7 @@ enum ODTEnum
 	eODTRec2020_P3D65limited_100dim,
     eODTRec2020_ST2084_1000,
     eODTP3DCI_48,
+    eODTP3DCI_D60sim_48,
     eODTP3DCI_D65sim_48,
     eODTP3D60_48,
     eODTP3D65_48,
@@ -413,6 +419,8 @@ enum ODTEnum
 #define kParamInvODTOptionRec2020_ST2084_1000Hint "Rec.2020 ST2084 1000nits"
 #define kParamInvODTOptionP3DCI_48 "P3DCI 48nits"
 #define kParamInvODTOptionP3DCI_48Hint "P3DCI 48nits"
+#define kParamInvODTOptionP3DCI_D60sim_48 "P3DCI D60sim 48nits"
+#define kParamInvODTOptionP3DCI_D60sim_48Hint "P3DCI D60sim 48nits"
 #define kParamInvODTOptionP3DCI_D65sim_48 "P3DCI D65sim 48nits"
 #define kParamInvODTOptionP3DCI_D65sim_48Hint "P3DCI D65sim 48nits"
 #define kParamInvODTOptionP3D60_48 "P3D60 48nits"
@@ -455,6 +463,7 @@ enum InvODTEnum
     eInvODTRec2020_100dim,
     eInvODTRec2020_ST2084_1000,
     eInvODTP3DCI_48,
+    eInvODTP3DCI_D60sim_48,
     eInvODTP3DCI_D65sim_48,
     eInvODTP3D60_48,
     eInvODTP3D65_48,
@@ -1579,6 +1588,12 @@ void ACESPlugin::changedParam(const OFX::InstanceChangedArgs& p_Args, const std:
 	"{ \n" \
 	"aces = LMT_Analytic_3(aces); \n" \
 	"} \n" \
+	"break; \n" \
+	" \n" \
+	"case 4: \n" \
+	"{ \n" \
+	"aces = LMT_BlueLightArtifactFix(aces); \n" \
+	"} \n" \
 	"} \n" \
 	" \n" \
 	"switch (AcesOut) \n" \
@@ -1710,85 +1725,90 @@ void ACESPlugin::changedParam(const OFX::InstanceChangedArgs& p_Args, const std:
 	"break; \n" \
 	"case 13: \n" \
 	"{ \n" \
-	"aces = ODT_P3DCI_D65sim_48nits(aces); \n" \
+	"aces = ODT_P3DCI_D60sim_48nits(aces); \n" \
 	"} \n" \
 	"break; \n" \
 	"case 14: \n" \
 	"{ \n" \
-	"aces = ODT_P3D60_48nits(aces); \n" \
+	"aces = ODT_P3DCI_D65sim_48nits(aces); \n" \
 	"} \n" \
 	"break; \n" \
 	"case 15: \n" \
 	"{ \n" \
-	"aces = ODT_P3D65_48nits(aces); \n" \
+	"aces = ODT_P3D60_48nits(aces); \n" \
 	"} \n" \
 	"break; \n" \
 	"case 16: \n" \
 	"{ \n" \
-	"aces = ODT_P3D65_D60sim_48nits(aces); \n" \
+	"aces = ODT_P3D65_48nits(aces); \n" \
 	"} \n" \
 	"break; \n" \
 	"case 17: \n" \
 	"{ \n" \
-	"aces = ODT_P3D65_Rec709limited_48nits(aces); \n" \
+	"aces = ODT_P3D65_D60sim_48nits(aces); \n" \
 	"} \n" \
 	"break; \n" \
 	"case 18: \n" \
 	"{ \n" \
-	"aces = ODT_DCDM(aces); \n" \
+	"aces = ODT_P3D65_Rec709limited_48nits(aces); \n" \
 	"} \n" \
 	"break; \n" \
 	"case 19: \n" \
 	"{ \n" \
-	"aces = ODT_DCDM_P3D60limited(aces); \n" \
+	"aces = ODT_DCDM(aces); \n" \
 	"} \n" \
 	"break; \n" \
 	"case 20: \n" \
 	"{ \n" \
-	"aces = ODT_DCDM_P3D65limited(aces); \n" \
+	"aces = ODT_DCDM_P3D60limited(aces); \n" \
 	"} \n" \
 	"break; \n" \
 	"case 21: \n" \
 	"{ \n" \
-	"aces = ODT_RGBmonitor_100nits_dim(aces); \n" \
+	"aces = ODT_DCDM_P3D65limited(aces); \n" \
 	"} \n" \
 	"break; \n" \
 	"case 22: \n" \
 	"{ \n" \
-	"aces = ODT_RGBmonitor_D60sim_100nits_dim(aces); \n" \
+	"aces = ODT_RGBmonitor_100nits_dim(aces); \n" \
 	"} \n" \
 	"break; \n" \
 	"case 23: \n" \
 	"{ \n" \
-	"aces = RRTODT_P3D65_108nits_7_2nits_ST2084(aces); \n" \
+	"aces = ODT_RGBmonitor_D60sim_100nits_dim(aces); \n" \
 	"} \n" \
 	"break; \n" \
 	"case 24: \n" \
 	"{ \n" \
-	"aces = RRTODT_Rec2020_1000nits_15nits_HLG(aces); \n" \
+	"aces = RRTODT_P3D65_108nits_7_2nits_ST2084(aces); \n" \
 	"} \n" \
 	"break; \n" \
 	"case 25: \n" \
 	"{ \n" \
-	"aces = RRTODT_Rec2020_1000nits_15nits_ST2084(aces); \n" \
+	"aces = RRTODT_Rec2020_1000nits_15nits_HLG(aces); \n" \
 	"} \n" \
 	"break; \n" \
 	"case 26: \n" \
 	"{ \n" \
-	"aces = RRTODT_Rec2020_2000nits_15nits_ST2084(aces); \n" \
+	"aces = RRTODT_Rec2020_1000nits_15nits_ST2084(aces); \n" \
 	"} \n" \
 	"break; \n" \
 	"case 27: \n" \
 	"{ \n" \
-	"aces = RRTODT_Rec2020_4000nits_15nits_ST2084(aces); \n" \
+	"aces = RRTODT_Rec2020_2000nits_15nits_ST2084(aces); \n" \
 	"} \n" \
 	"break; \n" \
 	"case 28: \n" \
 	"{ \n" \
-	"aces = RRTODT_Rec709_100nits_10nits_BT1886(aces); \n" \
+	"aces = RRTODT_Rec2020_4000nits_15nits_ST2084(aces); \n" \
 	"} \n" \
 	"break; \n" \
 	"case 29: \n" \
+	"{ \n" \
+	"aces = RRTODT_Rec709_100nits_10nits_BT1886(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	"case 30: \n" \
 	"{ \n" \
 	"aces = RRTODT_Rec709_100nits_10nits_sRGB(aces); \n" \
 	"} \n" \
@@ -1863,75 +1883,80 @@ void ACESPlugin::changedParam(const OFX::InstanceChangedArgs& p_Args, const std:
 	"break; \n" \
 	"case 9: \n" \
 	"{ \n" \
-	"aces = InvODT_P3DCI_D65sim_48nits(aces); \n" \
+	"aces = InvODT_P3DCI_D60sim_48nits(aces); \n" \
 	"} \n" \
 	"break; \n" \
 	"case 10: \n" \
 	"{ \n" \
-	"aces = InvODT_P3D60_48nits(aces); \n" \
+	"aces = InvODT_P3DCI_D65sim_48nits(aces); \n" \
 	"} \n" \
 	"break; \n" \
 	"case 11: \n" \
 	"{ \n" \
-	"aces = InvODT_P3D65_48nits(aces); \n" \
+	"aces = InvODT_P3D60_48nits(aces); \n" \
 	"} \n" \
 	"break; \n" \
 	"case 12: \n" \
 	"{ \n" \
-	"aces = InvODT_P3D65_D60sim_48nits(aces); \n" \
+	"aces = InvODT_P3D65_48nits(aces); \n" \
 	"} \n" \
 	"break; \n" \
 	"case 13: \n" \
 	"{ \n" \
-	"aces = InvODT_DCDM(aces); \n" \
+	"aces = InvODT_P3D65_D60sim_48nits(aces); \n" \
 	"} \n" \
 	"break; \n" \
 	"case 14: \n" \
 	"{ \n" \
-	"aces = InvODT_DCDM_P3D65limited(aces); \n" \
+	"aces = InvODT_DCDM(aces); \n" \
 	"} \n" \
 	"break; \n" \
 	"case 15: \n" \
 	"{ \n" \
-	"aces = InvODT_RGBmonitor_100nits_dim(aces); \n" \
+	"aces = InvODT_DCDM_P3D65limited(aces); \n" \
 	"} \n" \
 	"break; \n" \
 	"case 16: \n" \
 	"{ \n" \
-	"aces = InvODT_RGBmonitor_D60sim_100nits_dim(aces); \n" \
+	"aces = InvODT_RGBmonitor_100nits_dim(aces); \n" \
 	"} \n" \
 	"break; \n" \
 	"case 17: \n" \
 	"{ \n" \
-	"aces = InvRRTODT_P3D65_108nits_7_2nits_ST2084(aces); \n" \
+	"aces = InvODT_RGBmonitor_D60sim_100nits_dim(aces); \n" \
 	"} \n" \
 	"break; \n" \
 	"case 18: \n" \
 	"{ \n" \
-	"aces = InvRRTODT_Rec2020_1000nits_15nits_HLG(aces); \n" \
+	"aces = InvRRTODT_P3D65_108nits_7_2nits_ST2084(aces); \n" \
 	"} \n" \
 	"break; \n" \
 	"case 19: \n" \
 	"{ \n" \
-	"aces = InvRRTODT_Rec2020_1000nits_15nits_ST2084(aces); \n" \
+	"aces = InvRRTODT_Rec2020_1000nits_15nits_HLG(aces); \n" \
 	"} \n" \
 	"break; \n" \
 	"case 20: \n" \
 	"{ \n" \
-	"aces = InvRRTODT_Rec2020_2000nits_15nits_ST2084(aces); \n" \
+	"aces = InvRRTODT_Rec2020_1000nits_15nits_ST2084(aces); \n" \
 	"} \n" \
 	"break; \n" \
 	"case 21: \n" \
 	"{ \n" \
-	"aces = InvRRTODT_Rec2020_4000nits_15nits_ST2084(aces); \n" \
+	"aces = InvRRTODT_Rec2020_2000nits_15nits_ST2084(aces); \n" \
 	"} \n" \
 	"break; \n" \
 	"case 22: \n" \
 	"{ \n" \
-	"aces = InvRRTODT_Rec709_100nits_10nits_BT1886(aces); \n" \
+	"aces = InvRRTODT_Rec2020_4000nits_15nits_ST2084(aces); \n" \
 	"} \n" \
 	"break; \n" \
 	"case 23: \n" \
+	"{ \n" \
+	"aces = InvRRTODT_Rec709_100nits_10nits_BT1886(aces); \n" \
+	"} \n" \
+	"break; \n" \
+	"case 24: \n" \
 	"{ \n" \
 	"aces = InvRRTODT_Rec709_100nits_10nits_sRGB(aces); \n" \
 	"} \n" \
@@ -2369,6 +2394,8 @@ void ACESPluginFactory::describeInContext(OFX::ImageEffectDescriptor& p_Desc, OF
 	param->appendOption(kParamLMTOptionBleach, kParamLMTOptionBleachHint);
 	assert(param->getNOptions() == (int)eLMTPFE);
 	param->appendOption(kParamLMTOptionPFE, kParamLMTOptionPFEHint);
+	assert(param->getNOptions() == (int)eLMTFix);
+	param->appendOption(kParamLMTOptionFix, kParamLMTOptionFixHint);
 	param->setDefault( (int)eLMTBypass );
 	param->setAnimates(false);
 	param->setIsSecretAndDisabled(false);
@@ -2633,6 +2660,8 @@ void ACESPluginFactory::describeInContext(OFX::ImageEffectDescriptor& p_Desc, OF
 	param->appendOption(kParamODTOptionRec2020_ST2084_1000, kParamODTOptionRec2020_ST2084_1000Hint);
 	assert(param->getNOptions() == (int)eODTP3DCI_48);
 	param->appendOption(kParamODTOptionP3DCI_48, kParamODTOptionP3DCI_48Hint);
+	assert(param->getNOptions() == (int)eODTP3DCI_D60sim_48);
+	param->appendOption(kParamODTOptionP3DCI_D60sim_48, kParamODTOptionP3DCI_D60sim_48Hint);
 	assert(param->getNOptions() == (int)eODTP3DCI_D65sim_48);
 	param->appendOption(kParamODTOptionP3DCI_D65sim_48, kParamODTOptionP3DCI_D65sim_48Hint);
 	assert(param->getNOptions() == (int)eODTP3D60_48);
@@ -2695,6 +2724,8 @@ void ACESPluginFactory::describeInContext(OFX::ImageEffectDescriptor& p_Desc, OF
 	param->appendOption(kParamInvODTOptionRec2020_ST2084_1000, kParamInvODTOptionRec2020_ST2084_1000Hint);
 	assert(param->getNOptions() == (int)eInvODTP3DCI_48);
 	param->appendOption(kParamInvODTOptionP3DCI_48, kParamInvODTOptionP3DCI_48Hint);
+	assert(param->getNOptions() == (int)eInvODTP3DCI_D60sim_48);
+	param->appendOption(kParamInvODTOptionP3DCI_D60sim_48, kParamInvODTOptionP3DCI_D60sim_48Hint);
 	assert(param->getNOptions() == (int)eInvODTP3DCI_D65sim_48);
 	param->appendOption(kParamInvODTOptionP3DCI_D65sim_48, kParamInvODTOptionP3DCI_D65sim_48Hint);
 	assert(param->getNOptions() == (int)eInvODTP3D60_48);
