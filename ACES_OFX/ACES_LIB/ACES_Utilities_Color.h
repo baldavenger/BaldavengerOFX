@@ -442,7 +442,7 @@ __device__ inline float3 ST2084_2_Y_f3( float3 in)
 }
 
 // Conversion of PQ signal to HLG, as detailed in Section 7 of ITU-R BT.2390-0
-__device__ inline float3 ST2084_2_HLG_1000nits( float3 PQ) 
+__device__ inline float3 ST2084_2_HLG_1000nits_f3( float3 PQ) 
 {
     // ST.2084 EOTF (non-linear PQ to display light)
     float3 displayLinear = ST2084_2_Y_f3( PQ);
@@ -457,10 +457,20 @@ __device__ inline float3 ST2084_2_HLG_1000nits( float3 PQ)
     const float gamma = 1.2f;
     
     float3 sceneLinear;
+    if (Y_d == 0.0f) { 
+    /* This case is to protect against pow(0,-N)=Inf error. The ITU document
+    does not offer a recommendation for this corner case. There may be a 
+    better way to handle this, but for now, this works. 
+    */ 
+    sceneLinear.x = 0.0f;
+    sceneLinear.y = 0.0f;
+    sceneLinear.z = 0.0f;        
+    } else {
     sceneLinear.x = powf( (Y_d-beta)/alpha, (1.0f - gamma)/gamma) * ((displayLinear.x-beta)/alpha);
     sceneLinear.y = powf( (Y_d-beta)/alpha, (1.0f - gamma)/gamma) * ((displayLinear.y-beta)/alpha);
     sceneLinear.z = powf( (Y_d-beta)/alpha, (1.0f - gamma)/gamma) * ((displayLinear.z-beta)/alpha);
-
+	}
+	
     // HLG OETF (scene linear to non-linear signal value)
     const float a = 0.17883277f;
     const float b = 0.28466892f; // 1.-4.*a;
@@ -488,7 +498,7 @@ __device__ inline float3 ST2084_2_HLG_1000nits( float3 PQ)
 
 
 // Conversion of HLG to PQ signal, as detailed in Section 7 of ITU-R BT.2390-0
-__device__ inline float3 HLG_2_ST2084_1000nits( float3 HLG) 
+__device__ inline float3 HLG_2_ST2084_1000nits_f3( float3 HLG) 
 {
     const float a = 0.17883277f;
     const float b = 0.28466892f; // 1.-4.*a;

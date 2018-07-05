@@ -17,7 +17,7 @@
 #include "ACES_LMT/LMT_Analytic_2.h"
 #include "ACES_LMT/LMT_Analytic_3.h"
 #include "ACES_LMT/LMT_Analytic_4.h"
-
+#include "ACES_LMT/LMT_BlueLightArtifactFix.h"
 
 __device__ inline float3 LMT_Bleach_Bypass( float3 aces)
 {

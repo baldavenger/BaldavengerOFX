@@ -149,7 +149,7 @@ __device__ inline float3 rrt_sweeteners( float3 in)
     // --- ACES to RGB rendering space --- //
     aces = clamp_f3( aces, 0.0f, HALF_POS_INF);
     float3 rgbPre = mult_f3_f44( aces, AP0_2_AP1_MAT);
-
+	rgbPre = clamp_f3( rgbPre, 0.0f, HALF_MAX);
     // --- Global desaturation --- //
     rgbPre = mult_f3_f33( rgbPre, RRT_SAT_MAT);
     return rgbPre;
