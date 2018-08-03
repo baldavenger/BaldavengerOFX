@@ -1,4 +1,5 @@
 SUBDIRS = \
+ACES_OFX \
 ChannelBox \
 Convolution \
 FilmGrade \
@@ -14,6 +15,7 @@ SoftClip \
 VideoGrade
 
 SUBDIRS_NOMULTI = \
+ACES_OFX \
 ChannelBox \
 Convolution \
 FilmGrade \
