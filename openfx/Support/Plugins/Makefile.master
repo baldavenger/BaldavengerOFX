@@ -1,8 +1,8 @@
 UNAME_SYSTEM := $(shell uname -s)
 
-CUDAPATH = /usr/local/cuda
+CUDAPATH ?= /usr/local/cuda
 NVCC = ${CUDAPATH}/bin/nvcc
-CXXFLAGS = -I$(OFXPATH)/include -I$(PATHTOROOT)/include -I$(OFXSEXTPATH)
+CXXFLAGS = -fvisibility=hidden -I$(OFXPATH)/include -I$(PATHTOROOT)/include -I$(OFXSEXTPATH)
 PLUGINFOLDER = BaldavengerPlugins
 
 ifeq ($(UNAME_SYSTEM), Linux)
@@ -10,7 +10,7 @@ ifeq ($(UNAME_SYSTEM), Linux)
 	CXXFLAGS += -I${OPENCLPATH}/include -fPIC
 	NVCCFLAGS = --compiler-options="-fPIC"
 	ARCH = Linux-x86-64
-	CUFLAGS = -L${CUDAPATH}/lib64 -lcuda -lcudart
+	CUFLAGS = -shared -fvisibility=hidden -L${CUDAPATH}/lib64 -lcuda -lcudart
 	LINKFLAGS_OR = -shared
 	LINKFLAGS = $(LINKFLAGS_OR)
 	OFX_DIR = /usr/OFX/Plugins
