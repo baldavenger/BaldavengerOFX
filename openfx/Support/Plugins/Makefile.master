@@ -69,6 +69,9 @@ $(PLUGINNAME).ofx: $(PLUGINOBJECTS) $(SUPPORTOBJECTS)
 	mkdir -p $(BUNDLE_RES)
 	cp $(RESOURCES) $(BUNDLE_RES)
 	rm *.o *.ofx
+ifeq ($(UNAME_SYSTEM), Darwin)
+	install_name_tool -change @rpath/libcudart.8.0.dylib @rpath/libcudart.dylib $(BUNDLE_DIR)$(PLUGINNAME).ofx
+endif
 
 $(PLUGINNAME)CudaKernel.o: $(PLUGINNAME)CudaKernel.cu
 	${NVCC} -c $< $(NVCCFLAGS)
