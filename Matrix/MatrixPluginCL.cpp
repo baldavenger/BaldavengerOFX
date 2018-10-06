@@ -31,7 +31,7 @@ using std::string;
 
 #define kPluginIdentifier "OpenFX.Yo.Matrix"
 #define kPluginVersionMajor 3
-#define kPluginVersionMinor 0
+#define kPluginVersionMinor 1
 
 #define kSupportsTiles false
 #define kSupportsMultiResolution false
@@ -65,7 +65,6 @@ enum LuminanceMathEnum
     eLuminanceMathAverage,
     eLuminanceMathMaximum,
 };
-
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -102,7 +101,6 @@ class ImageScaler : public OFX::ImageProcessor
 public:
     explicit ImageScaler(OFX::ImageEffect& p_Instance);
 
-    //virtual void processImagesCUDA();
     virtual void processImagesOpenCL();
     virtual void multiThreadProcessImages(OfxRectI p_ProcWindow);
 
@@ -121,21 +119,7 @@ ImageScaler::ImageScaler(OFX::ImageEffect& p_Instance)
     : OFX::ImageProcessor(p_Instance)
 {
 }
-/*
-extern void RunCudaKernel(const float* p_Input, float* p_Output, int p_Width, int p_Height, float* p_Matrix, int p_Luma, int p_Sat, int p_LumaMath);
 
-void ImageScaler::processImagesCUDA()
-{
-    const OfxRectI& bounds = _srcImg->getBounds();
-    const int width = bounds.x2 - bounds.x1;
-    const int height = bounds.y2 - bounds.y1;
-
-    float* input = static_cast<float*>(_srcImg->getPixelData());
-    float* output = static_cast<float*>(_dstImg->getPixelData());
-
-    RunCudaKernel(input, output, width, height, _matrix, _luma, _sat, _lumaMath);
-}
-*/
 extern void RunOpenCLKernel(void* p_CmdQ, const float* p_Input, float* p_Output, int p_Width, int p_Height, float* p_Matrix, int p_Luma, int p_Sat, int p_LumaMath);
 
 void ImageScaler::processImagesOpenCL()
@@ -249,6 +233,28 @@ public:
 
     /* Set up and run a processor */
     void setupAndProcess(ImageScaler &p_ImageScaler, const OFX::RenderArguments& p_Args);
+    
+	float Luma(float R, float G, float B, int L)
+	{
+	float lumaRec709 = R * 0.2126f + G * 0.7152f + B * 0.0722f;
+	float lumaRec2020 = R * 0.2627f + G * 0.6780f + B * 0.0593f;
+	float lumaDCIP3 = R * 0.209492f + G * 0.721595f + B * 0.0689131f;
+	float lumaACESAP0 = R * 0.3439664498f + G * 0.7281660966f + B * -0.0721325464f;
+	float lumaACESAP1 = R * 0.2722287168f + G * 0.6740817658f + B * 0.0536895174f;
+	float lumaAvg = (R + G + B) / 3.0f;
+	float lumaMax = fmax(fmax(R, G), B);
+	float Lu = L == 0 ? lumaRec709 : L == 1 ? lumaRec2020 : L == 2 ? lumaDCIP3 : L == 3 ? lumaACESAP0 : L == 4 ? lumaACESAP1 : L == 5 ? lumaAvg : lumaMax;
+	return Lu;
+	}
+
+	float Sat(float r, float g, float b)
+	{
+	float min = fmin(fmin(r, g), b);
+	float max = fmax(fmax(r, g), b);
+	float delta = max - min;
+	float S = max != 0.0f ? delta / max : 0.0f;
+	return S;
+	}
 
 private:
     // Does not own the following pointers
@@ -270,6 +276,7 @@ private:
     OFX::DoubleParam* m_BlueRed;
     OFX::DoubleParam* m_BlueGreen;
     OFX::DoubleParam* m_BlueBlue;
+    OFX::IntParam* m_Cube;
     OFX::StringParam* m_Name;
     OFX::PushButtonParam* m_Invert;
     OFX::PushButtonParam* m_Info;
@@ -278,6 +285,7 @@ private:
 	OFX::PushButtonParam* m_Button1;
 	OFX::PushButtonParam* m_Button2;
 	OFX::PushButtonParam* m_Button3;
+	OFX::PushButtonParam* m_Button4;
     
 };
 
@@ -302,6 +310,7 @@ MatrixPlugin::MatrixPlugin(OfxImageEffectHandle p_Handle)
     m_BlueRed = fetchDoubleParam("ScaleBR");
     m_BlueGreen = fetchDoubleParam("ScaleBG");
     m_BlueBlue = fetchDoubleParam("ScaleBB");
+    m_Cube = fetchIntParam("Cube");
     m_Name = fetchStringParam("Name");
     m_Invert = fetchPushButtonParam("Invert");
     m_Info = fetchPushButtonParam("Info");
@@ -310,6 +319,7 @@ MatrixPlugin::MatrixPlugin(OfxImageEffectHandle p_Handle)
 	m_Button1 = fetchPushButtonParam("Button1");
 	m_Button2 = fetchPushButtonParam("Button2");
 	m_Button3 = fetchPushButtonParam("Button3");
+	m_Button4 = fetchPushButtonParam("Button4");
    
 }
 
@@ -763,6 +773,82 @@ void MatrixPlugin::changedParam(const OFX::InstanceChangedArgs& p_Args, const st
 	
 	if(p_ParamName == "Button3")
     {
+ 	m_MatrixR->getValueAtTime(p_Args.time, rScale.r, rScale.g, rScale.b);
+	m_MatrixG->getValueAtTime(p_Args.time, gScale.r, gScale.g, gScale.b);
+	m_MatrixB->getValueAtTime(p_Args.time, bScale.r, bScale.g, bScale.b);
+ 	float Matrix[9] = {rScale.r, rScale.g, rScale.b, gScale.r, gScale.g, gScale.b, bScale.r, bScale.g, bScale.b};
+ 	int luminanceMath_i;
+    m_LuminanceMath->getValueAtTime(p_Args.time, luminanceMath_i);
+    LuminanceMathEnum luminanceMath = (LuminanceMathEnum)luminanceMath_i;
+    
+    int lumaMath = luminanceMath_i;
+ 
+	bool luma = m_Luma->getValueAtTime(p_Args.time);
+	int lumaSwitch = luma ? 1 : 0;
+   
+	bool sat = m_Sat->getValueAtTime(p_Args.time);
+	int satSwitch = sat ? 1 : 0;
+	
+	int cube = (int)m_Cube->getValueAtTime(p_Args.time);
+	int total = cube * cube * cube;
+
+	string PATH;
+	m_Path->getValue(PATH);
+	
+	string NAME;
+	m_Name->getValue(NAME);
+	
+	OFX::Message::MessageReplyEnum reply = sendMessage(OFX::Message::eMessageQuestion, "", "Save " + NAME + ".nk to " + PATH + "?");
+	if (reply == OFX::Message::eMessageReplyYes) {
+	
+	FILE * pFile;
+	
+	pFile = fopen ((PATH + "/" + NAME + ".cube").c_str(), "w");
+	if (pFile != NULL) {
+	fprintf (pFile, "# Resolve 3D LUT export\n" \
+	"LUT_3D_SIZE %d\n" \
+	"LUT_3D_INPUT_RANGE 0.0 1.0\n" \
+	"\n", cube);
+	for( int i = 0; i < total; ++i ){
+    int r = fmod(i, cube);
+    int g = fmod(floor(i / cube), cube);
+    int b = fmod(floor(i / (cube * cube)), cube);
+    float R = (float)r / (cube - 1);
+    float G = (float)g / (cube - 1);
+    float B = (float)b / (cube - 1);
+    float red = R * Matrix[0] + G * Matrix[1] + B * Matrix[2];
+	float green = R * Matrix[3] + G * Matrix[4] + B * Matrix[5];
+	float blue = R * Matrix[6] + G * Matrix[7] + B * Matrix[8];
+	if (luma == 1) {
+	float inLuma = Luma(R, G, B, lumaMath);
+	float outLuma = Luma(red, green, blue, lumaMath);
+	red = red * (inLuma / outLuma);
+	green = green * (inLuma / outLuma);
+	blue = blue * (inLuma / outLuma);
+	}
+	if (sat == 1) {
+	float inSat = Sat(R, G, B);
+	float outSat = Sat(red, green, blue);
+	float satgap = inSat / outSat;
+	float sLuma = Luma(red, green, blue, lumaMath);
+	float sr = (1.0f - satgap) * sLuma + red * satgap;
+	float sg = (1.0f - satgap) * sLuma + green * satgap;
+	float sb = (1.0f - satgap) * sLuma + blue * satgap;
+	red = inSat == 0.0f ? sLuma : sr;
+	green = inSat == 0.0f ? sLuma : sg;
+	blue = inSat == 0.0f ? sLuma : sb;
+	}
+    fprintf (pFile, "%f %f %f\n", red, green, blue);
+    }
+    fclose (pFile);
+	} else {
+     sendMessage(OFX::Message::eMessageError, "", string("Error: Cannot save " + NAME + ".cube to " + PATH  + ". Check Permissions."));
+	}	
+	}
+	}
+   	    	
+	if(p_ParamName == "Button4")
+    {
     
     string PATH2;
 	m_Path2->getValue(PATH2);
@@ -903,7 +989,6 @@ void MatrixPluginFactory::describe(OFX::ImageEffectDescriptor& p_Desc)
 
     // Setup OpenCL and CUDA render capability flags
     p_Desc.setSupportsOpenCLRender(true);
-    p_Desc.setSupportsCudaRender(true);
 }
 
 static DoubleParamDescriptor* defineScaleParam(OFX::ImageEffectDescriptor& p_Desc, const std::string& p_Name, const std::string& p_Label,
@@ -921,7 +1006,6 @@ static DoubleParamDescriptor* defineScaleParam(OFX::ImageEffectDescriptor& p_Des
 
     return param;
 }
-
 
 void MatrixPluginFactory::describeInContext(OFX::ImageEffectDescriptor& p_Desc, OFX::ContextEnum /*p_Context*/)
 {
@@ -1088,22 +1172,37 @@ void MatrixPluginFactory::describeInContext(OFX::ImageEffectDescriptor& p_Desc, 
 	   
     GroupParamDescriptor* script = p_Desc.defineGroupParam("Script Export");
     script->setOpen(false);
-    script->setHint("export DCTL and Nuke script");
+    script->setHint("export dctl and nuke script");
     if (page) {
     page->addChild(*script);
     }
     
 	pushparam = p_Desc.definePushButtonParam("Button1");
     pushparam->setLabel("export dctl");
-    pushparam->setHint("create DCTL version");
+    pushparam->setHint("create dctl version");
     pushparam->setParent(*script);
     page->addChild(*pushparam);
     
 	pushparam = p_Desc.definePushButtonParam("Button2");
     pushparam->setLabel("export nuke script");
-    pushparam->setHint("create NUKE version");
+    pushparam->setHint("create nuke version");
     pushparam->setParent(*script);
     page->addChild(*pushparam);
+    
+    pushparam = p_Desc.definePushButtonParam("Button3");
+    pushparam->setLabel("export 3d lut");
+    pushparam->setHint("create 3d look-up table");
+    pushparam->setParent(*script);
+    page->addChild(*pushparam);
+    
+    IntParamDescriptor* Param = p_Desc.defineIntParam("Cube");
+	Param->setLabel("cube size");
+    Param->setHint("3d lut cube size");
+    Param->setDefault(33);
+    Param->setRange(3, 129);
+    Param->setDisplayRange(3, 129);
+    Param->setParent(*script);
+    page->addChild(*Param);
     
 	StringParamDescriptor* stringparam = p_Desc.defineStringParam("Name");
 	stringparam->setLabel("name");
@@ -1121,7 +1220,7 @@ void MatrixPluginFactory::describeInContext(OFX::ImageEffectDescriptor& p_Desc, 
 	stringparam->setParent(*script);
 	page->addChild(*stringparam);
 	
-	pushparam = p_Desc.definePushButtonParam("Button3");
+	pushparam = p_Desc.definePushButtonParam("Button4");
     pushparam->setLabel("export shader");
     pushparam->setHint("create Shader version");
     pushparam->setParent(*script);
