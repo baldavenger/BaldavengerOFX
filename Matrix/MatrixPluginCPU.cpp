@@ -76,7 +76,7 @@ namespace {
     };
 }
 
-inline float Luma(float R, float G, float B, int L) {
+inline float _Luma(float R, float G, float B, int L) {
 float lumaRec709 = R * 0.2126f + G * 0.7152f + B * 0.0722f;
 float lumaRec2020 = R * 0.2627f + G * 0.6780f + B * 0.0593f;
 float lumaDCIP3 = R * 0.209492f + G * 0.721595f + B * 0.0689131f;
@@ -88,7 +88,7 @@ float Lu = L == 0 ? lumaRec709 : L == 1 ? lumaRec2020 : L == 2 ? lumaDCIP3 : L =
 return Lu;
 }
 
-inline float Sat(float r, float g, float b){
+inline float _Sat(float r, float g, float b){
 float min = fmin(fmin(r, g), b);
 float max = fmax(fmax(r, g), b);
 float delta = max - min;
@@ -140,18 +140,18 @@ void ImageScaler::multiThreadProcessImages(OfxRectI p_ProcWindow)
 			float blue = srcPix[0] * _matrix[6] + srcPix[1] * _matrix[7] + srcPix[2] * _matrix[8];
 			
 			if (_luma == 1) {
-			float inLuma = Luma(srcPix[0], srcPix[1], srcPix[2], _lumaMath);
-			float outLuma = Luma(red, green, blue, _lumaMath);
+			float inLuma = _Luma(srcPix[0], srcPix[1], srcPix[2], _lumaMath);
+			float outLuma = _Luma(red, green, blue, _lumaMath);
 			red = red * (inLuma / outLuma);
 			green = green * (inLuma / outLuma);
 			blue = blue * (inLuma / outLuma);
 			}
    
 			if (_sat == 1) {
-			float inSat = Sat(srcPix[0], srcPix[1], srcPix[2]);
-			float outSat = Sat(red, green, blue);
+			float inSat = _Sat(srcPix[0], srcPix[1], srcPix[2]);
+			float outSat = _Sat(red, green, blue);
 			float satgap = inSat / outSat;
-			float sLuma = Luma(red, green, blue, _lumaMath);
+			float sLuma = _Luma(red, green, blue, _lumaMath);
 			float sr = (1.0f - satgap) * sLuma + red * satgap;
 			float sg = (1.0f - satgap) * sLuma + green * satgap;
 			float sb = (1.0f - satgap) * sLuma + blue * satgap;
@@ -219,7 +219,7 @@ public:
     /* Set up and run a processor */
     void setupAndProcess(ImageScaler &p_ImageScaler, const OFX::RenderArguments& p_Args);
     
-	float Luma(float R, float G, float B, int L)
+	float _Luma(float R, float G, float B, int L)
 	{
 	float lumaRec709 = R * 0.2126f + G * 0.7152f + B * 0.0722f;
 	float lumaRec2020 = R * 0.2627f + G * 0.6780f + B * 0.0593f;
@@ -232,7 +232,7 @@ public:
 	return Lu;
 	}
 
-	float Sat(float r, float g, float b)
+	float _Sat(float r, float g, float b)
 	{
 	float min = fmin(fmin(r, g), b);
 	float max = fmax(fmax(r, g), b);
@@ -805,17 +805,17 @@ void MatrixPlugin::changedParam(const OFX::InstanceChangedArgs& p_Args, const st
 	float green = R * Matrix[3] + G * Matrix[4] + B * Matrix[5];
 	float blue = R * Matrix[6] + G * Matrix[7] + B * Matrix[8];
 	if (luma == 1) {
-	float inLuma = Luma(R, G, B, lumaMath);
-	float outLuma = Luma(red, green, blue, lumaMath);
+	float inLuma = _Luma(R, G, B, lumaMath);
+	float outLuma = _Luma(red, green, blue, lumaMath);
 	red = red * (inLuma / outLuma);
 	green = green * (inLuma / outLuma);
 	blue = blue * (inLuma / outLuma);
 	}
 	if (sat == 1) {
-	float inSat = Sat(R, G, B);
-	float outSat = Sat(red, green, blue);
+	float inSat = _Sat(R, G, B);
+	float outSat = _Sat(red, green, blue);
 	float satgap = inSat / outSat;
-	float sLuma = Luma(red, green, blue, lumaMath);
+	float sLuma = _Luma(red, green, blue, lumaMath);
 	float sr = (1.0f - satgap) * sLuma + red * satgap;
 	float sg = (1.0f - satgap) * sLuma + green * satgap;
 	float sb = (1.0f - satgap) * sLuma + blue * satgap;
@@ -927,6 +927,9 @@ void MatrixPlugin::setupAndProcess(ImageScaler& p_ImageScaler, const OFX::Render
     p_ImageScaler.setDstImg(dst.get());
     p_ImageScaler.setSrcImg(src.get());
 
+    // Setup OpenCL and CUDA Render arguments
+    //p_ImageScaler.setGPURenderArgs(p_Args);
+
     // Set the render window
     p_ImageScaler.setRenderWindow(p_Args.renderWindow);
 
@@ -968,7 +971,10 @@ void MatrixPluginFactory::describe(OFX::ImageEffectDescriptor& p_Desc)
     p_Desc.setTemporalClipAccess(false);
     p_Desc.setRenderTwiceAlways(false);
     p_Desc.setSupportsMultipleClipPARs(kSupportsMultipleClipPARs);
-    
+
+    // Setup OpenCL and CUDA render capability flags
+    //p_Desc.setSupportsOpenCLRender(true);
+    //p_Desc.setSupportsCudaRender(true);
 }
 
 static DoubleParamDescriptor* defineScaleParam(OFX::ImageEffectDescriptor& p_Desc, const std::string& p_Name, const std::string& p_Label,
