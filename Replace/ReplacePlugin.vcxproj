@@ -81,10 +81,10 @@
     </Link>
     <PostBuildEvent>
       <Message>Creating bundle...</Message>
-      <Command>if not exist "$(OutDir)ReplacePlugin.ofx.bundle\Contents\Resources" mkdir "$(OutDir)ReplacePlugin.ofx.bundle\Contents\Resources"
-       copy "(OutDir)../../OpenFX.Yo.Replace.png" "$(OutDir)ReplacePlugin.ofx.bundle\Contents\Resources"
-if not exist "$(OutDir)ReplacePlugin.ofx.bundle\Contents\Win64" mkdir "$(OutDir)ReplacePlugin.ofx.bundle\Contents\Win64"
-copy /Y "$(TargetPath)" /B "$(OutDir)ReplacePlugin.ofx.bundle\Contents\Win64\ReplacePlugin.ofx" /B
+      <Command>if not exist "$(OutDir)Replace.ofx.bundle\Contents\Resources" mkdir "$(OutDir)Replace.ofx.bundle\Contents\Resources"
+       copy "(OutDir)../../OpenFX.Yo.Replace.png" "$(OutDir)Replace.ofx.bundle\Contents\Resources"
+if not exist "$(OutDir)Replace.ofx.bundle\Contents\Win64" mkdir "$(OutDir)Replace.ofx.bundle\Contents\Win64"
+copy /Y "$(TargetPath)" /B "$(OutDir)Replace.ofx.bundle\Contents\Win64\Replace.ofx" /B
 </Command>
     </PostBuildEvent>
     <CudaCompile>
@@ -113,10 +113,10 @@ copy /Y "$(TargetPath)" /B "$(OutDir)ReplacePlugin.ofx.bundle\Contents\Win64\Rep
     </Link>
     <PostBuildEvent>
       <Message>Creating bundle...</Message>
-      <Command>if not exist "$(OutDir)ReplacePlugin.ofx.bundle\Contents\Resources" mkdir "$(OutDir)ReplacePlugin.ofx.bundle\Contents\Resources"
-      copy "(OutDir)../../OpenFX.Yo.Replace.png" "$(OutDir)ReplacePlugin.ofx.bundle\Contents\Resources"
-if not exist "$(OutDir)ReplacePlugin.ofx.bundle\Contents\Win64" mkdir "$(OutDir)ReplacePlugin.ofx.bundle\Contents\Win64"
-copy /Y "$(TargetPath)" /B "$(OutDir)ReplacePlugin.ofx.bundle\Contents\Win64\ReplacePlugin.ofx" /B
+      <Command>if not exist "$(OutDir)Replace.ofx.bundle\Contents\Resources" mkdir "$(OutDir)Replace.ofx.bundle\Contents\Resources"
+      copy "(OutDir)../../OpenFX.Yo.Replace.png" "$(OutDir)Replace.ofx.bundle\Contents\Resources"
+if not exist "$(OutDir)Replace.ofx.bundle\Contents\Win64" mkdir "$(OutDir)Replace.ofx.bundle\Contents\Win64"
+copy /Y "$(TargetPath)" /B "$(OutDir)Replace.ofx.bundle\Contents\Win64\Replace.ofx" /B
 </Command>
     </PostBuildEvent>
     <CudaCompile>
