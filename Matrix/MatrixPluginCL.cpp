@@ -798,7 +798,7 @@ void MatrixPlugin::changedParam(const OFX::InstanceChangedArgs& p_Args, const st
 	string NAME;
 	m_Name->getValue(NAME);
 	
-	OFX::Message::MessageReplyEnum reply = sendMessage(OFX::Message::eMessageQuestion, "", "Save " + NAME + ".nk to " + PATH + "?");
+	OFX::Message::MessageReplyEnum reply = sendMessage(OFX::Message::eMessageQuestion, "", "Save " + NAME + ".cube to " + PATH + "?");
 	if (reply == OFX::Message::eMessageReplyYes) {
 	
 	FILE * pFile;
