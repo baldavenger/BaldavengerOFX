@@ -81,10 +81,10 @@
     </Link>
     <PostBuildEvent>
       <Message>Creating bundle...</Message>
-      <Command>if not exist "$(OutDir)FilmGradePlugin.ofx.bundle\Contents\Resources" mkdir "$(OutDir)FilmGradePlugin.ofx.bundle\Contents\Resources"
-       copy "(OutDir)../../OpenFX.Yo.FilmGrade.png" "$(OutDir)FilmGradePlugin.ofx.bundle\Contents\Resources"
-if not exist "$(OutDir)FilmGradePlugin.ofx.bundle\Contents\Win64" mkdir "$(OutDir)FilmGradePlugin.ofx.bundle\Contents\Win64"
-copy /Y "$(TargetPath)" /B "$(OutDir)FilmGradePlugin.ofx.bundle\Contents\Win64\FilmGradePlugin.ofx" /B
+      <Command>if not exist "$(OutDir)FilmGrade.ofx.bundle\Contents\Resources" mkdir "$(OutDir)FilmGrade.ofx.bundle\Contents\Resources"
+       copy "(OutDir)../../OpenFX.Yo.FilmGrade.png" "$(OutDir)FilmGrade.ofx.bundle\Contents\Resources"
+if not exist "$(OutDir)FilmGrade.ofx.bundle\Contents\Win64" mkdir "$(OutDir)FilmGrade.ofx.bundle\Contents\Win64"
+copy /Y "$(TargetPath)" /B "$(OutDir)FilmGrade.ofx.bundle\Contents\Win64\FilmGrade.ofx" /B
 </Command>
     </PostBuildEvent>
     <CudaCompile>
@@ -113,10 +113,10 @@ copy /Y "$(TargetPath)" /B "$(OutDir)FilmGradePlugin.ofx.bundle\Contents\Win64\F
     </Link>
     <PostBuildEvent>
       <Message>Creating bundle...</Message>
-      <Command>if not exist "$(OutDir)FilmGradePlugin.ofx.bundle\Contents\Resources" mkdir "$(OutDir)FilmGradePlugin.ofx.bundle\Contents\Resources"
-      copy "(OutDir)../../OpenFX.Yo.FilmGrade.png" "$(OutDir)FilmGradePlugin.ofx.bundle\Contents\Resources"
-if not exist "$(OutDir)FilmGradePlugin.ofx.bundle\Contents\Win64" mkdir "$(OutDir)FilmGradePlugin.ofx.bundle\Contents\Win64"
-copy /Y "$(TargetPath)" /B "$(OutDir)FilmGradePlugin.ofx.bundle\Contents\Win64\FilmGradePlugin.ofx" /B
+      <Command>if not exist "$(OutDir)FilmGrade.ofx.bundle\Contents\Resources" mkdir "$(OutDir)FilmGrade.ofx.bundle\Contents\Resources"
+      copy "(OutDir)../../OpenFX.Yo.FilmGrade.png" "$(OutDir)FilmGrade.ofx.bundle\Contents\Resources"
+if not exist "$(OutDir)FilmGrade.ofx.bundle\Contents\Win64" mkdir "$(OutDir)FilmGrade.ofx.bundle\Contents\Win64"
+copy /Y "$(TargetPath)" /B "$(OutDir)FilmGrade.ofx.bundle\Contents\Win64\FilmGrade.ofx" /B
 </Command>
     </PostBuildEvent>
     <CudaCompile>
