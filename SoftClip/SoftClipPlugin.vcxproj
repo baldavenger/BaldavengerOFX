@@ -81,10 +81,10 @@
     </Link>
     <PostBuildEvent>
       <Message>Creating bundle...</Message>
-      <Command>if not exist "$(OutDir)SoftClipPlugin.ofx.bundle\Contents\Resources" mkdir "$(OutDir)SoftClipPlugin.ofx.bundle\Contents\Resources"
-       copy "(OutDir)../../OpenFX.Yo.SoftClip.png" "$(OutDir)SoftClipPlugin.ofx.bundle\Contents\Resources"
-if not exist "$(OutDir)SoftClipPlugin.ofx.bundle\Contents\Win64" mkdir "$(OutDir)SoftClipPlugin.ofx.bundle\Contents\Win64"
-copy /Y "$(TargetPath)" /B "$(OutDir)SoftClipPlugin.ofx.bundle\Contents\Win64\SoftClipPlugin.ofx" /B
+      <Command>if not exist "$(OutDir)SoftClip.ofx.bundle\Contents\Resources" mkdir "$(OutDir)SoftClip.ofx.bundle\Contents\Resources"
+       copy "(OutDir)../../OpenFX.Yo.SoftClip.png" "$(OutDir)SoftClip.ofx.bundle\Contents\Resources"
+if not exist "$(OutDir)SoftClip.ofx.bundle\Contents\Win64" mkdir "$(OutDir)SoftClip.ofx.bundle\Contents\Win64"
+copy /Y "$(TargetPath)" /B "$(OutDir)SoftClip.ofx.bundle\Contents\Win64\SoftClip.ofx" /B
 </Command>
     </PostBuildEvent>
     <CudaCompile>
@@ -113,10 +113,10 @@ copy /Y "$(TargetPath)" /B "$(OutDir)SoftClipPlugin.ofx.bundle\Contents\Win64\So
     </Link>
     <PostBuildEvent>
       <Message>Creating bundle...</Message>
-      <Command>if not exist "$(OutDir)SoftClipPlugin.ofx.bundle\Contents\Resources" mkdir "$(OutDir)SoftClipPlugin.ofx.bundle\Contents\Resources"
-      copy "(OutDir)../../OpenFX.Yo.SoftClip.png" "$(OutDir)SoftClipPlugin.ofx.bundle\Contents\Resources"
-if not exist "$(OutDir)SoftClipPlugin.ofx.bundle\Contents\Win64" mkdir "$(OutDir)SoftClipPlugin.ofx.bundle\Contents\Win64"
-copy /Y "$(TargetPath)" /B "$(OutDir)SoftClipPlugin.ofx.bundle\Contents\Win64\SoftClipPlugin.ofx" /B
+      <Command>if not exist "$(OutDir)SoftClip.ofx.bundle\Contents\Resources" mkdir "$(OutDir)SoftClip.ofx.bundle\Contents\Resources"
+      copy "(OutDir)../../OpenFX.Yo.SoftClip.png" "$(OutDir)SoftClip.ofx.bundle\Contents\Resources"
+if not exist "$(OutDir)SoftClip.ofx.bundle\Contents\Win64" mkdir "$(OutDir)SoftClip.ofx.bundle\Contents\Win64"
+copy /Y "$(TargetPath)" /B "$(OutDir)SoftClip.ofx.bundle\Contents\Win64\SoftClip.ofx" /B
 </Command>
     </PostBuildEvent>
     <CudaCompile>
