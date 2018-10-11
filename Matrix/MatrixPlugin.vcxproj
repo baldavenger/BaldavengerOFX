@@ -81,10 +81,10 @@
     </Link>
     <PostBuildEvent>
       <Message>Creating bundle...</Message>
-      <Command>if not exist "$(OutDir)MatrixPlugin.ofx.bundle\Contents\Resources" mkdir "$(OutDir)MatrixPlugin.ofx.bundle\Contents\Resources"
-       copy "(OutDir)../../OpenFX.Yo.Matrix.png" "$(OutDir)MatrixPlugin.ofx.bundle\Contents\Resources"
-if not exist "$(OutDir)MatrixPlugin.ofx.bundle\Contents\Win64" mkdir "$(OutDir)MatrixPlugin.ofx.bundle\Contents\Win64"
-copy /Y "$(TargetPath)" /B "$(OutDir)MatrixPlugin.ofx.bundle\Contents\Win64\MatrixPlugin.ofx" /B
+      <Command>if not exist "$(OutDir)Matrix.ofx.bundle\Contents\Resources" mkdir "$(OutDir)Matrix.ofx.bundle\Contents\Resources"
+       copy "(OutDir)../../OpenFX.Yo.Matrix.png" "$(OutDir)Matrix.ofx.bundle\Contents\Resources"
+if not exist "$(OutDir)Matrix.ofx.bundle\Contents\Win64" mkdir "$(OutDir)Matrix.ofx.bundle\Contents\Win64"
+copy /Y "$(TargetPath)" /B "$(OutDir)Matrix.ofx.bundle\Contents\Win64\Matrix.ofx" /B
 </Command>
     </PostBuildEvent>
     <CudaCompile>
@@ -113,10 +113,10 @@ copy /Y "$(TargetPath)" /B "$(OutDir)MatrixPlugin.ofx.bundle\Contents\Win64\Matr
     </Link>
     <PostBuildEvent>
       <Message>Creating bundle...</Message>
-      <Command>if not exist "$(OutDir)MatrixPlugin.ofx.bundle\Contents\Resources" mkdir "$(OutDir)MatrixPlugin.ofx.bundle\Contents\Resources"
-      copy "(OutDir)../../OpenFX.Yo.Matrix.png" "$(OutDir)MatrixPlugin.ofx.bundle\Contents\Resources"
-if not exist "$(OutDir)MatrixPlugin.ofx.bundle\Contents\Win64" mkdir "$(OutDir)MatrixPlugin.ofx.bundle\Contents\Win64"
-copy /Y "$(TargetPath)" /B "$(OutDir)MatrixPlugin.ofx.bundle\Contents\Win64\MatrixPlugin.ofx" /B
+      <Command>if not exist "$(OutDir)Matrix.ofx.bundle\Contents\Resources" mkdir "$(OutDir)Matrix.ofx.bundle\Contents\Resources"
+      copy "(OutDir)../../OpenFX.Yo.Matrix.png" "$(OutDir)Matrix.ofx.bundle\Contents\Resources"
+if not exist "$(OutDir)Matrix.ofx.bundle\Contents\Win64" mkdir "$(OutDir)Matrix.ofx.bundle\Contents\Win64"
+copy /Y "$(TargetPath)" /B "$(OutDir)Matrix.ofx.bundle\Contents\Win64\Matrix.ofx" /B
 </Command>
     </PostBuildEvent>
     <CudaCompile>
