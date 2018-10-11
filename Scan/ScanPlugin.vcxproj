@@ -81,10 +81,10 @@
     </Link>
     <PostBuildEvent>
       <Message>Creating bundle...</Message>
-      <Command>if not exist "$(OutDir)ScanPlugin.ofx.bundle\Contents\Resources" mkdir "$(OutDir)ScanPlugin.ofx.bundle\Contents\Resources"
-       copy "(OutDir)../../OpenFX.Yo.Scan.png" "$(OutDir)ScanPlugin.ofx.bundle\Contents\Resources"
-if not exist "$(OutDir)ScanPlugin.ofx.bundle\Contents\Win64" mkdir "$(OutDir)ScanPlugin.ofx.bundle\Contents\Win64"
-copy /Y "$(TargetPath)" /B "$(OutDir)ScanPlugin.ofx.bundle\Contents\Win64\ScanPlugin.ofx" /B
+      <Command>if not exist "$(OutDir)Scan.ofx.bundle\Contents\Resources" mkdir "$(OutDir)Scan.ofx.bundle\Contents\Resources"
+       copy "(OutDir)../../OpenFX.Yo.Scan.png" "$(OutDir)Scan.ofx.bundle\Contents\Resources"
+if not exist "$(OutDir)Scan.ofx.bundle\Contents\Win64" mkdir "$(OutDir)Scan.ofx.bundle\Contents\Win64"
+copy /Y "$(TargetPath)" /B "$(OutDir)Scan.ofx.bundle\Contents\Win64\Scan.ofx" /B
 </Command>
     </PostBuildEvent>
     <CudaCompile>
@@ -113,10 +113,10 @@ copy /Y "$(TargetPath)" /B "$(OutDir)ScanPlugin.ofx.bundle\Contents\Win64\ScanPl
     </Link>
     <PostBuildEvent>
       <Message>Creating bundle...</Message>
-      <Command>if not exist "$(OutDir)ScanPlugin.ofx.bundle\Contents\Resources" mkdir "$(OutDir)ScanPlugin.ofx.bundle\Contents\Resources"
-      copy "(OutDir)../../OpenFX.Yo.Scan.png" "$(OutDir)ScanPlugin.ofx.bundle\Contents\Resources"
-if not exist "$(OutDir)ScanPlugin.ofx.bundle\Contents\Win64" mkdir "$(OutDir)ScanPlugin.ofx.bundle\Contents\Win64"
-copy /Y "$(TargetPath)" /B "$(OutDir)ScanPlugin.ofx.bundle\Contents\Win64\ScanPlugin.ofx" /B
+      <Command>if not exist "$(OutDir)Scan.ofx.bundle\Contents\Resources" mkdir "$(OutDir)Scan.ofx.bundle\Contents\Resources"
+      copy "(OutDir)../../OpenFX.Yo.Scan.png" "$(OutDir)Scan.ofx.bundle\Contents\Resources"
+if not exist "$(OutDir)Scan.ofx.bundle\Contents\Win64" mkdir "$(OutDir)Scan.ofx.bundle\Contents\Win64"
+copy /Y "$(TargetPath)" /B "$(OutDir)Scan.ofx.bundle\Contents\Win64\Scan.ofx" /B
 </Command>
     </PostBuildEvent>
     <CudaCompile>
