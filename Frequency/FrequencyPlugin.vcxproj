@@ -81,10 +81,10 @@
     </Link>
     <PostBuildEvent>
       <Message>Creating bundle...</Message>
-      <Command>if not exist "$(OutDir)FrequencyPlugin.ofx.bundle\Contents\Resources" mkdir "$(OutDir)FrequencyPlugin.ofx.bundle\Contents\Resources"
-       copy "(OutDir)../../OpenFX.Yo.Frequency.png" "$(OutDir)FrequencyPlugin.ofx.bundle\Contents\Resources"
-if not exist "$(OutDir)FrequencyPlugin.ofx.bundle\Contents\Win64" mkdir "$(OutDir)FrequencyPlugin.ofx.bundle\Contents\Win64"
-copy /Y "$(TargetPath)" /B "$(OutDir)FrequencyPlugin.ofx.bundle\Contents\Win64\FrequencyPlugin.ofx" /B
+      <Command>if not exist "$(OutDir)Frequency.ofx.bundle\Contents\Resources" mkdir "$(OutDir)Frequency.ofx.bundle\Contents\Resources"
+       copy "(OutDir)../../OpenFX.Yo.Frequency.png" "$(OutDir)Frequency.ofx.bundle\Contents\Resources"
+if not exist "$(OutDir)Frequency.ofx.bundle\Contents\Win64" mkdir "$(OutDir)Frequency.ofx.bundle\Contents\Win64"
+copy /Y "$(TargetPath)" /B "$(OutDir)Frequency.ofx.bundle\Contents\Win64\Frequency.ofx" /B
 </Command>
     </PostBuildEvent>
     <CudaCompile>
@@ -113,10 +113,10 @@ copy /Y "$(TargetPath)" /B "$(OutDir)FrequencyPlugin.ofx.bundle\Contents\Win64\F
     </Link>
     <PostBuildEvent>
       <Message>Creating bundle...</Message>
-      <Command>if not exist "$(OutDir)FrequencyPlugin.ofx.bundle\Contents\Resources" mkdir "$(OutDir)FrequencyPlugin.ofx.bundle\Contents\Resources"
-      copy "(OutDir)../../OpenFX.Yo.Frequency.png" "$(OutDir)FrequencyPlugin.ofx.bundle\Contents\Resources"
-if not exist "$(OutDir)FrequencyPlugin.ofx.bundle\Contents\Win64" mkdir "$(OutDir)FrequencyPlugin.ofx.bundle\Contents\Win64"
-copy /Y "$(TargetPath)" /B "$(OutDir)FrequencyPlugin.ofx.bundle\Contents\Win64\FrequencyPlugin.ofx" /B
+      <Command>if not exist "$(OutDir)Frequency.ofx.bundle\Contents\Resources" mkdir "$(OutDir)Frequency.ofx.bundle\Contents\Resources"
+      copy "(OutDir)../../OpenFX.Yo.Frequency.png" "$(OutDir)Frequency.ofx.bundle\Contents\Resources"
+if not exist "$(OutDir)Frequency.ofx.bundle\Contents\Win64" mkdir "$(OutDir)Frequency.ofx.bundle\Contents\Win64"
+copy /Y "$(TargetPath)" /B "$(OutDir)Frequency.ofx.bundle\Contents\Win64\Frequency.ofx" /B
 </Command>
     </PostBuildEvent>
     <CudaCompile>
