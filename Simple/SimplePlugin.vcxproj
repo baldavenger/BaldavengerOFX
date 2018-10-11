@@ -81,10 +81,10 @@
     </Link>
     <PostBuildEvent>
       <Message>Creating bundle...</Message>
-      <Command>if not exist "$(OutDir)SimplePlugin.ofx.bundle\Contents\Resources" mkdir "$(OutDir)SimplePlugin.ofx.bundle\Contents\Resources"
-       copy "(OutDir)../../OpenFX.Yo.Simple.png" "$(OutDir)SimplePlugin.ofx.bundle\Contents\Resources"
-if not exist "$(OutDir)SimplePlugin.ofx.bundle\Contents\Win64" mkdir "$(OutDir)SimplePlugin.ofx.bundle\Contents\Win64"
-copy /Y "$(TargetPath)" /B "$(OutDir)SimplePlugin.ofx.bundle\Contents\Win64\SimplePlugin.ofx" /B
+      <Command>if not exist "$(OutDir)Simple.ofx.bundle\Contents\Resources" mkdir "$(OutDir)Simple.ofx.bundle\Contents\Resources"
+       copy "(OutDir)../../OpenFX.Yo.Simple.png" "$(OutDir)Simple.ofx.bundle\Contents\Resources"
+if not exist "$(OutDir)Simple.ofx.bundle\Contents\Win64" mkdir "$(OutDir)Simple.ofx.bundle\Contents\Win64"
+copy /Y "$(TargetPath)" /B "$(OutDir)Simple.ofx.bundle\Contents\Win64\Simple.ofx" /B
 </Command>
     </PostBuildEvent>
     <CudaCompile>
@@ -113,10 +113,10 @@ copy /Y "$(TargetPath)" /B "$(OutDir)SimplePlugin.ofx.bundle\Contents\Win64\Simp
     </Link>
     <PostBuildEvent>
       <Message>Creating bundle...</Message>
-      <Command>if not exist "$(OutDir)SimplePlugin.ofx.bundle\Contents\Resources" mkdir "$(OutDir)SimplePlugin.ofx.bundle\Contents\Resources"
-      copy "(OutDir)../../OpenFX.Yo.Simple.png" "$(OutDir)SimplePlugin.ofx.bundle\Contents\Resources"
-if not exist "$(OutDir)SimplePlugin.ofx.bundle\Contents\Win64" mkdir "$(OutDir)SimplePlugin.ofx.bundle\Contents\Win64"
-copy /Y "$(TargetPath)" /B "$(OutDir)SimplePlugin.ofx.bundle\Contents\Win64\SimplePlugin.ofx" /B
+      <Command>if not exist "$(OutDir)Simple.ofx.bundle\Contents\Resources" mkdir "$(OutDir)Simple.ofx.bundle\Contents\Resources"
+      copy "(OutDir)../../OpenFX.Yo.Simple.png" "$(OutDir)Simple.ofx.bundle\Contents\Resources"
+if not exist "$(OutDir)Simple.ofx.bundle\Contents\Win64" mkdir "$(OutDir)Simple.ofx.bundle\Contents\Win64"
+copy /Y "$(TargetPath)" /B "$(OutDir)Simple.ofx.bundle\Contents\Win64\Simple.ofx" /B
 </Command>
     </PostBuildEvent>
     <CudaCompile>
