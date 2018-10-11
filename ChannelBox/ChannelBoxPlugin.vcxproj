@@ -81,10 +81,10 @@
     </Link>
     <PostBuildEvent>
       <Message>Creating bundle...</Message>
-      <Command>if not exist "$(OutDir)ChannelBoxPlugin.ofx.bundle\Contents\Resources" mkdir "$(OutDir)ChannelBoxPlugin.ofx.bundle\Contents\Resources"
-       copy "(OutDir)../../OpenFX.Yo.ChannelBox.png" "$(OutDir)ChannelBoxPlugin.ofx.bundle\Contents\Resources"
-if not exist "$(OutDir)ChannelBoxPlugin.ofx.bundle\Contents\Win64" mkdir "$(OutDir)ChannelBoxPlugin.ofx.bundle\Contents\Win64"
-copy /Y "$(TargetPath)" /B "$(OutDir)ChannelBoxPlugin.ofx.bundle\Contents\Win64\ChannelBoxPlugin.ofx" /B
+      <Command>if not exist "$(OutDir)ChannelBox.ofx.bundle\Contents\Resources" mkdir "$(OutDir)ChannelBox.ofx.bundle\Contents\Resources"
+       copy "(OutDir)../../OpenFX.Yo.ChannelBox.png" "$(OutDir)ChannelBox.ofx.bundle\Contents\Resources"
+if not exist "$(OutDir)ChannelBox.ofx.bundle\Contents\Win64" mkdir "$(OutDir)ChannelBox.ofx.bundle\Contents\Win64"
+copy /Y "$(TargetPath)" /B "$(OutDir)ChannelBox.ofx.bundle\Contents\Win64\ChannelBox.ofx" /B
 </Command>
     </PostBuildEvent>
     <CudaCompile>
@@ -113,10 +113,10 @@ copy /Y "$(TargetPath)" /B "$(OutDir)ChannelBoxPlugin.ofx.bundle\Contents\Win64\
     </Link>
     <PostBuildEvent>
       <Message>Creating bundle...</Message>
-      <Command>if not exist "$(OutDir)ChannelBoxPlugin.ofx.bundle\Contents\Resources" mkdir "$(OutDir)ChannelBoxPlugin.ofx.bundle\Contents\Resources"
-      copy "(OutDir)../../OpenFX.Yo.ChannelBox.png" "$(OutDir)ChannelBoxPlugin.ofx.bundle\Contents\Resources"
-if not exist "$(OutDir)ChannelBoxPlugin.ofx.bundle\Contents\Win64" mkdir "$(OutDir)ChannelBoxPlugin.ofx.bundle\Contents\Win64"
-copy /Y "$(TargetPath)" /B "$(OutDir)ChannelBoxPlugin.ofx.bundle\Contents\Win64\ChannelBoxPlugin.ofx" /B
+      <Command>if not exist "$(OutDir)ChannelBox.ofx.bundle\Contents\Resources" mkdir "$(OutDir)ChannelBox.ofx.bundle\Contents\Resources"
+      copy "(OutDir)../../OpenFX.Yo.ChannelBox.png" "$(OutDir)ChannelBox.ofx.bundle\Contents\Resources"
+if not exist "$(OutDir)ChannelBox.ofx.bundle\Contents\Win64" mkdir "$(OutDir)ChannelBox.ofx.bundle\Contents\Win64"
+copy /Y "$(TargetPath)" /B "$(OutDir)ChannelBox.ofx.bundle\Contents\Win64\ChannelBox.ofx" /B
 </Command>
     </PostBuildEvent>
     <CudaCompile>
