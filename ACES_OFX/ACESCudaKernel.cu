@@ -1,7 +1,7 @@
-#include "ACES_LIB/ACES_IDT.h"
-#include "ACES_LIB/ACES_LMT.h"
-#include "ACES_LIB/ACES_RRT.h"
-#include "ACES_LIB/ACES_ODT.h"
+#include "ACES_LIB_CUDA/ACES_IDT.h"
+#include "ACES_LIB_CUDA/ACES_LMT.h"
+#include "ACES_LIB_CUDA/ACES_RRT.h"
+#include "ACES_LIB_CUDA/ACES_ODT.h"
 
 __global__ void ACESKernel(const float* p_Input, float* p_Output, int p_Width, int p_Height, 
 int p_Direction, int p_IDT, int p_ACESIN, int p_LMT, int p_ACESOUT, int p_RRT, int p_InvRRT, 

@@ -594,7 +594,7 @@ class ACES : public OFX::ImageProcessor
 public:
     explicit ACES(OFX::ImageEffect& p_Instance);
 
-    virtual void processImagesCUDA();
+    //virtual void processImagesCUDA();
     //virtual void processImagesOpenCL();
     virtual void multiThreadProcessImages(OfxRectI p_ProcWindow);
     
@@ -628,7 +628,7 @@ ACES::ACES(OFX::ImageEffect& p_Instance)
     : OFX::ImageProcessor(p_Instance)
 {
 }
-
+/*
 extern void RunCudaKernel(const float* p_Input, float* p_Output, int p_Width, int p_Height, 
 int p_Direction, int p_IDT, int p_ACESIN, int p_LMT, int p_ACESOUT, int p_RRT, int p_InvRRT, 
 int p_ODT, int p_InvODT, float p_Exposure, float* p_LMTScale, float *p_Lum, 
@@ -646,7 +646,7 @@ void ACES::processImagesCUDA()
     RunCudaKernel(input, output, width, height, _direction, _idt, _acesin, _lmt, _acesout, _rrt, 
     _invrrt, _odt, _invodt, _exposure, _lmtscale, _lum, _display, _limit, _eotf, _surround, _switch);
 }
-/*
+
 extern void RunOpenCLKernel(void* p_CmdQ, int p_Width, int p_Height, const float* p_Input, float* p_Output);
 
 void ACES::processImagesOpenCL()
@@ -1332,7 +1332,6 @@ dstPix[c] = 0;
 }
 }
 
-// increment the dst pixel
 dstPix += 4;
 }
 }
@@ -3457,7 +3456,7 @@ void ACESPlugin::setupAndProcess(ACES& p_ACES, const OFX::RenderArguments& p_Arg
     p_ACES.setSrcImg(src.get());
 
     // Setup OpenCL and CUDA Render arguments
-    p_ACES.setGPURenderArgs(p_Args);
+    //p_ACES.setGPURenderArgs(p_Args);
 
     // Set the render window
     p_ACES.setRenderWindow(p_Args.renderWindow);
@@ -3503,8 +3502,8 @@ void ACESPluginFactory::describe(OFX::ImageEffectDescriptor& p_Desc)
     p_Desc.setSupportsMultipleClipPARs(kSupportsMultipleClipPARs);
 
     // Setup OpenCL and CUDA render capability flags
-    p_Desc.setSupportsOpenCLRender(true);
-    p_Desc.setSupportsCudaRender(true);
+    //p_Desc.setSupportsOpenCLRender(true);
+    //p_Desc.setSupportsCudaRender(true);
 }
 
 static DoubleParamDescriptor* defineScaleParam(OFX::ImageEffectDescriptor& p_Desc, const std::string& p_Name, const std::string& p_Label,
