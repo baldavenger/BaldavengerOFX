@@ -989,7 +989,7 @@ void MatrixPluginFactory::describe(OFX::ImageEffectDescriptor& p_Desc)
 
     // Setup OpenCL and CUDA render capability flags
     p_Desc.setSupportsOpenCLRender(true);
-    //p_Desc.setSupportsCudaRender(true);
+    p_Desc.setSupportsCudaRender(true);
 }
 
 static DoubleParamDescriptor* defineScaleParam(OFX::ImageEffectDescriptor& p_Desc, const std::string& p_Name, const std::string& p_Label,

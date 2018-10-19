@@ -32,6 +32,7 @@ VideoGrade
 
 all: subdirs
 
+
 .PHONY: nomulti subdirs clean install install-nomulti uninstall uninstall-nomulti $(SUBDIRS)
 
 nomulti:

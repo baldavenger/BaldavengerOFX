@@ -180,7 +180,9 @@ enum OutputAlphaEnum
 #define MIN_SATURATION 0.1
 #define MIN_VALUE 0.1
 
-#define M_PI 3.141592653
+#ifndef M_PI
+#define M_PI			3.14159265358979323846264338327950288
+#endif
 
 // default fraction of the min-max interval to use as rolloff after rectangle analysis
 #define DEFAULT_RECTANGLE_ROLLOFF 0.5

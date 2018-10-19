@@ -1,5 +1,7 @@
 PLUGINNAME = Matrix
 PLUGINOBJECTS = $(PLUGINNAME)Plugin.o $(PLUGINNAME)CudaKernel.o $(PLUGINNAME)OpenCLKernel.o
+PLUGINOBJECTSCL = $(PLUGINNAME)PluginCL.o $(PLUGINNAME)OpenCLKernel.o
+PLUGINOBJECTSCPU = $(PLUGINNAME)PluginCPU.o
 RESOURCES = OpenFX.Yo.$(PLUGINNAME).png
 
 ## Select TRUE to install directly to OFX/Plugin folder, select FALSE for usual location. ##
@@ -11,13 +13,12 @@ ENABLECUDA := TRUE
 ## Select TRUE for CPU ONLY processing (removes both CUDA and OpenCL, overrides ENABLECUDA), select FALSE for no change. ##
 CPU_ONLY := FALSE
 
-
 ifeq ($(ENABLECUDA), FALSE)
-	PLUGINOBJECTS = $(PLUGINNAME)PluginCL.o $(PLUGINNAME)OpenCLKernel.o
+	PLUGINOBJECTS = $(PLUGINOBJECTSCL)
 endif
 
 ifeq ($(CPU_ONLY), TRUE)
-	PLUGINOBJECTS = $(PLUGINNAME)PluginCPU.o
+	PLUGINOBJECTS = $(PLUGINOBJECTSCPU)
 endif
 
 TOP_SRCDIR = ..
