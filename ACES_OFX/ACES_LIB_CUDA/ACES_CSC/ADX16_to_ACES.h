@@ -26,7 +26,7 @@ __constant__ float2 LUT_1D[11] = { {-0.190000000000000, -6.000000000000000},
     							{ 0.500000000000000, -1.121718645000000},
     							{ 0.600000000000000, -0.926545676714876} };
 
-#define REF_PT 					(7120.0f - 1520.0f) / 8000.0f * (100.0f / 55.0f) - log10f(0.18f)
+#define REF_PT 					((7120.0f - 1520.0f) / 8000.0f * (100.0f / 55.0f) - log10f(0.18f)) * 1.0f
 
 
 __device__ inline float3 ADX16_to_ACES( float3 ADX16)
@@ -45,9 +45,9 @@ __device__ inline float3 ADX16_to_ACES( float3 ADX16)
 
     // Convert Channel Independent Density values to Relative Log Exposure values
     float3 logE;
-    if ( cid.x <= 0.6f) logE.x = interpolate1D( LUT_1D, cid.x);
-    if ( cid.y <= 0.6f) logE.y = interpolate1D( LUT_1D, cid.y);
-    if ( cid.z <= 0.6f) logE.z = interpolate1D( LUT_1D, cid.z);
+    if ( cid.x <= 0.6f) logE.x = interpolate1D( LUT_1D, 11, cid.x);
+    if ( cid.y <= 0.6f) logE.y = interpolate1D( LUT_1D, 11, cid.y);
+    if ( cid.z <= 0.6f) logE.z = interpolate1D( LUT_1D, 11, cid.z);
 
     if ( cid.x > 0.6f) logE.x = ( 100.0f / 55.0f) * cid.x - REF_PT;
     if ( cid.y > 0.6f) logE.y = ( 100.0f / 55.0f) * cid.y - REF_PT;

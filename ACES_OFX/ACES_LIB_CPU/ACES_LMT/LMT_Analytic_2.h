@@ -526,9 +526,9 @@ inline float3 LMT_Analytic_2( float3 In)
 {
     // Apply 1D-LUT
     float3 out;
-    out.x = pow10f( interpolate1D( LUT1D, log10f(In.x) ) );
-    out.y = pow10f( interpolate1D( LUT1D, log10f(In.y) ) );
-    out.z = pow10f( interpolate1D( LUT1D, log10f(In.z) ) );
+    out.x = pow10f( interpolate1D( LUT1D, 1024, log10f(In.x) ) );
+    out.y = pow10f( interpolate1D( LUT1D, 1024, log10f(In.y) ) );
+    out.z = pow10f( interpolate1D( LUT1D, 1024, log10f(In.z) ) );
     
     return out;
 }

@@ -361,9 +361,9 @@ __device__ inline float lookupCubic1D (float table[], float pMin, float pMax, fl
   return table[i] * (2 * s*s*s - 3 * s*s + 1) + m0 * (s*s*s - 2 * s*s + s) + table[i+1] * (-2 * s*s*s + 3 * s*s) + m1 * (s*s*s - s*s);
 }
 
-__device__ inline float interpolate1D (float2 table[], float p)
+__device__ inline float interpolate1D (float2 table[], int Size, float p)
 {
-  int Size = size(table);
+  //int Size = size(table);
   if( p <= table[0].x ) return table[0].y;
   if( p >= table[Size-1].x ) return table[Size-1].y;
   

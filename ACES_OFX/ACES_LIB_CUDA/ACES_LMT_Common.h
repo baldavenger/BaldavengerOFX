@@ -240,7 +240,7 @@ __device__ inline float3 rotate_H_in_H
     float new_hue = centeredHue + degreesShift;
     float2 table[2] = { {0.0f, old_hue}, 
                         {1.0f, new_hue} };
-    float blended_hue = interpolate1D( table, f_H);
+    float blended_hue = interpolate1D( table, 2, f_H);
         
     if (f_H > 0.0f) new_ych.z = uncenter_hue(blended_hue, centerH);
     
