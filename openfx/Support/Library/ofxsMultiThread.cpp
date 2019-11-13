@@ -118,29 +118,7 @@ namespace OFX {
       if(stat != kOfxStatOK) n = 0;
       return n;
     }
-	
-	/** @brief Utility function to compute the subrange of a given thread */
-    void getThreadRange(unsigned int threadID, unsigned int nThreads, int ibegin, int iend, int* ibegin_range, int* iend_range)
-    {
-      unsigned int di = iend - ibegin;
-      // the following is equivalent to std::ceil(di/(double)nThreads); but doesn't require <cmath>
-      unsigned int r = (di + nThreads - 1) / nThreads;
 
-      if (r == 0) {
-        // there are more threads than lines to process
-        r = 1;
-      }
-      if ((int)threadID * r >= di) {
-        // empty range
-        *ibegin_range = *iend_range = iend;
-        return;
-      }
-      *ibegin_range = ibegin + threadID * r;
-      unsigned int step = (threadID + 1) * r;
-      *iend_range = ibegin + (step < di ? step : di);
-    }
-
-#ifdef OFX_USE_MULTITHREAD_MUTEX
     ////////////////////////////////////////////////////////////////////////////////
     // MUTEX class
 
@@ -179,6 +157,6 @@ namespace OFX {
       OfxStatus stat = OFX::Private::gThreadSuite ? OFX::Private::gThreadSuite->mutexTryLock(_handle) : kOfxStatReplyDefault;
       return stat == kOfxStatOK;
     }
-#endif
+
   };
 };

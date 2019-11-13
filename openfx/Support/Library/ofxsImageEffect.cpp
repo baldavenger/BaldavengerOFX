@@ -666,6 +666,12 @@ namespace OFX {
   {
     _effectProps.propSetInt(kOfxImageEffectPropSupportsTiles, int(v));
   }
+  
+  /** @brief Does the plugin handles render quality */
+  void ImageEffectDescriptor::setSupportsRenderQuality(bool v)
+  {
+    _effectProps.propSetInt(kOfxImageEffectPropRenderQualityDraft, int(v), false); // OFX 1.4+
+  }
 
   /** @brief Does the plugin perform temporal clip access */
   void ImageEffectDescriptor::setTemporalClipAccess(bool v)
@@ -718,6 +724,18 @@ namespace OFX {
   void ImageEffectDescriptor::setSupportsCudaRender(bool v)
   {
       _effectProps.propSetString(kOfxImageEffectPropCudaRenderSupported, (v ? "true" : "false"));
+  }
+
+  /** @brief Does the plugin support Metal Render */
+  void ImageEffectDescriptor::setSupportsMetalRender(bool v)
+  {
+      _effectProps.propSetString(kOfxImageEffectPropMetalRenderSupported, (v ? "true" : "false"));
+  }
+
+  /** @brief Does the plugin have no spatial awaareness */
+  void ImageEffectDescriptor::setNoSpatialAwareness(bool v)
+  {
+      _effectProps.propSetString(kOfxImageEffectPropNoSpatialAwareness, (v ? "true" : "false"));
   }
 
 #ifdef OFX_SUPPORTS_OPENGLRENDER
@@ -1877,7 +1895,7 @@ namespace OFX {
         gHostDescription.supportsStringAnimation    = hostProps.propGetInt(kOfxParamHostPropSupportsStringAnimation) != 0;
         gHostDescription.supportsCustomInteract     = hostProps.propGetInt(kOfxParamHostPropSupportsCustomInteract) != 0;
         gHostDescription.supportsChoiceAnimation    = hostProps.propGetInt(kOfxParamHostPropSupportsChoiceAnimation) != 0;
-        //gHostDescription.supportsStrChoiceAnimation = hostProps.propGetInt(kOfxParamHostPropSupportsStrChoiceAnimation) != 0;
+        gHostDescription.supportsStrChoiceAnimation = hostProps.propGetInt(kOfxParamHostPropSupportsStrChoiceAnimation) != 0;
         gHostDescription.supportsBooleanAnimation   = hostProps.propGetInt(kOfxParamHostPropSupportsBooleanAnimation) != 0;
         gHostDescription.supportsCustomAnimation    = hostProps.propGetInt(kOfxParamHostPropSupportsCustomAnimation) != 0;
         gHostDescription.osHandle                   = hostProps.propGetPointer(kOfxPropHostOSHandle, false);
@@ -1885,6 +1903,7 @@ namespace OFX {
         gHostDescription.supportsParametricAnimation = hostProps.propGetInt(kOfxParamHostPropSupportsParametricAnimation, false) != 0;
         gHostDescription.supportsOpenCLRender        = hostProps.propGetString(kOfxImageEffectPropOpenCLRenderSupported, 0, false) == "true";
         gHostDescription.supportsCudaRender          = hostProps.propGetString(kOfxImageEffectPropCudaRenderSupported, 0, false) == "true";
+        gHostDescription.supportsMetalRender         = hostProps.propGetString(kOfxImageEffectPropMetalRenderSupported, 0, false) == "true";
 #ifdef HAVE_OFX_V_1_40
         gHostDescription.supportsRenderQualityDraft = hostProps.propGetInt(kOfxImageEffectPropRenderQualityDraft, false) != 0; // appeared in OFX 1.4
         {
@@ -2125,7 +2144,9 @@ namespace OFX {
 
       args.isEnabledOpenCLRender = inArgs.propGetInt(kOfxImageEffectPropOpenCLEnabled, false) != 0;
       args.isEnabledCudaRender   = inArgs.propGetInt(kOfxImageEffectPropCudaEnabled, false) != 0;
+      args.isEnabledMetalRender  = inArgs.propGetInt(kOfxImageEffectPropMetalEnabled, false) != 0;
       args.pOpenCLCmdQ           = inArgs.propGetPointer(kOfxImageEffectPropOpenCLCommandQueue, false);
+      args.pMetalCmdQ            = inArgs.propGetPointer(kOfxImageEffectPropMetalCommandQueue, false);
 
 #ifdef OFX_SUPPORTS_OPENGLRENDER
       // Don't throw an exception if the following inArgs are not present.
@@ -2190,7 +2211,9 @@ namespace OFX {
 
       args.isEnabledOpenCLRender = inArgs.propGetInt(kOfxImageEffectPropOpenCLEnabled, false) != 0;
       args.isEnabledCudaRender   = inArgs.propGetInt(kOfxImageEffectPropCudaEnabled, false) != 0;
+      args.isEnabledMetalRender  = inArgs.propGetInt(kOfxImageEffectPropMetalEnabled, false) != 0;
       args.pOpenCLCmdQ           = inArgs.propGetPointer(kOfxImageEffectPropOpenCLCommandQueue, false);
+      args.pMetalCmdQ            = inArgs.propGetPointer(kOfxImageEffectPropMetalCommandQueue, false);
 
 #ifdef OFX_SUPPORTS_OPENGLRENDER
       // Don't throw an exception if the following inArgs are not present.
@@ -2221,7 +2244,9 @@ namespace OFX {
 
       args.isEnabledOpenCLRender = inArgs.propGetInt(kOfxImageEffectPropOpenCLEnabled, false) != 0;
       args.isEnabledCudaRender   = inArgs.propGetInt(kOfxImageEffectPropCudaEnabled, false) != 0;
+      args.isEnabledMetalRender  = inArgs.propGetInt(kOfxImageEffectPropMetalEnabled, false) != 0;
       args.pOpenCLCmdQ           = inArgs.propGetPointer(kOfxImageEffectPropOpenCLCommandQueue, false);
+      args.pMetalCmdQ            = inArgs.propGetPointer(kOfxImageEffectPropMetalCommandQueue, false);
 
 #ifdef OFX_SUPPORTS_OPENGLRENDER
       // Don't throw an exception if the following inArgs are not present.

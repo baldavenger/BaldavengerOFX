@@ -274,11 +274,14 @@ Transform3x3Plugin::setupAndProcess(Transform3x3ProcessorBase &processor,
             invtransformsizealloc = kTransform3x3MotionBlurCount;
             invtransform.resize(invtransformsizealloc);
             assert(_shutteroffset);
-            ShutterOffsetEnum shutteroffset = (ShutterOffsetEnum)_shutteroffset->getValueAtTime(time);
+            
+            int shutteroffset_i;
+            ShutterOffsetEnum shutteroffset;
+            _shutteroffset->getValueAtTime(time, shutteroffset_i);
             double shuttercustomoffset;
             assert(_shuttercustomoffset);
             _shuttercustomoffset->getValueAtTime(time, shuttercustomoffset);
-
+            
             invtransformsize = getInverseTransforms(time, args.renderView, args.renderScale, fielded, srcpixelAspectRatio, dstpixelAspectRatio, invert, shutter, shutteroffset, shuttercustomoffset, &invtransform.front(), invtransformsizealloc);
         } else if (directionalBlur) {
             invtransformsizealloc = kTransform3x3MotionBlurCount;
@@ -674,9 +677,15 @@ Transform3x3Plugin::getRegionOfDefinition(const RegionOfDefinitionArguments &arg
     double shuttercustomoffset = 0.;
     if (_directionalBlur) {
         directionalBlur = _directionalBlur->getValueAtTime(time);
-        shutter = _shutter->getValueAtTime(time);
-        shutteroffset = (ShutterOffsetEnum)_shutteroffset->getValueAtTime(time);
-        shuttercustomoffset = _shuttercustomoffset->getValueAtTime(time);
+        //shutter = _shutter->getValueAtTime(time);
+        _shutter->getValueAtTime(time, shutter);
+        //int shutteroffset_i;
+        //ShutterOffsetEnum _shutteroffset;
+        //_shutteroffset.getValueAtTime(time, shutteroffset_i);
+        //shutteroffset = 0;
+        _shuttercustomoffset->getValueAtTime(time, shuttercustomoffset);
+        //shutteroffset = (ShutterOffsetEnum)_shutteroffset->getValueAtTime(time);
+        //_shuttercustomoffset->getValueAtTime(time, shuttercustomoffset);
     }
 
     bool identity = isIdentity(args.time);
@@ -767,9 +776,11 @@ Transform3x3Plugin::getRegionsOfInterest(const RegionsOfInterestArguments &args,
     double shuttercustomoffset = 0.;
     if (_directionalBlur) {
         directionalBlur = _directionalBlur->getValueAtTime(time);
-        shutter = _shutter->getValueAtTime(time);
-        shutteroffset = (ShutterOffsetEnum)_shutteroffset->getValueAtTime(time);
-        shuttercustomoffset = _shuttercustomoffset->getValueAtTime(time);
+        //shutter = _shutter->getValueAtTime(time);
+        //shutteroffset = (ShutterOffsetEnum)_shutteroffset->getValueAtTime(time);
+        //shuttercustomoffset = _shuttercustomoffset->getValueAtTime(time);
+        _shutter->getValueAtTime(time, shutter);
+        _shuttercustomoffset->getValueAtTime(time, shuttercustomoffset);
     }
 #ifdef OFX_EXTENSIONS_NUKE
     const int view = args.view;
@@ -782,7 +793,10 @@ Transform3x3Plugin::getRegionsOfInterest(const RegionsOfInterestArguments &args,
 
     FilterEnum filter = eFilterCubic;
     if (_filter) {
-        filter = (FilterEnum)_filter->getValueAtTime(time);
+        //filter = (FilterEnum)_filter->getValueAtTime(time);
+        int filter_i;
+    	_filter->getValueAtTime(time, filter_i);
+    	filter = (FilterEnum)filter_i;
     }
 
     assert(srcRoI.x1 <= srcRoI.x2 && srcRoI.y1 <= srcRoI.y2);
@@ -826,7 +840,10 @@ Transform3x3Plugin::renderInternalForBitDepth(const RenderArguments &args)
     FilterEnum filter = args.renderQualityDraft ? eFilterImpulse : eFilterCubic;
 
     if (!args.renderQualityDraft && _filter) {
-        filter = (FilterEnum)_filter->getValueAtTime(time);
+        //filter = (FilterEnum)_filter->getValueAtTime(time);
+        int filter_i;
+    	_filter->getValueAtTime(time, filter_i);
+    	filter = (FilterEnum)filter_i;
     }
     bool clamp = false;
     if (_clamp) {

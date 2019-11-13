@@ -10,15 +10,15 @@ ifeq ($(UNAME_SYSTEM), Linux)
 	CXXFLAGS += -I${OPENCLPATH}/include -fPIC
 	NVCCFLAGS = --compiler-options="-fPIC"
 	ARCH = Linux-x86-64
-	CUFLAGS = -shared -fvisibility=hidden -L${CUDAPATH}/lib64 -lcuda -lcudart
+	CUDAFLAGS = -shared -fvisibility=hidden -L${CUDAPATH}/lib64 -lcuda -lcudart
 	LINKFLAGS_OR = -shared
 	LINKFLAGS = $(LINKFLAGS_OR)
 	OFX_DIR = /usr/OFX/Plugins
 endif
 
 ifeq ($(UNAME_SYSTEM), Darwin)
-	CUFLAGS = -L${CUDAPATH}/lib -lcuda -lcudart -F/Library/Frameworks -framework CUDA -framework OpenCL -framework OpenGL -framework AppKit
-	CLFLAGS = -F/Library/Frameworks -framework OpenCL -framework OpenGL -framework AppKit
+	CUDAFLAGS = -L${CUDAPATH}/lib -lcuda -lcudart -F/Library/Frameworks -framework CUDA -framework OpenCL -framework Metal -framework OpenGL -framework AppKit
+	AMDFLAGS = -F/Library/Frameworks -framework OpenCL -framework Metal -framework OpenGL -framework AppKit
 	CPUFLAGS = -F/Library/Frameworks -framework OpenGL -framework AppKit
 	LINKFLAGS_OR = -bundle -fvisibility=hidden -exported_symbols_list $(PATHTOROOT)/include/osxSymbols
 	LINKFLAGS = $(LINKFLAGS_OR)
@@ -28,10 +28,13 @@ endif
 
 ifeq ($(ENABLECUDA), TRUE)
 	CXXFLAGS += -I${CUDAPATH}/include
-	LINKFLAGS += $(CUFLAGS)
-else
-	LINKFLAGS += $(CLFLAGS)
-	PLUGINFOLDER = BaldavengerPluginsCL
+	LINKFLAGS += $(CUDAFLAGS)
+	PLUGINFOLDER = BaldavengerPluginsCUDA
+endif
+
+ifeq ($(ENABLEAMD), TRUE)	
+	LINKFLAGS += $(AMDFLAGS)
+	PLUGINFOLDER = BaldavengerPluginsAMD
 endif
 
 ifeq ($(CPU_ONLY), TRUE)
@@ -70,11 +73,17 @@ $(PLUGINNAME).ofx: $(PLUGINOBJECTS) $(SUPPORTOBJECTS)
 	cp $(RESOURCES) $(BUNDLE_RES)
 	rm *.o *.ofx
 ifeq ($(UNAME_SYSTEM), Darwin)
-	install_name_tool -change @rpath/libcudart.8.0.dylib @rpath/libcudart.dylib $(BUNDLE_DIR)$(PLUGINNAME).ofx
+ifeq ($(ENABLECUDA), TRUE)
+#	install_name_tool -change @rpath/libcudart.$(CUDA_VERSION).dylib @rpath/libcudart.dylib $(BUNDLE_DIR)$(PLUGINNAME).ofx
+	install_name_tool -change @rpath/libcudart.10.1.dylib @rpath/libcudart.dylib $(BUNDLE_DIR)$(PLUGINNAME).ofx
+endif
 endif
 
 $(PLUGINNAME)CudaKernel.o: $(PLUGINNAME)CudaKernel.cu
 	${NVCC} -c $< $(NVCCFLAGS)
+
+$(PLUGINNAME)MetalKernel.o: $(PLUGINNAME)MetalKernel.mm
+	$(CXX) -c $< $(CXXFLAGS)
 
 %.o: $(PATHTOROOT)/Library/%.cpp
 	$(CXX) -c $< $(CXXFLAGS)

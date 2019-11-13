@@ -113,6 +113,7 @@ namespace OFX {
     ePixelComponentRGBA,
     ePixelComponentRGB,
     ePixelComponentAlpha,
+    ePixelComponentXY,
     ePixelComponentCustom ///< some non standard pixel type
   };
 
@@ -447,6 +448,9 @@ namespace OFX {
 
     /** @brief Does the plugin support image tiling, defaults to true */
     void setSupportsTiles(bool v);
+    
+    /** @brief Does the plugin handle render quality, defaults to false */
+    void setSupportsRenderQuality(bool v);
 
     /** @brief Does the plugin perform temporal clip access, defaults to false */
     void setTemporalClipAccess(bool v);
@@ -474,6 +478,9 @@ namespace OFX {
 
     /** @brief Does the plugin support Metal Render, defaults to false */
     void setSupportsMetalRender(bool v);
+
+    /** @brief Does the plugin have no spatial awareness, defaults to false */
+    void setNoSpatialAwareness(bool v);
 
 #ifdef OFX_SUPPORTS_OPENGLRENDER
     /** @brief Does the plugin support OpenGL accelerated rendering (but is also capable of CPU rendering) ? */
@@ -796,14 +803,16 @@ namespace OFX {
     bool      isEnabledCudaRender;
     bool      isEnabledMetalRender;
     void*     pOpenCLCmdQ;
+    void*     pMetalCmdQ;
+    int         renderView;         /// default is 0, for s3d left eye: 0, right eye: 1
 #ifdef OFX_SUPPORTS_OPENGLRENDER
     bool      openGLEnabled;
 #endif
     bool      sequentialRenderStatus;
     bool      interactiveRenderStatus;
-#ifdef HAVE_OFX_V_1_40
+//#ifdef HAVE_OFX_V_1_40
     bool      renderQualityDraft;
-#endif
+//#endif
   };
 
   /** @brief POD struct to pass rendering arguments into @ref OFX::ImageEffect::isIdentity */
@@ -824,6 +833,7 @@ namespace OFX {
     bool      isEnabledCudaRender;
     bool      isEnabledMetalRender;
     void*     pOpenCLCmdQ;
+    void*     pMetalCmdQ;
 #ifdef OFX_SUPPORTS_OPENGLRENDER
     bool      openGLEnabled;
 #endif
@@ -839,6 +849,7 @@ namespace OFX {
     bool      isEnabledCudaRender;
     bool      isEnabledMetalRender;
     void*     pOpenCLCmdQ;
+    void*     pMetalCmdQ;
 #ifdef OFX_SUPPORTS_OPENGLRENDER
     bool      openGLEnabled;
 #endif

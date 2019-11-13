@@ -3,7 +3,7 @@ ACES_OFX \
 ChannelBox \
 Convolution \
 FilmGrade \
-Frequency \
+FreqSep \
 HueConverge \
 Matrix \
 Qualifier \
@@ -19,7 +19,7 @@ ACES_OFX \
 ChannelBox \
 Convolution \
 FilmGrade \
-Frequency \
+FreqSep \
 HueConverge \
 Matrix \
 Qualifier \

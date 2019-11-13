@@ -63,6 +63,7 @@ namespace OFX {
         bool             _isEnabledCudaRender;   /**< @brief is Cuda Render Enabled */
         bool             _isEnabledMetalRender;   /**< @brief is Cuda Render Enabled */
         void*            _pOpenCLCmdQ;           /**< @brief OpenCL Command Queue Handle */
+        void*            _pMetalCmdQ;           /**< @brief Metal Command Queue Handle */
 
     public :
         /** @brief ctor */
@@ -73,6 +74,7 @@ namespace OFX {
           , _isEnabledCudaRender(false)
           , _isEnabledMetalRender(false)
           , _pOpenCLCmdQ(NULL)
+          , _pMetalCmdQ(NULL)
         {
             _renderWindow.x1 = _renderWindow.y1 = _renderWindow.x2 = _renderWindow.y2 = 0;
         }
@@ -90,6 +92,10 @@ namespace OFX {
             if (_isEnabledOpenCLRender)
             {
                 _pOpenCLCmdQ = args.pOpenCLCmdQ;
+            }
+            if (_isEnabledMetalRender)
+            {
+                _pMetalCmdQ = args.pMetalCmdQ;
             }
         }
 

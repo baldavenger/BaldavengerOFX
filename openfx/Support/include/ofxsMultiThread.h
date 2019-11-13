@@ -13,7 +13,7 @@ this list of conditions and the following disclaimer.
 * Redistributions in binary form must reproduce the above copyright notice,
 this list of conditions and the following disclaimer in the documentation
 and/or other materials provided with the distribution.
-* Neither the name The Open Effects Association Ltd, nor the names of its 
+* Neither the name The Open Effects Association Ltd, nor the names of its
 contributors may be used to endorse or promote products derived from this
 software without specific prior written permission.
 
@@ -63,7 +63,7 @@ namespace OFX {
       Processor();
 
       /** @brief dtor */
-      virtual ~Processor();            
+      virtual ~Processor();
 
       /** @brief function that will be called in each thread. ID is from 0..nThreads-1 nThreads are the number of threads it is being run over */
       virtual void multiThreadFunction(unsigned int threadID, unsigned int nThreads) = 0;
@@ -83,11 +83,11 @@ namespace OFX {
 
     /** @brief The index of the current thread. From 0 to numCPUs() - 1 */
     unsigned int getThreadIndex(void);
-
+    
     /** @brief Utility function to compute the subrange of a given thread */
     void getThreadRange(unsigned int threadID, unsigned int nThreads, int ibegin, int iend, int* ibegin_range, int* iend_range);
 
-//#ifdef OFX_USE_MULTITHREAD_MUTEX
+	//#ifdef OFX_USE_MULTITHREAD_MUTEX
     /** @brief An OFX mutex */
     class Mutex {
     protected :
@@ -114,8 +114,8 @@ namespace OFX {
       */
       bool tryLock();
     };
-//#endif
-
+	//#endif
+	
     /// a class to wrap around a mutex which is exception safe
     /// it locks the mutex on construction and unlocks it on destruction
     template<class M>

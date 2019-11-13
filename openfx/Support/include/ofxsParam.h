@@ -227,8 +227,8 @@ namespace OFX {
 
         /** @brief set the secretness of the param, defaults to false */
         void setIsSecret(bool v);
-
-		 /** @brief whether the param is secret and disabled, defaults to false */
+        
+        /** @brief whether the param is secret and disabled, defaults to false */
         void setIsSecretAndDisabled(bool v) { setEnabled(!v); setIsSecret(v); }
 
         /** @brief set the group param that is the parent of this one, default is to be ungrouped at the root level */
@@ -414,7 +414,7 @@ namespace OFX {
     public :
         /** @brief set the type of the double param, defaults to eDoubleTypePlain */
         void setDoubleType(DoubleTypeEnum v);
-
+        
         /** @brief returns true if the param descriptor prop kOfxParamPropDefaultCoordinateSystem is present */
         bool supportsDefaultCoordinateSystem();
 

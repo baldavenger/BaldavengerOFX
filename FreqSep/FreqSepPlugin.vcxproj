@@ -1,10 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
-    <ProjectConfiguration Include="Debug|x64">
-      <Configuration>Debug</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
     <ProjectConfiguration Include="Release|x64">
       <Configuration>Release</Configuration>
       <Platform>x64</Platform>
@@ -12,7 +8,7 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{88405F0E-918E-4523-8627-1380BC83A605}</ProjectGuid>
-    <RootNamespace>FrequencyPlugin</RootNamespace>
+    <RootNamespace>FreqSepPlugin</RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -22,11 +18,6 @@
     <CharacterSet>Unicode</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <PlatformToolset>v120</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
-  </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
     <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 8.0.props" />
@@ -34,19 +25,9 @@
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-  </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>12.0.30501.0</_ProjectFileVersion>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>$(Platform)\$(Configuration)\</IntDir>
-    <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(CUDA_INC_PATH);$(AMDAPPSDKROOT)/include;../openfx/include;../openfx/Support/include;../SupportExt</IncludePath>
-    <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(CUDA_LIB_PATH);$(AMDAPPSDKROOT)/lib/x86_64</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
@@ -55,42 +36,6 @@
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(CUDA_INC_PATH);$(AMDAPPSDKROOT)/include;../openfx/include;../openfx/Support/include;../SupportExt</IncludePath>
     <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(CUDA_LIB_PATH);$(AMDAPPSDKROOT)/lib/x86_64</LibraryPath>
   </PropertyGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <PreBuildEvent>
-      <Command />
-    </PreBuildEvent>
-    <Midl>
-      <TargetEnvironment>X64</TargetEnvironment>
-    </Midl>
-    <ClCompile>
-      <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <MinimalRebuild>true</MinimalRebuild>
-      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
-      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <PrecompiledHeader />
-      <WarningLevel>Level3</WarningLevel>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-    </ClCompile>
-    <Link>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-      <SubSystem>Windows</SubSystem>
-      <TargetMachine>MachineX64</TargetMachine>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;cuda.lib;cudart.lib;OpenCL.lib;%(AdditionalDependencies)</AdditionalDependencies>
-    </Link>
-    <PostBuildEvent>
-      <Message>Creating bundle...</Message>
-      <Command>if not exist "$(OutDir)Frequency.ofx.bundle\Contents\Resources" mkdir "$(OutDir)Frequency.ofx.bundle\Contents\Resources"
-       copy "(OutDir)../../OpenFX.Yo.Frequency.png" "$(OutDir)Frequency.ofx.bundle\Contents\Resources"
-if not exist "$(OutDir)Frequency.ofx.bundle\Contents\Win64" mkdir "$(OutDir)Frequency.ofx.bundle\Contents\Win64"
-copy /Y "$(TargetPath)" /B "$(OutDir)Frequency.ofx.bundle\Contents\Win64\Frequency.ofx" /B
-</Command>
-    </PostBuildEvent>
-    <CudaCompile>
-      <TargetMachinePlatform>64</TargetMachinePlatform>
-    </CudaCompile>
-  </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Midl>
       <TargetEnvironment>X64</TargetEnvironment>
@@ -113,10 +58,10 @@ copy /Y "$(TargetPath)" /B "$(OutDir)Frequency.ofx.bundle\Contents\Win64\Frequen
     </Link>
     <PostBuildEvent>
       <Message>Creating bundle...</Message>
-      <Command>if not exist "$(OutDir)Frequency.ofx.bundle\Contents\Resources" mkdir "$(OutDir)Frequency.ofx.bundle\Contents\Resources"
-      copy "(OutDir)../../OpenFX.Yo.Frequency.png" "$(OutDir)Frequency.ofx.bundle\Contents\Resources"
-if not exist "$(OutDir)Frequency.ofx.bundle\Contents\Win64" mkdir "$(OutDir)Frequency.ofx.bundle\Contents\Win64"
-copy /Y "$(TargetPath)" /B "$(OutDir)Frequency.ofx.bundle\Contents\Win64\Frequency.ofx" /B
+      <Command>if not exist "$(OutDir)FreqSepPlugin.ofx.bundle\Contents\Resources" mkdir "$(OutDir)FreqSepPlugin.ofx.bundle\Contents\Resources"
+      copy "(OutDir)..\..\BaldavengerOFX.FreqSep.png" "$(OutDir)FreqSepPlugin.ofx.bundle\Contents\Resources"
+if not exist "$(OutDir)FreqSepPlugin.ofx.bundle\Contents\Win64" mkdir "$(OutDir)FreqSepPlugin.ofx.bundle\Contents\Win64"
+copy /Y "$(TargetPath)" /B "$(OutDir)FreqSepPlugin.ofx.bundle\Contents\Win64\FreqSepPlugin.ofx" /B
 </Command>
     </PostBuildEvent>
     <CudaCompile>
@@ -132,11 +77,11 @@ copy /Y "$(TargetPath)" /B "$(OutDir)Frequency.ofx.bundle\Contents\Win64\Frequen
     <ClCompile Include="..\openfx\Support\Library\ofxsParams.cpp" />
     <ClCompile Include="..\openfx\Support\Library\ofxsProperty.cpp" />
     <ClCompile Include="..\openfx\Support\Library\ofxsPropertyValidation.cpp" />
-    <ClCompile Include="FrequencyPlugin.cpp" />
-    <ClCompile Include="FrequencyOpenCLKernel.cpp" />
+    <ClCompile Include="FreqSepPluginCUDA.cpp" />
+    <ClCompile Include="FreqSepOpenCLKernel.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <CudaCompile Include="FrequencyCudaKernel.cu" />
+    <CudaCompile Include="FreqSepCudaKernel.cu" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

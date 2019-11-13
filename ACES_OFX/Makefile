@@ -2,7 +2,7 @@ PLUGINNAME = ACES
 PLUGINOBJECTS = $(PLUGINNAME)Plugin.o $(PLUGINNAME)CudaKernel.o # $(PLUGINNAME)OpenCLKernel.o
 PLUGINOBJECTSCL = $(PLUGINNAME)PluginCPU.o # $(PLUGINNAME)OpenCLKernel.o
 PLUGINOBJECTSCPU = $(PLUGINNAME)PluginCPU.o
-RESOURCES = OpenFX.Yo.$(PLUGINNAME).png
+RESOURCES = BaldavengerOFX.$(PLUGINNAME).png
 
 ## Select TRUE to install directly to OFX/Plugin folder, select FALSE for usual location. ##
 INSTALL_PLUGIN := TRUE

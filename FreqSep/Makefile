@@ -1,0 +1,36 @@
+PLUGINNAME = FreqSep
+
+## Enable only one ##
+ENABLECUDA := TRUE
+#ENABLEAMD := TRUE
+#CPU_ONLY := TRUE
+
+INSTALL_PLUGIN := TRUE
+
+UNAME_SYSTEM := $(shell uname -s)
+ifeq ($(UNAME_SYSTEM), Darwin)
+OS = macOS
+endif
+ifeq ($(UNAME_SYSTEM), Linux)
+OS = CentOS
+endif
+
+PLUGINOBJECTSCUDA = $(PLUGINNAME)PluginCUDA.o $(PLUGINNAME)CudaKernel.o $(PLUGINNAME)OpenCLKernel.o $(PLUGINNAME)MetalKernel.o
+PLUGINOBJECTSAMD = $(PLUGINNAME)PluginAMD.o $(PLUGINNAME)OpenCLKernel.o $(PLUGINNAME)MetalKernel.o
+PLUGINOBJECTSCPU = $(PLUGINNAME)PluginCPU.o
+RESOURCES = BaldavengerOFX.$(PLUGINNAME).png
+
+ifeq ($(ENABLECUDA), TRUE)
+PLUGINOBJECTS = $(PLUGINOBJECTSCUDA)
+endif
+
+ifeq ($(ENABLEAMD), TRUE)
+PLUGINOBJECTS = $(PLUGINOBJECTSAMD)
+endif
+
+ifeq ($(CPU_ONLY), TRUE)
+PLUGINOBJECTS = $(PLUGINOBJECTSCPU)
+endif
+
+TOP_SRCDIR = ..
+include $(TOP_SRCDIR)/Makefile.master

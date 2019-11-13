@@ -475,7 +475,7 @@ namespace OFX {
     }
   }
 
-	/** @brief returns true if the param descriptor prop kOfxParamPropDefaultCoordinateSystem is present */
+  /** @brief returns true if the param descriptor prop kOfxParamPropDefaultCoordinateSystem is present */
   bool BaseDoubleParamDescriptor::supportsDefaultCoordinateSystem()
   {
     //OfxStatus stat = Private::gPropSuite->propSetString(_paramProps.propSetHandle(), kOfxParamPropDefaultCoordinateSystem, 0, kOfxParamCoordinatesCanonical);

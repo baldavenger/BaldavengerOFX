@@ -89,12 +89,14 @@ of the direct OFX objects and any library side only functions.
 
 #include "ofxCore.h"
 #include "ofxImageEffect.h"
+#include "ofxImageEffectExt.h"
 #include "ofxInteract.h"
 #include "ofxKeySyms.h"
 #include "ofxMemory.h"
 #include "ofxMessage.h"
 #include "ofxMultiThread.h"
 #include "ofxParam.h"
+#include "ofxParamExt.h"
 #include "ofxProperty.h"
 #include "ofxPixels.h"
 

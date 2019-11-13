@@ -30,12 +30,12 @@ using std::string;
 #endif
 
 #define kPluginName "ACES 1.1"
-#define kPluginGrouping "OpenFX Yo"
+#define kPluginGrouping "BaldavengerOFX"
 #define kPluginDescription \
 "------------------------------------------------------------------------------------------------------------------ \n" \
 "ACES 1.1"
 
-#define kPluginIdentifier "OpenFX.Yo.ACES"
+#define kPluginIdentifier "BaldavengerOFX.ACES"
 #define kPluginVersionMajor 1
 #define kPluginVersionMinor 3
 

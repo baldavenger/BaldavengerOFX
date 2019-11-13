@@ -2,10 +2,10 @@
 
 #include "ofxsImageEffect.h"
 
-class FrequencyPluginFactory : public OFX::PluginFactoryHelper<FrequencyPluginFactory>
+class FreqSepPluginFactory : public OFX::PluginFactoryHelper<FreqSepPluginFactory>
 {
 public:
-    FrequencyPluginFactory();
+    FreqSepPluginFactory();
     virtual void load() {}
     virtual void unload() {}
     virtual void describe(OFX::ImageEffectDescriptor& p_Desc);
