@@ -420,6 +420,7 @@ case 0:
 if (p_Switch[0] == 1)
 p_Blur[2] = p_Blur[1] = p_Blur[0];
 
+if (p_Blur[0] > 0.0f) {
 [computeEncoder setComputePipelineState:_gaussian];
 [computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 0];
 [computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 1];
@@ -443,7 +444,9 @@ p_Blur[2] = p_Blur[1] = p_Blur[0];
 [computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 0];
 [computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 1];
 [computeEncoder dispatchThreadgroups:transThreadGroupsB threadsPerThreadgroup: transThreadGroupsCount];
+}
 
+if (p_Blur[1] > 0.0f) {
 [computeEncoder setComputePipelineState:_gaussian];
 [computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 0];
 [computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 1];
@@ -469,7 +472,9 @@ p_Blur[2] = p_Blur[1] = p_Blur[0];
 [computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 0];
 [computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 1];
 [computeEncoder dispatchThreadgroups:transThreadGroupsB threadsPerThreadgroup: transThreadGroupsCount];
+}
 
+if (p_Blur[2] > 0.0f) {
 [computeEncoder setComputePipelineState:_gaussian];
 [computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 0];
 [computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 1];
@@ -495,6 +500,7 @@ p_Blur[2] = p_Blur[1] = p_Blur[0];
 [computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 0];
 [computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 1];
 [computeEncoder dispatchThreadgroups:transThreadGroupsB threadsPerThreadgroup: transThreadGroupsCount];
+}
 
 if (p_Switch[0] == 1)
 p_Sharpen[2] = p_Sharpen[1] = p_Sharpen[0];
@@ -515,6 +521,7 @@ if (p_Display != 1) {
 if (p_Switch[0] == 1)
 p_Blur[5] = p_Blur[4] = p_Blur[3];
 
+if (p_Blur[3] > 0.0f) {
 [computeEncoder setComputePipelineState:_gaussian];
 [computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 0];
 [computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 1];
@@ -540,7 +547,9 @@ p_Blur[5] = p_Blur[4] = p_Blur[3];
 [computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 0];
 [computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 1];
 [computeEncoder dispatchThreadgroups:transThreadGroupsB threadsPerThreadgroup: transThreadGroupsCount];
+}
 
+if (p_Blur[4] > 0.0f) {
 [computeEncoder setComputePipelineState:_gaussian];
 [computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 0];
 [computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 1];
@@ -566,7 +575,9 @@ p_Blur[5] = p_Blur[4] = p_Blur[3];
 [computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 0];
 [computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 1];
 [computeEncoder dispatchThreadgroups:transThreadGroupsB threadsPerThreadgroup: transThreadGroupsCount];
+}
 
+if (p_Blur[5] > 0.0f) {
 [computeEncoder setComputePipelineState:_gaussian];
 [computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 0];
 [computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 1];
@@ -592,6 +603,7 @@ p_Blur[5] = p_Blur[4] = p_Blur[3];
 [computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 0];
 [computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 1];
 [computeEncoder dispatchThreadgroups:transThreadGroupsB threadsPerThreadgroup: transThreadGroupsCount];
+}
 
 [computeEncoder setComputePipelineState:_lowFreqCont];
 [computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 0];
@@ -630,6 +642,7 @@ case 1:
 [computeEncoder setBytes:&p_Height length:sizeof(int) atIndex: 3];
 [computeEncoder dispatchThreadgroups:threadGroups threadsPerThreadgroup: threadGroupCount];
 
+if (p_Blur[0] > 0.0f) {
 [computeEncoder setComputePipelineState:_gaussian];
 [computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 0];
 [computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 1];
@@ -655,6 +668,7 @@ case 1:
 [computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 0];
 [computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 1];
 [computeEncoder dispatchThreadgroups:transThreadGroupsB threadsPerThreadgroup: transThreadGroupsCount];
+}
 
 [computeEncoder setComputePipelineState:_freqSharpenLuma];
 [computeEncoder setBuffer:srcDeviceBuf offset: 0 atIndex: 0];
@@ -669,6 +683,7 @@ if (p_Display != 1){
 if (p_Switch[1] == 1)
 p_Blur[5] = p_Blur[4];
 
+if (p_Blur[3] > 0.0f) {
 [computeEncoder setComputePipelineState:_gaussian];
 [computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 0];
 [computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 1];
@@ -694,7 +709,9 @@ p_Blur[5] = p_Blur[4];
 [computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 0];
 [computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 1];
 [computeEncoder dispatchThreadgroups:transThreadGroupsB threadsPerThreadgroup: transThreadGroupsCount];
+}
 
+if (p_Blur[4] > 0.0f) {
 [computeEncoder setComputePipelineState:_gaussian];
 [computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 0];
 [computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 1];
@@ -720,7 +737,9 @@ p_Blur[5] = p_Blur[4];
 [computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 0];
 [computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 1];
 [computeEncoder dispatchThreadgroups:transThreadGroupsB threadsPerThreadgroup: transThreadGroupsCount];
+}
 
+if (p_Blur[5] > 0.0f) {
 [computeEncoder setComputePipelineState:_gaussian];
 [computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 0];
 [computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 1];
@@ -746,6 +765,7 @@ p_Blur[5] = p_Blur[4];
 [computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 0];
 [computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 1];
 [computeEncoder dispatchThreadgroups:transThreadGroupsB threadsPerThreadgroup: transThreadGroupsCount];
+}
 
 [computeEncoder setComputePipelineState:_lowFreqContLuma];
 [computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 0];
@@ -783,6 +803,7 @@ case 2:
 [computeEncoder setBytes:&p_Height length:sizeof(int) atIndex: 3];
 [computeEncoder dispatchThreadgroups:threadGroups threadsPerThreadgroup: threadGroupCount];
 
+if (p_Blur[0] > 0.0f) {
 [computeEncoder setComputePipelineState:_gaussian];
 [computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 0];
 [computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 1];
@@ -806,6 +827,7 @@ case 2:
 [computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 0];
 [computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 1];
 [computeEncoder dispatchThreadgroups:transThreadGroupsB threadsPerThreadgroup: transThreadGroupsCount];
+}
 
 [computeEncoder setComputePipelineState:_freqSharpenLuma];
 [computeEncoder setBuffer:srcDeviceBuf offset: 0 atIndex: 0];
@@ -820,6 +842,7 @@ if (p_Display != 1){
 if (p_Switch[1] == 1)
 p_Blur[5] = p_Blur[4];
 
+if (p_Blur[3] > 0.0f) {
 [computeEncoder setComputePipelineState:_gaussian];
 [computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 0];
 [computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 1];
@@ -845,7 +868,9 @@ p_Blur[5] = p_Blur[4];
 [computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 0];
 [computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 1];
 [computeEncoder dispatchThreadgroups:transThreadGroupsB threadsPerThreadgroup: transThreadGroupsCount];
+}
 
+if (p_Blur[4] > 0.0f) {
 [computeEncoder setComputePipelineState:_gaussian];
 [computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 0];
 [computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 1];
@@ -871,7 +896,9 @@ p_Blur[5] = p_Blur[4];
 [computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 0];
 [computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 1];
 [computeEncoder dispatchThreadgroups:transThreadGroupsB threadsPerThreadgroup: transThreadGroupsCount];
+}
 
+if (p_Blur[5] > 0.0f) {
 [computeEncoder setComputePipelineState:_gaussian];
 [computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 0];
 [computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 1];
@@ -897,6 +924,7 @@ p_Blur[5] = p_Blur[4];
 [computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 0];
 [computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 1];
 [computeEncoder dispatchThreadgroups:transThreadGroupsB threadsPerThreadgroup: transThreadGroupsCount];
+}
 
 [computeEncoder setComputePipelineState:_lowFreqContLuma];
 [computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 0];
