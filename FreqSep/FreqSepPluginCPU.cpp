@@ -30,22 +30,26 @@ using std::string;
 "Frequency Separation"
 
 #define kPluginIdentifier "BaldavengerOFX.FreqSep"
-#define kPluginVersionMajor 2
+#define kPluginVersionMajor 3
 #define kPluginVersionMinor 0
 
 #define kSupportsTiles false
 #define kSupportsMultiResolution false
 #define kSupportsMultipleClipPARs false
 
+#define kResolutionScale	(float)width / 1920.0f
+
 #define kParamFreqSep "ColourSpace"
 #define kParamFreqSepLabel "colour space"
 #define kParamFreqSepHint "colour space"
 #define kParamFreqSepOptionRGB "RGB"
 #define kParamFreqSepOptionRGBHint "no conversion"
-#define kParamFreqSepOptionYUV "YUV"
-#define kParamFreqSepOptionYUVHint "Rec.709 to Y'UV"
-#define kParamFreqSepOptionLAB "LAB"
-#define kParamFreqSepOptionLABHint "Rec.709 to LAB"
+#define kParamFreqSepOptionLABREC709 "LAB from Rec709"
+#define kParamFreqSepOptionLABREC709Hint "Rec.709 to LAB"
+#define kParamFreqSepOptionLABLOGC "LAB from LogC"
+#define kParamFreqSepOptionLABLOGCHint "LogC to LAB"
+#define kParamFreqSepOptionLABACES "LAB from ACEScct"
+#define kParamFreqSepOptionLABACESHint "ACEScct to LAB"
 
 #define kParamDisplay "Display"
 #define kParamDisplayLabel "display"
@@ -62,8 +66,9 @@ using std::string;
 enum FreqSepEnum
 {
 eFreqSepRGB,
-eFreqSepYUV,
-eFreqSepLAB,
+eFreqSepLABREC709,
+eFreqSepLABLOGC,
+eFreqSepLABACES,
 };
 
 enum DisplayEnum
@@ -76,19 +81,13 @@ eDisplayLowOver,
 
 ////////////////////////////////////////////////////////////////////////////////
 
-namespace {
-struct RGBValues {
-double r,g,b;
-RGBValues(double v) : r(v), g(v), b(v) {}
-RGBValues() : r(0), g(0), b(0) {}
-};
-}
-
 class FreqSep : public OFX::ImageProcessor
 {
 public:
 explicit FreqSep(OFX::ImageEffect& p_Instance);
 
+//virtual void processImagesOpenCL();
+//virtual void processImagesMetal();
 virtual void multiThreadProcessImages(OfxRectI p_ProcWindow);
 
 void setSrcImg(OFX::Image* p_SrcImg);
@@ -108,7 +107,47 @@ FreqSep::FreqSep(OFX::ImageEffect& p_Instance)
 : OFX::ImageProcessor(p_Instance)
 {
 }
+/*
+extern void RunOpenCLKernel(void* p_CmdQ, float* p_Input, float* p_Output, int p_Width, int p_Height, int p_Space, int p_Display, float* p_Blur, float* p_Sharpen, float* p_Cont, int* p_Switch);
 
+void FreqSep::processImagesOpenCL()
+{
+const OfxRectI& bounds = _srcImg->getBounds();
+const int width = bounds.x2 - bounds.x1;
+const int height = bounds.y2 - bounds.y1;
+
+for(int c = 0; c < 6; c++){
+_blur[c] = _blur[c] * kResolutionScale; 
+}
+
+float* input = static_cast<float*>(_srcImg->getPixelData());
+float* output = static_cast<float*>(_dstImg->getPixelData());
+
+RunOpenCLKernel(_pOpenCLCmdQ, input, output, width, height, _space, _display, _blur, _sharpen, _cont, _switch);
+}
+
+#ifdef __APPLE__
+extern void RunMetalKernel(void* p_CmdQ, float* p_Input, float* p_Output, int p_Width, int p_Height, int p_Space, int p_Display, float* p_Blur, float* p_Sharpen, float* p_Cont, int* p_Switch);
+#endif
+
+void FreqSep::processImagesMetal()
+{
+#ifdef __APPLE__
+const OfxRectI& bounds = _srcImg->getBounds();
+const int width = bounds.x2 - bounds.x1;
+const int height = bounds.y2 - bounds.y1;
+
+for(int c = 0; c < 6; c++){
+_blur[c] = _blur[c] * kResolutionScale; 
+}
+
+float* input = static_cast<float*>(_srcImg->getPixelData());
+float* output = static_cast<float*>(_dstImg->getPixelData());
+
+RunMetalKernel(_pMetalCmdQ, input, output, width, height, _space, _display, _blur, _sharpen, _cont, _switch);
+#endif
+}
+*/
 void FreqSep::multiThreadProcessImages(OfxRectI p_ProcWindow)
 {
 for (int y = p_ProcWindow.y1; y < p_ProcWindow.y2; ++y)
@@ -169,26 +208,21 @@ _switch[2] = p_Switch[2];
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/** @brief The plugin that does our work */
+
 class FreqSepPlugin : public OFX::ImageEffect
 {
 public:
 explicit FreqSepPlugin(OfxImageEffectHandle p_Handle);
 
-/* Override the render */
 virtual void render(const OFX::RenderArguments& p_Args);
 
-/* Override is identity */
 virtual bool isIdentity(const OFX::IsIdentityArguments& p_Args, OFX::Clip*& p_IdentityClip, double& p_IdentityTime);
 
-/* Override changedParam */
 virtual void changedParam(const OFX::InstanceChangedArgs& p_Args, const std::string& p_ParamName);
 
-/* Set up and run a processor */
 void setupAndProcess(FreqSep &p_FreqSep, const OFX::RenderArguments& p_Args);
 
 private:
-// Does not own the following pointers
 OFX::Clip* m_DstClip;
 OFX::Clip* m_SrcClip;
 
@@ -286,8 +320,7 @@ m_Space->getValueAtTime(p_Args.time, space_i);
 FreqSepEnum FreqSepFilter = (FreqSepEnum)space_i;
 
 bool RGB = space_i == 0;
-bool YUV = space_i == 1;
-bool LAB = space_i == 2;
+bool LAB = space_i != 0;
 
 bool gang1 = m_Gang1->getValueAtTime(p_Args.time);
 bool gang2 = m_Gang2->getValueAtTime(p_Args.time);
@@ -296,6 +329,7 @@ if(RGB){
 m_Gang1->setIsSecretAndDisabled(!RGB);
 m_Gang2->setIsSecretAndDisabled(RGB);
 m_Gang1->setValue(true);
+m_Curve->setValue(true);
 m_Blur1->setLabel("highfreq threshold");
 m_Blur2->setLabel("highfreq threshold G");
 m_Blur3->setLabel("highfreq threshold B");
@@ -307,26 +341,11 @@ m_Blur5->setLabel("lowfreq blur G");
 m_Blur6->setLabel("lowfreq blur B");
 }
 
-if(YUV){
-m_Gang1->setIsSecretAndDisabled(YUV);
-m_Gang2->setIsSecretAndDisabled(!YUV);
-m_Gang2->setValue(true);
-m_Blur2->setIsSecretAndDisabled(YUV);
-m_Blur3->setIsSecretAndDisabled(YUV);
-m_Sharpen2->setIsSecretAndDisabled(YUV);
-m_Sharpen3->setIsSecretAndDisabled(YUV);
-m_Blur5->setIsSecretAndDisabled(!YUV);
-m_Blur1->setLabel("highfreq threshold Y");
-m_Sharpen1->setLabel("highfreq contrast Y");
-m_Blur4->setLabel("lowfreq blur Y");
-m_Blur5->setLabel("blur UV");
-m_Blur6->setLabel("blur V");
-}
-
 if(LAB){
 m_Gang1->setIsSecretAndDisabled(LAB);
 m_Gang2->setIsSecretAndDisabled(!LAB);
 m_Gang2->setValue(true);
+m_Curve->setValue(false);
 m_Blur2->setIsSecretAndDisabled(LAB);
 m_Blur3->setIsSecretAndDisabled(LAB);
 m_Sharpen2->setIsSecretAndDisabled(LAB);
@@ -361,38 +380,23 @@ m_Sharpen2->setIsSecretAndDisabled(gang1);
 m_Sharpen3->setIsSecretAndDisabled(gang1);
 m_Blur5->setIsSecretAndDisabled(gang1);
 m_Blur6->setIsSecretAndDisabled(gang1);
-
 }
 
 if(p_ParamName == "Gang2")
 {
-
 int space_i;
 m_Space->getValueAtTime(p_Args.time, space_i);
 FreqSepEnum FreqSepFilter = (FreqSepEnum)space_i;
-
-bool YUV = space_i == 1;
-bool LAB = space_i == 2;
-
+bool LAB = space_i != 0;
 bool gang2 = m_Gang2->getValueAtTime(p_Args.time);
-
 if(LAB) {
 if(!gang2) {
 m_Blur5->setLabel("blur A");
 } else {
 m_Blur5->setLabel("blur AB");
 }}
-
-if(YUV) {
-if(!gang2) {
-m_Blur5->setLabel("blur U");
-} else {
-m_Blur5->setLabel("blur UV");
-}}
-
 m_Blur6->setIsSecretAndDisabled(gang2);
 }
-
 
 if(p_ParamName == "Info")
 {
@@ -514,17 +518,14 @@ sendMessage(OFX::Message::eMessageError, "", string("Error: Cannot save " + NAME
 
 void FreqSepPlugin::setupAndProcess(FreqSep& p_FreqSep, const OFX::RenderArguments& p_Args)
 {
-// Get the dst image
 std::auto_ptr<OFX::Image> dst(m_DstClip->fetchImage(p_Args.time));
 OFX::BitDepthEnum dstBitDepth = dst->getPixelDepth();
 OFX::PixelComponentEnum dstComponents = dst->getPixelComponents();
 
-// Get the src image
 std::auto_ptr<OFX::Image> src(m_SrcClip->fetchImage(p_Args.time));
 OFX::BitDepthEnum srcBitDepth = src->getPixelDepth();
 OFX::PixelComponentEnum srcComponents = src->getPixelComponents();
 
-// Check to see if the bit depth and number of components are the same
 if ((srcBitDepth != dstBitDepth) || (srcComponents != dstComponents))
 {
 OFX::throwSuiteStatusException(kOfxStatErrValue);
@@ -550,12 +551,12 @@ _blur[3] = m_Blur4->getValueAtTime(p_Args.time);
 _blur[4] = m_Blur5->getValueAtTime(p_Args.time);
 _blur[5] = m_Blur6->getValueAtTime(p_Args.time);
 
-_blur[0] *= 2.0f;
-_blur[1] *= 2.0f;
-_blur[2] *= 2.0f;
-_blur[3] *= 5.0f;
-_blur[4] *= 5.0f;
-_blur[5] *= 5.0f;
+_blur[0] *= 4.0f;
+_blur[1] *= 4.0f;
+_blur[2] *= 4.0f;
+_blur[3] *= 10.0f;
+_blur[4] *= 10.0f;
+_blur[5] *= 10.0f;
 
 _sharpen[0] = m_Sharpen1->getValueAtTime(p_Args.time);
 _sharpen[1] = m_Sharpen2->getValueAtTime(p_Args.time);
@@ -577,20 +578,15 @@ _switch[1] = gang2 ? 1 : 0;
 bool curve = m_Curve->getValueAtTime(p_Args.time);
 _switch[2] = curve ? 1 : 0;
 
-// Set the images
 p_FreqSep.setDstImg(dst.get());
 p_FreqSep.setSrcImg(src.get());
 
-// Setup GPU Render arguments
-p_FreqSep.setGPURenderArgs(p_Args);
+//p_FreqSep.setGPURenderArgs(p_Args);
 
-// Set the render window
-//p_FreqSep.setRenderWindow(p_Args.renderWindow);
+p_FreqSep.setRenderWindow(p_Args.renderWindow);
 
-// Set the scales
 p_FreqSep.setScales(_space, _display, _blur, _sharpen, _cont, _switch);
 
-// Call the base class process member, this will call the derived templated process code
 p_FreqSep.process();
 }
 
@@ -605,19 +601,15 @@ FreqSepPluginFactory::FreqSepPluginFactory()
 
 void FreqSepPluginFactory::describe(OFX::ImageEffectDescriptor& p_Desc)
 {
-// Basic labels
 p_Desc.setLabels(kPluginName, kPluginName, kPluginName);
 p_Desc.setPluginGrouping(kPluginGrouping);
 p_Desc.setPluginDescription(kPluginDescription);
 
-// Add the supported contexts, only filter at the moment
 p_Desc.addSupportedContext(eContextFilter);
 p_Desc.addSupportedContext(eContextGeneral);
 
-// Add supported pixel depths
 p_Desc.addSupportedBitDepth(eBitDepthFloat);
 
-// Set a few flags
 p_Desc.setSingleInstance(false);
 p_Desc.setHostFrameThreading(false);
 p_Desc.setSupportsMultiResolution(kSupportsMultiResolution);
@@ -626,9 +618,7 @@ p_Desc.setTemporalClipAccess(false);
 p_Desc.setRenderTwiceAlways(false);
 p_Desc.setSupportsMultipleClipPARs(kSupportsMultipleClipPARs);
 
-// Setup GPU render capability flags
 //p_Desc.setSupportsOpenCLRender(true);
-//p_Desc.setSupportsCudaRender(true);
 //#ifdef __APPLE__
 //p_Desc.setSupportsMetalRender(true);
 //#endif
@@ -636,21 +626,17 @@ p_Desc.setSupportsMultipleClipPARs(kSupportsMultipleClipPARs);
 
 void FreqSepPluginFactory::describeInContext(OFX::ImageEffectDescriptor& p_Desc, OFX::ContextEnum /*p_Context*/)
 {
-// Source clip only in the filter context
-// Create the mandated source clip
 ClipDescriptor* srcClip = p_Desc.defineClip(kOfxImageEffectSimpleSourceClipName);
 srcClip->addSupportedComponent(ePixelComponentRGBA);
 srcClip->setTemporalClipAccess(false);
 srcClip->setSupportsTiles(kSupportsTiles);
 srcClip->setIsMask(false);
 
-// Create the mandated output clip
 ClipDescriptor* dstClip = p_Desc.defineClip(kOfxImageEffectOutputClipName);
 dstClip->addSupportedComponent(ePixelComponentRGBA);
 dstClip->addSupportedComponent(ePixelComponentAlpha);
 dstClip->setSupportsTiles(kSupportsTiles);
 
-// Make some pages and to things in
 PageParamDescriptor* page = p_Desc.definePageParam("Controls");
 
 {
@@ -659,10 +645,12 @@ param->setLabel(kParamFreqSepLabel);
 param->setHint(kParamFreqSepHint);
 assert(param->getNOptions() == (int)eFreqSepRGB);
 param->appendOption(kParamFreqSepOptionRGB, kParamFreqSepOptionRGBHint);
-assert(param->getNOptions() == (int)eFreqSepYUV);
-param->appendOption(kParamFreqSepOptionYUV, kParamFreqSepOptionYUVHint);
-assert(param->getNOptions() == (int)eFreqSepLAB);
-param->appendOption(kParamFreqSepOptionLAB, kParamFreqSepOptionLABHint);
+assert(param->getNOptions() == (int)eFreqSepLABREC709);
+param->appendOption(kParamFreqSepOptionLABREC709, kParamFreqSepOptionLABREC709Hint);
+assert(param->getNOptions() == (int)eFreqSepLABLOGC);
+param->appendOption(kParamFreqSepOptionLABLOGC, kParamFreqSepOptionLABLOGCHint);
+assert(param->getNOptions() == (int)eFreqSepLABACES);
+param->appendOption(kParamFreqSepOptionLABACES, kParamFreqSepOptionLABACESHint);
 param->setDefault( (int)eFreqSepRGB );
 param->setAnimates(false);
 page->addChild(*param);

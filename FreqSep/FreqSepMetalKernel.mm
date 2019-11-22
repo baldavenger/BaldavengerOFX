@@ -7,9 +7,268 @@
 #define bufferLength	(p_Width * p_Height * sizeof(float))
 
 const char* kernelSource =  \
-"#include <metal_stdlib>\n" \
+"#include <metal_stdlib> \n" \
 "using namespace metal; \n" \
-"kernel void k_gaussian(device float* p_Input [[buffer (0)]], device float* p_Output [[buffer (1)]],  \n" \
+"float3 make_float3( float A, float B, float C) { \n" \
+"float3 out; \n" \
+"out.x = A; \n" \
+"out.y = B; \n" \
+"out.z = C; \n" \
+"return out; \n" \
+"} \n" \
+"float from_func_Rec709( float v) { \n" \
+"if (v < 0.08145f) \n" \
+"return (v < 0.0f) ? 0.0f : v * (1.0f / 4.5f); \n" \
+"else \n" \
+"return pow( (v + 0.0993f) * (1.0f / 1.0993f), (1.0f / 0.45f) ); \n" \
+"} \n" \
+"float to_func_Rec709( float v) { \n" \
+"if (v < 0.0181f) \n" \
+"return (v < 0.0f) ? 0.0f : v * 4.5f; \n" \
+"else \n" \
+"return 1.0993f * pow(v, 0.45f) - (1.0993f - 1.0f); \n" \
+"} \n" \
+"float normalizedLogCToRelativeExposure( float x) { \n" \
+"if (x > 0.149659f) \n" \
+"return (pow(10.0f, (x - 0.385537f) / 0.247189f) - 0.052272f) / 5.555556f; \n" \
+"else \n" \
+"return (x - 0.092809f) / 5.367650f; \n" \
+"} \n" \
+"float relativeExposureToLogC( float x) { \n" \
+"if (x > 0.010591f) \n" \
+"return 0.247190f * log10(5.555556f * x + 0.052272f) + 0.385537f; \n" \
+"else \n" \
+"return 5.367655f * x + 0.092809f; \n" \
+"} \n" \
+"float3 Rec709_to_XYZ( float3 rgb) { \n" \
+"rgb.x = from_func_Rec709(rgb.x); \n" \
+"rgb.y = from_func_Rec709(rgb.y); \n" \
+"rgb.z = from_func_Rec709(rgb.z); \n" \
+"float3 xyz; \n" \
+"xyz.x = 0.4124564f * rgb.x + 0.3575761f * rgb.y + 0.1804375f * rgb.z; \n" \
+"xyz.y = 0.2126729f * rgb.x + 0.7151522f * rgb.y + 0.0721750f * rgb.z; \n" \
+"xyz.z = 0.0193339f * rgb.x + 0.1191920f * rgb.y + 0.9503041f * rgb.z; \n" \
+"return xyz; \n" \
+"} \n" \
+"float3 XYZ_to_Rec709(float3 xyz) { \n" \
+"float3 rgb; \n" \
+"rgb.x =  3.2404542f * xyz.x + -1.5371385f * xyz.y + -0.4985314f * xyz.z; \n" \
+"rgb.y = -0.9692660f * xyz.x +  1.8760108f * xyz.y +  0.0415560f * xyz.z; \n" \
+"rgb.z =  0.0556434f * xyz.x + -0.2040259f * xyz.y +  1.0572252f * xyz.z; \n" \
+"rgb.x = to_func_Rec709(rgb.x); \n" \
+"rgb.y = to_func_Rec709(rgb.y); \n" \
+"rgb.z = to_func_Rec709(rgb.z); \n" \
+"return rgb; \n" \
+"} \n" \
+"float3 ArrilogC_to_XYZ( float3 Alexa) { \n" \
+"float r_lin = normalizedLogCToRelativeExposure(Alexa.x); \n" \
+"float g_lin = normalizedLogCToRelativeExposure(Alexa.y); \n" \
+"float b_lin = normalizedLogCToRelativeExposure(Alexa.z); \n" \
+"float3 XYZ; \n" \
+"XYZ.x = r_lin * 0.638008f + g_lin * 0.214704f + b_lin * 0.097744f; \n" \
+"XYZ.y = r_lin * 0.291954f + g_lin * 0.823841f - b_lin * 0.115795f; \n" \
+"XYZ.z = r_lin * 0.002798f - g_lin * 0.067034f + b_lin * 1.153294f; \n" \
+"return XYZ; \n" \
+"} \n" \
+"float3 XYZ_to_ArrilogC( float3 XYZ) { \n" \
+"float3 Alexa; \n" \
+"Alexa.x = XYZ.x * 1.789066f - XYZ.y * 0.482534f - XYZ.z * 0.200076f; \n" \
+"Alexa.y = XYZ.x * -0.639849f + XYZ.y * 1.3964f + XYZ.z * 0.194432f; \n" \
+"Alexa.z = XYZ.x * -0.041532f + XYZ.y * 0.082335f + XYZ.z * 0.878868f; \n" \
+"Alexa.x = relativeExposureToLogC(Alexa.x); \n" \
+"Alexa.y = relativeExposureToLogC(Alexa.y); \n" \
+"Alexa.z = relativeExposureToLogC(Alexa.z); \n" \
+"return Alexa; \n" \
+"} \n" \
+"float3 ACEScct_to_XYZ( float3 in) { \n" \
+"float Y_BRK = 0.155251141552511f; \n" \
+"float A = 10.5402377416545f; \n" \
+"float B = 0.0729055341958355f; \n" \
+"float3 out; \n" \
+"in.x = in.x > Y_BRK ? pow( 2.0f, in.x * 17.52f - 9.72f) : (in.x - B) / A; \n" \
+"in.y = in.y > Y_BRK ? pow( 2.0f, in.y * 17.52f - 9.72f) : (in.y - B) / A; \n" \
+"in.z = in.z > Y_BRK ? pow( 2.0f, in.z * 17.52f - 9.72f) : (in.z - B) / A; \n" \
+"out.x = 0.6624541811f * in.x + 0.1340042065f * in.y + 0.156187687f * in.z; \n" \
+"out.y = 0.2722287168f * in.x + 0.6740817658f * in.y + 0.0536895174f * in.z; \n" \
+"out.z = -0.0055746495f * in.x + 0.0040607335f * in.y + 1.0103391003f * in.z; \n" \
+"return out; \n" \
+"} \n" \
+"float3 XYZ_to_ACEScct( float3 in) { \n" \
+"float X_BRK = 0.0078125f; \n" \
+"float A = 10.5402377416545f; \n" \
+"float B = 0.0729055341958355f; \n" \
+"float3 out; \n" \
+"out.x = 1.6410233797f * in.x + -0.3248032942f * in.y + -0.2364246952f * in.z; \n" \
+"out.y = -0.6636628587f * in.x + 1.6153315917f * in.y + 0.0167563477f * in.z; \n" \
+"out.z = 0.0117218943f * in.x + -0.008284442f * in.y + 0.9883948585f * in.z; \n" \
+"out.x = out.x <= X_BRK ? A * out.x + B : (log2(out.x) + 9.72f) / 17.52f; \n" \
+"out.y = out.y <= X_BRK ? A * out.y + B : (log2(out.y) + 9.72f) / 17.52f; \n" \
+"out.z = out.z <= X_BRK ? A * out.z + B : (log2(out.z) + 9.72f) / 17.52f; \n" \
+"return out; \n" \
+"} \n" \
+"float3 XYZ_to_LAB( float3 XYZ) { \n" \
+"float fx, fy, fz; \n" \
+"float Xn = 0.950489f; \n" \
+"float Zn = 1.08884f; \n" \
+"if(XYZ.x / Xn > 0.008856f) \n" \
+"fx = pow(XYZ.x / Xn, 1.0f / 3.0f); \n" \
+"else \n" \
+"fx = 7.787f * (XYZ.x / Xn) + 0.137931f; \n" \
+"if(XYZ.y > 0.008856f) \n" \
+"fy = pow(XYZ.y, 1.0f / 3.0f); \n" \
+"else \n" \
+"fy = 7.787f * XYZ.y + 0.137931f; \n" \
+"if(XYZ.z / Zn > 0.008856f) \n" \
+"fz = pow(XYZ.z / Zn, 1.0f / 3.0f); \n" \
+"else \n" \
+"fz = 7.787f * (XYZ.z / Zn) + 0.137931f; \n" \
+"float3 Lab; \n" \
+"Lab.x = 1.16f * fy - 0.16f; \n" \
+"Lab.y = 2.5f * (fx - fy) + 0.5f; \n" \
+"Lab.z = 1.0f * (fy - fz) + 0.5f; \n" \
+"return Lab; \n" \
+"} \n" \
+"float3 LAB_to_XYZ( float3 LAB) { \n" \
+"float3 XYZ; \n" \
+"float Xn = 0.950489f; \n" \
+"float Zn = 1.08884f; \n" \
+"float cy = (LAB.x + 0.16f) / 1.16f; \n" \
+"if(cy >= 0.206893f) \n" \
+"XYZ.y = cy * cy * cy; \n" \
+"else \n" \
+"XYZ.y = (cy - 0.137931f) / 7.787f; \n" \
+"float cx = (LAB.y - 0.5f) / 2.5f + cy; \n" \
+"if(cx >= 0.206893f) \n" \
+"XYZ.x = Xn * cx * cx * cx; \n" \
+"else \n" \
+"XYZ.x = Xn * (cx - 0.137931f) / 7.787f; \n" \
+"float cz = cy - (LAB.z - 0.5f); \n" \
+"if(cz >= 0.206893f) \n" \
+"XYZ.z = Zn * cz * cz * cz; \n" \
+"else \n" \
+"XYZ.z = Zn * (cz - 0.137931f) / 7.787f; \n" \
+"return XYZ; \n" \
+"} \n" \
+"kernel void k_simple( device float* p_Input [[buffer (0)]], device float* p_Output [[buffer (1)]], constant int& p_Width [[buffer (2)]],  \n" \
+"constant int& p_Height [[buffer (3)]], constant int& ch_in [[buffer (4)]], uint2 id [[ thread_position_in_grid ]]) \n" \
+"{                                 				    \n" \
+"if ((id.x < p_Width) && (id.y < p_Height) ) \n" \
+"{ \n" \
+"const int index = (id.y * p_Width + id.x) * 4; \n" \
+"p_Output[index + ch_in] = p_Input[index + ch_in];  \n" \
+"} \n" \
+"} \n" \
+"kernel void k_rec709_to_lab( device float* p_Input [[buffer (0)]], device float* p_Output [[buffer (1)]],  \n" \
+"constant int& p_Width [[buffer (2)]], constant int& p_Height [[buffer (3)]], uint2 id [[ thread_position_in_grid ]]) \n" \
+"{ \n" \
+"if((id.x < p_Width) && (id.y < p_Height) ) \n" \
+"{ \n" \
+"const int index = (id.y * p_Width + id.x) * 4; \n" \
+"float3 rgb = make_float3(p_Input[index], p_Input[index + 1], p_Input[index + 2]); \n" \
+"float3 lab = Rec709_to_XYZ(rgb); \n" \
+"lab = XYZ_to_LAB(lab); \n" \
+"p_Output[index] = lab.x; \n" \
+"p_Output[index + 1] = lab.y; \n" \
+"p_Output[index + 2] = lab.z; \n" \
+"p_Input[index] = lab.x; \n" \
+"} \n" \
+"} \n" \
+"kernel void k_lab_to_rec709( device float* p_Input [[buffer (1)]], constant int& p_Width [[buffer (2)]],  \n" \
+"constant int& p_Height [[buffer (3)]], uint2 id [[ thread_position_in_grid ]]) \n" \
+"{ \n" \
+"if((id.x < p_Width) && (id.y < p_Height) ) \n" \
+"{ \n" \
+"const int index = (id.y * p_Width + id.x) * 4; \n" \
+"float3 lab = make_float3(p_Input[index], p_Input[index + 1], p_Input[index + 2]); \n" \
+"float3 rgb = LAB_to_XYZ(lab); \n" \
+"rgb = XYZ_to_Rec709(rgb); \n" \
+"p_Input[index] = rgb.x; \n" \
+"p_Input[index + 1] = rgb.y; \n" \
+"p_Input[index + 2] = rgb.z; \n" \
+"} \n" \
+"} \n" \
+"kernel void k_arri_to_lab( device float* p_Input [[buffer (0)]], device float* p_Output [[buffer (1)]],  \n" \
+"constant int& p_Width [[buffer (2)]], constant int& p_Height [[buffer (3)]], uint2 id [[ thread_position_in_grid ]]) \n" \
+"{ \n" \
+"if( (id.x < p_Width) && (id.y < p_Height) ) \n" \
+"{ \n" \
+"const int index = (id.y * p_Width + id.x) * 4; \n" \
+"float3 Alexa = make_float3(p_Input[index], p_Input[index + 1], p_Input[index + 2]); \n" \
+"float3 lab = ArrilogC_to_XYZ(Alexa); \n" \
+"lab = XYZ_to_LAB(lab); \n" \
+"p_Output[index] = lab.x; \n" \
+"p_Output[index + 1] = lab.y; \n" \
+"p_Output[index + 2] = lab.z; \n" \
+"p_Input[index] = lab.x; \n" \
+"} \n" \
+"} \n" \
+"kernel void k_lab_to_arri( device float* p_Input [[buffer (1)]], constant int& p_Width [[buffer (2)]],  \n" \
+"constant int& p_Height [[buffer (3)]], uint2 id [[ thread_position_in_grid ]]) \n" \
+"{ \n" \
+"if( (id.x < p_Width) && (id.y < p_Height) ) \n" \
+"{ \n" \
+"const int index = (id.y * p_Width + id.x) * 4; \n" \
+"float3 lab = make_float3(p_Input[index], p_Input[index + 1], p_Input[index + 2]); \n" \
+"float3 Alexa; \n" \
+"Alexa = LAB_to_XYZ(lab); \n" \
+"Alexa = XYZ_to_ArrilogC(Alexa); \n" \
+"p_Input[index] = Alexa.x; \n" \
+"p_Input[index + 1] = Alexa.y; \n" \
+"p_Input[index + 2] = Alexa.z; \n" \
+"} \n" \
+"} \n" \
+"kernel void k_acescct_to_lab( device float* p_Input [[buffer (0)]], device float* p_Output [[buffer (1)]],  \n" \
+"constant int& p_Width [[buffer (2)]], constant int& p_Height [[buffer (3)]], uint2 id [[ thread_position_in_grid ]]) \n" \
+"{ \n" \
+"if( (id.x < p_Width) && (id.y < p_Height) ) \n" \
+"{ \n" \
+"const int index = (id.y * p_Width + id.x) * 4; \n" \
+"float3 aces = make_float3(p_Input[index], p_Input[index + 1], p_Input[index + 2]); \n" \
+"float3 lab = ACEScct_to_XYZ(aces); \n" \
+"lab = XYZ_to_LAB(lab); \n" \
+"p_Output[index] = lab.x; \n" \
+"p_Output[index + 1] = lab.y; \n" \
+"p_Output[index + 2] = lab.z; \n" \
+"p_Input[index] = lab.x; \n" \
+"} \n" \
+"} \n" \
+"kernel void k_lab_to_acescct( device float* p_Input [[buffer (1)]], constant int& p_Width [[buffer (2)]],  \n" \
+"constant int& p_Height [[buffer (3)]], uint2 id [[ thread_position_in_grid ]]) \n" \
+"{ \n" \
+"if( (id.x < p_Width) && (id.y < p_Height) ) \n" \
+"{ \n" \
+"const int index = (id.y * p_Width + id.x) * 4; \n" \
+"float3 lab = make_float3(p_Input[index], p_Input[index + 1], p_Input[index + 2]); \n" \
+"float3 aces; \n" \
+"aces = LAB_to_XYZ(lab); \n" \
+"aces = XYZ_to_ACEScct(aces); \n" \
+"p_Input[index] = aces.x; \n" \
+"p_Input[index + 1] = aces.y; \n" \
+"p_Input[index + 2] = aces.z; \n" \
+"} \n" \
+"} \n" \
+" \n" \
+"kernel void k_transpose( device float* p_Input [[buffer (11)]], device float* p_Output [[buffer (1)]], constant int& p_Width [[buffer (2)]],  \n" \
+"constant int& p_Height [[buffer (3)]], constant int& ch_out [[buffer (4)]], uint2 threadIdx [[ thread_position_in_threadgroup ]], \n" \
+"uint2 blockIdx [[ threadgroup_position_in_grid ]], uint2 blockDim [[ threads_per_threadgroup ]]) \n" \
+"{ \n" \
+"const int BLOCK_D = 32; \n" \
+"threadgroup float sblock[BLOCK_D * (BLOCK_D + 1)]; \n" \
+"int xIndex = blockIdx.x * BLOCK_D + threadIdx.x; \n" \
+"int yIndex = blockIdx.y * BLOCK_D + threadIdx.y; \n" \
+"if( (xIndex < p_Width) && (yIndex < p_Height) ) \n" \
+"{ \n" \
+"sblock[threadIdx.y * (BLOCK_D + 1) + threadIdx.x] = p_Input[(yIndex * p_Width + xIndex)]; \n" \
+"} \n" \
+"threadgroup_barrier(mem_flags::mem_threadgroup); \n" \
+"xIndex = blockIdx.y * BLOCK_D + threadIdx.x; \n" \
+"yIndex = blockIdx.x * BLOCK_D + threadIdx.y; \n" \
+"if( (xIndex < p_Height) && (yIndex < p_Width) ) \n" \
+"{ \n" \
+"p_Output[(yIndex * p_Height + xIndex) * 4 + ch_out] = sblock[threadIdx.x * (BLOCK_D + 1) + threadIdx.y]; \n" \
+"} \n" \
+"} \n" \
+"kernel void k_gaussian( device float* p_Input [[buffer (1)]], device float* p_Output [[buffer (11)]],  \n" \
 "constant int& p_Width [[buffer (2)]], constant int& p_Height [[buffer (3)]], constant int& ch_in [[buffer (4)]],  \n" \
 "constant float& blur [[buffer (5)]], uint2 threadIdx [[ thread_position_in_threadgroup ]], \n" \
 "uint2 blockIdx [[ threadgroup_position_in_grid ]], uint2 blockDim [[ threads_per_threadgroup ]]) \n" \
@@ -36,7 +295,7 @@ const char* kernelSource =  \
 "xp = *p_Input; \n" \
 "yb = coefp * xp; \n" \
 "yp = yb; \n" \
-"for (int y = 0; y < p_Height; y++){ \n" \
+"for (int y = 0; y < p_Height; y++) { \n" \
 "float xc = *p_Input; \n" \
 "float yc = a0 * xc + a1 * xp - b1 * yp - b2 * yb; \n" \
 "*p_Output = yc; \n" \
@@ -52,7 +311,7 @@ const char* kernelSource =  \
 "xn = xa = *p_Input; \n" \
 "yn = coefn * xn; \n" \
 "ya = yn; \n" \
-"for (int y = p_Height - 1; y >= 0; y--){ \n" \
+"for (int y = p_Height - 1; y >= 0; y--) { \n" \
 "float xc = *p_Input; \n" \
 "float yc = a2 * xn + a3 * xa - b1 * yn - b2 * ya; \n" \
 "xa = xn; \n" \
@@ -64,41 +323,12 @@ const char* kernelSource =  \
 "p_Output -= p_Width; \n" \
 "} \n" \
 "} \n" \
-"kernel void k_transpose(device float* p_Input [[buffer (0)]], device float* p_Output [[buffer (1)]], constant int& p_Width [[buffer (2)]],  \n" \
-"constant int& p_Height [[buffer (3)]], constant int& ch_out [[buffer (4)]], uint2 threadIdx [[ thread_position_in_threadgroup ]], \n" \
-"uint2 blockIdx [[ threadgroup_position_in_grid ]], uint2 blockDim [[ threads_per_threadgroup ]]) \n" \
-"{ \n" \
-"const int BLOCK_D = 32; \n" \
-"threadgroup float sblock[BLOCK_D * (BLOCK_D + 1)]; \n" \
-"int xIndex = blockIdx.x * BLOCK_D + threadIdx.x; \n" \
-"int yIndex = blockIdx.y * BLOCK_D + threadIdx.y; \n" \
-"if((xIndex < p_Width) && (yIndex < p_Height)) \n" \
-"{ \n" \
-"sblock[threadIdx.y * (BLOCK_D + 1) + threadIdx.x] = p_Input[(yIndex * p_Width + xIndex)]; \n" \
-"} \n" \
-"threadgroup_barrier(mem_flags::mem_threadgroup); \n" \
-"xIndex = blockIdx.y * BLOCK_D + threadIdx.x; \n" \
-"yIndex = blockIdx.x * BLOCK_D + threadIdx.y; \n" \
-"if((xIndex < p_Height) && (yIndex < p_Width)) \n" \
-"{ \n" \
-"p_Output[(yIndex * p_Height + xIndex) * 4 + ch_out] = sblock[threadIdx.x * (BLOCK_D + 1) + threadIdx.y]; \n" \
-"} \n" \
-"} \n" \
-"kernel void k_simple(device float* p_Input [[buffer (0)]], device float* p_Output [[buffer (1)]], constant int& p_Width [[buffer (2)]],  \n" \
-"constant int& p_Height [[buffer (3)]], constant int& ch_in [[buffer (4)]], uint2 id [[ thread_position_in_grid ]]) \n" \
-"{                                 				    \n" \
-"if ((id.x < p_Width) && (id.y < p_Height) ) \n" \
-"{ \n" \
-"const int index = (id.y * p_Width + id.x) * 4; \n" \
-"p_Output[index + ch_in] = p_Input[index + ch_in];  \n" \
-"} \n" \
-"} \n" \
-"kernel void k_freqSharpen(device float* p_Input [[buffer (0)]], device float* p_Output [[buffer (1)]], constant int& p_Width [[buffer (2)]],  \n" \
+"kernel void k_freqSharpen( device float* p_Input [[buffer (0)]], device float* p_Output [[buffer (1)]], constant int& p_Width [[buffer (2)]],  \n" \
 "constant int& p_Height [[buffer (3)]], constant int& ch_in [[buffer (4)]], constant float& sharpen [[buffer (6)]],  \n" \
 "constant int& p_Display [[buffer (7)]], uint2 id [[ thread_position_in_grid ]]) \n" \
 "{ \n" \
 "float offset = p_Display == 1 ? 0.5f : 0.0f; \n" \
-"if((id.x < p_Width) && (id.y < p_Height) ) \n" \
+"if( (id.x < p_Width) && (id.y < p_Height) ) \n" \
 "{ \n" \
 "const int index = (id.y * p_Width + id.x) * 4; \n" \
 "p_Input[index + ch_in] = (p_Input[index + ch_in] - p_Output[index + ch_in]) * sharpen + offset; \n" \
@@ -107,11 +337,11 @@ const char* kernelSource =  \
 "} \n" \
 "} \n" \
 "} \n" \
-"kernel void k_freqSharpenLuma(device float* p_Input [[buffer (0)]], device float* p_Output [[buffer (1)]], constant int& p_Width [[buffer (2)]],  \n" \
+"kernel void k_freqSharpenLuma( device float* p_Input [[buffer (0)]], device float* p_Output [[buffer (1)]], constant int& p_Width [[buffer (2)]],  \n" \
 "constant int& p_Height [[buffer (3)]], constant float& sharpen [[buffer (6)]], constant int& p_Display [[buffer (7)]], uint2 id [[ thread_position_in_grid ]]) \n" \
 "{ \n" \
 "float offset = p_Display == 1 ? 0.5f : 0.0f; \n" \
-"if((id.x < p_Width) && (id.y < p_Height) ) \n" \
+"if( (id.x < p_Width) && (id.y < p_Height) ) \n" \
 "{ \n" \
 "const int index = (id.y * p_Width + id.x) * 4; \n" \
 "p_Input[index] = (p_Input[index] - p_Output[index]) * sharpen + offset; \n" \
@@ -119,27 +349,29 @@ const char* kernelSource =  \
 "p_Output[index] = p_Output[index + 1] = p_Output[index + 2] = p_Input[index]; \n" \
 "} \n" \
 "} \n" \
-"kernel void k_freqAdd(device float* p_Input [[buffer (0)]], device float* p_Output [[buffer (1)]], constant int& p_Width [[buffer (2)]],  \n" \
+"kernel void k_freqAdd( device float* p_Input [[buffer (0)]], device float* p_Output [[buffer (1)]], constant int& p_Width [[buffer (2)]],  \n" \
 "constant int& p_Height [[buffer (3)]], constant int& ch_in [[buffer (4)]], uint2 id [[ thread_position_in_grid ]]) \n" \
 "{ \n" \
-"if((id.x < p_Width) && (id.y < p_Height) ) \n" \
+"if( (id.x < p_Width) && (id.y < p_Height) ) \n" \
 "{ \n" \
 "const int index = (id.y * p_Width + id.x) * 4; \n" \
 "p_Output[index + ch_in] = p_Input[index + ch_in] + p_Output[index + ch_in];												   \n" \
 "} \n" \
 "} \n" \
-"kernel void k_lowFreqCont(device float* p_Input [[buffer (0)]], constant int& p_Width [[buffer (2)]], constant int& p_Height [[buffer (3)]],  \n" \
+"kernel void k_lowFreqCont( device float* p_Input [[buffer (1)]], constant int& p_Width [[buffer (2)]], constant int& p_Height [[buffer (3)]],  \n" \
 "constant int& ch_in [[buffer (4)]], constant int& p_Display [[buffer (7)]], constant int& curve [[buffer (8)]],  \n" \
 "constant float& contrast [[buffer (9)]], constant float& pivot [[buffer (10)]], uint2 id [[ thread_position_in_grid ]]) \n" \
 "{ \n" \
-"if((id.x < p_Width) && (id.y < p_Height) ) \n" \
+"if( (id.x < p_Width) && (id.y < p_Height) ) \n" \
 "{ \n" \
 "const int index = (id.y * p_Width + id.x) * 4; \n" \
 "float graph = 0.0f; \n" \
-"if(curve == 1) \n" \
+"if(curve == 1){ \n" \
+"if(p_Input[index + ch_in] > 0.0f && p_Input[index + ch_in] < 1.0f) \n" \
 "p_Input[index + ch_in] = p_Input[index + ch_in] <= pivot ? pow(p_Input[index + ch_in] / pivot, contrast) * pivot : (1.0f - pow(1.0f - (p_Input[index + ch_in] - pivot) / (1.0f - pivot), contrast)) * (1.0f - pivot) + pivot; \n" \
-"else \n" \
+"} else { \n" \
 "p_Input[index + ch_in] = (p_Input[index + ch_in] - pivot) * contrast + pivot; \n" \
+"} \n" \
 "if(p_Display == 3){ \n" \
 "float width = p_Width; \n" \
 "float height = p_Height; \n" \
@@ -155,7 +387,7 @@ const char* kernelSource =  \
 "} \n" \
 "} \n" \
 "} \n" \
-"kernel void k_lowFreqContLuma(device float* p_Input [[buffer (0)]], constant int& p_Width [[buffer (2)]], constant int& p_Height [[buffer (3)]],  \n" \
+"kernel void k_lowFreqContLuma( device float* p_Input [[buffer (1)]], constant int& p_Width [[buffer (2)]], constant int& p_Height [[buffer (3)]],  \n" \
 "constant int& p_Display [[buffer (7)]], constant int& curve [[buffer (8)]],  \n" \
 "constant float& contrast [[buffer (9)]], constant float& pivot [[buffer (10)]], uint2 id [[ thread_position_in_grid ]]) \n" \
 "{ \n" \
@@ -163,10 +395,12 @@ const char* kernelSource =  \
 "{ \n" \
 "const int index = (id.y * p_Width + id.x) * 4; \n" \
 "float graph = 0.0f; \n" \
-"if(curve == 1) \n" \
+"if(curve == 1){ \n" \
+"if(p_Input[index] > 0.0f && p_Input[index] < 1.0f) \n" \
 "p_Input[index] = p_Input[index] <= pivot ? pow(p_Input[index] / pivot, contrast) * pivot : (1.0f - pow(1.0f - (p_Input[index] - pivot) / (1.0f - pivot), contrast)) * (1.0f - pivot) + pivot; \n" \
-"else \n" \
+"} else { \n" \
 "p_Input[index] = (p_Input[index] - pivot) * contrast + pivot; \n" \
+"} \n" \
 "if(p_Display == 2) \n" \
 "p_Input[index + 2] = p_Input[index + 1] = p_Input[index]; \n" \
 "if(p_Display == 3){ \n" \
@@ -185,87 +419,6 @@ const char* kernelSource =  \
 "} \n" \
 "} \n" \
 "} \n" \
-"kernel void k_rec709toLAB(device float* p_Input [[buffer (0)]], device float* p_Output [[buffer (1)]],  \n" \
-"constant int& p_Width [[buffer (2)]], constant int& p_Height [[buffer (3)]], uint2 id [[ thread_position_in_grid ]]) \n" \
-"{ \n" \
-"if((id.x < p_Width) && (id.y < p_Height) ) \n" \
-"{ \n" \
-"const int index = (id.y * p_Width + id.x) * 4; \n" \
-"float linR = p_Input[index + 0] < 0.08145f ? (p_Input[index + 0] < 0.0f ? 0.0f : p_Input[index + 0] * (1.0f / 4.5f)) : pow((p_Input[index + 0] + 0.0993f) * (1.0f / 1.0993f), (1.0f / 0.45f)); \n" \
-"float linG = p_Input[index + 1] < 0.08145f ? (p_Input[index + 1] < 0.0f ? 0.0f : p_Input[index + 1] * (1.0f / 4.5f)) : pow((p_Input[index + 1] + 0.0993f) * (1.0f / 1.0993f), (1.0f / 0.45f)); \n" \
-"float linB = p_Input[index + 2] < 0.08145f ? (p_Input[index + 2] < 0.0f ? 0.0f : p_Input[index + 2] * (1.0f / 4.5f)) : pow((p_Input[index + 2] + 0.0993f) * (1.0f / 1.0993f), (1.0f / 0.45f)); \n" \
-"float xyzR = 0.4124564f * linR + 0.3575761f * linG + 0.1804375f * linB; \n" \
-"float xyzG = 0.2126729f * linR + 0.7151522f * linG + 0.0721750f * linB; \n" \
-"float xyzB = 0.0193339f * linR + 0.1191920f * linG + 0.9503041f * linB; \n" \
-"xyzR /= (0.412453f + 0.357580f + 0.180423f); \n" \
-"xyzG /= (0.212671f + 0.715160f + 0.072169f); \n" \
-"xyzB /= (0.019334f + 0.119193f + 0.950227f); \n" \
-"float fx = xyzR >= 0.008856f ? pow(xyzR, 1.0f / 3.0f) : 7.787f * xyzR + 16.0f / 116.0f; \n" \
-"float fy = xyzG >= 0.008856f ? pow(xyzG, 1.0f / 3.0f) : 7.787f * xyzG + 16.0f / 116.0f; \n" \
-"float fz = xyzB >= 0.008856f ? pow(xyzB, 1.0f / 3.0f) : 7.787f * xyzB + 16.0f / 116.0f; \n" \
-"float L = (116.0f * fy - 16.0f) / 100.0f; \n" \
-"p_Output[index + 0] = L; \n" \
-"p_Output[index + 1] = (500.0f * (fx - fy)) / 200.0f + 0.5f; \n" \
-"p_Output[index + 2] = (200.0f * (fy - fz)) / 200.0f + 0.5f; \n" \
-"p_Input[index + 0] = L; \n" \
-"} \n" \
-"} \n" \
-"kernel void k_LABtoRec709(device float* p_Input [[buffer (0)]], constant int& p_Width [[buffer (2)]],  \n" \
-"constant int& p_Height [[buffer (3)]], uint2 id [[ thread_position_in_grid ]]) \n" \
-"{ \n" \
-"if((id.x < p_Width) && (id.y < p_Height) ) \n" \
-"{ \n" \
-"const int index = (id.y * p_Width + id.x) * 4; \n" \
-"float l = p_Input[index + 0] * 100.0f; \n" \
-"float a = (p_Input[index + 1] - 0.5f) * 200.0f; \n" \
-"float b = (p_Input[index + 2] - 0.5f) * 200.0f; \n" \
-"float cy = (l + 16.0f) / 116.0f; \n" \
-"float CY = cy >= 0.206893f ? (cy * cy * cy) : (cy - 16.0f / 116.0f) / 7.787f; \n" \
-"float y = (0.212671f + 0.715160f + 0.072169f) * CY; \n" \
-"float cx = a / 500.0f + cy; \n" \
-"float CX = cx >= 0.206893f ? (cx * cx * cx) : (cx - 16.0f / 116.0f) / 7.787f; \n" \
-"float x = (0.412453f + 0.357580f + 0.180423f) * CX; \n" \
-"float cz = cy - b / 200.0f; \n" \
-"float CZ = cz >= 0.206893f ? (cz * cz * cz) : (cz - 16.0f / 116.0f) / 7.787f; \n" \
-"float z = (0.019334f + 0.119193f + 0.950227f) * CZ; \n" \
-"float r =  3.2404542f * x + -1.5371385f * y + -0.4985314f * z; \n" \
-"float g = -0.9692660f * x +  1.8760108f * y +  0.0415560f * z; \n" \
-"float _b =  0.0556434f * x + -0.2040259f * y +  1.0572252f * z; \n" \
-"float R = r < 0.0181f ? (r < 0.0f ? 0.0f : r * 4.5f) : 1.0993f * pow(r, 0.45f) - (1.0993f - 1.0f); \n" \
-"float G = g < 0.0181f ? (g < 0.0f ? 0.0f : g * 4.5f) : 1.0993f * pow(g, 0.45f) - (1.0993f - 1.0f); \n" \
-"float B = _b < 0.0181f ? (_b < 0.0f ? 0.0f : _b * 4.5f) : 1.0993f * pow(_b, 0.45f) - (1.0993f - 1.0f); \n" \
-"p_Input[index + 0] = R; \n" \
-"p_Input[index + 1] = G; \n" \
-"p_Input[index + 2] = B; \n" \
-"} \n" \
-"} \n" \
-"kernel void k_rec709toYUV(device float* p_Input [[buffer (0)]], device float* p_Output [[buffer (1)]],  \n" \
-"constant int& p_Width [[buffer (2)]], constant int& p_Height [[buffer (3)]], uint2 id [[ thread_position_in_grid ]]) \n" \
-"{ \n" \
-"if((id.x < p_Width) && (id.y < p_Height) ) \n" \
-"{ \n" \
-"const int index = (id.y * p_Width + id.x) * 4; \n" \
-"float Y = 0.2126f * p_Input[index + 0] + 0.7152f * p_Input[index + 1] + 0.0722f * p_Input[index + 2]; \n" \
-"p_Output[index + 0] = Y; \n" \
-"p_Output[index + 1] = -0.09991f * p_Input[index + 0] - 0.33609f * p_Input[index + 1] + 0.436f * p_Input[index + 2]; \n" \
-"p_Output[index + 2] = 0.615f * p_Input[index + 0] - 0.55861f * p_Input[index + 1] - 0.05639f * p_Input[index + 2]; \n" \
-"p_Input[index + 0] = Y; \n" \
-"} \n" \
-"} \n" \
-"kernel void k_YUVtoRec709(device float* p_Input [[buffer (0)]], constant int& p_Width [[buffer (2)]],  \n" \
-"constant int& p_Height [[buffer (3)]], uint2 id [[ thread_position_in_grid ]]) \n" \
-"{ \n" \
-"if((id.x < p_Width) && (id.y < p_Height) ) \n" \
-"{ \n" \
-"const int index = (id.y * p_Width + id.x) * 4; \n" \
-"float r = p_Input[index + 0] + 1.28033f * p_Input[index + 2]; \n" \
-"float g = p_Input[index + 0] - 0.21482f * p_Input[index + 1] - 0.38059f * p_Input[index + 2]; \n" \
-"float b = p_Input[index + 0] + 2.12798f * p_Input[index + 1]; \n" \
-"p_Input[index + 0] = r; \n" \
-"p_Input[index + 1] = g; \n" \
-"p_Input[index + 2] = b; \n" \
-"} \n" \
-"} \n" \
 "\n";
 
 std::mutex s_PipelineQueueMutex;
@@ -278,13 +431,15 @@ int red = 0;
 int green = 1;
 int blue = 2;
 
-const char* gaussian			= "k_gaussian";
 const char* simple				= "k_simple";
+const char* gaussian			= "k_gaussian";
 const char* transpose			= "k_transpose";
-const char* rec709toYUV			= "k_rec709toYUV";
-const char* YUVtoRec709			= "k_YUVtoRec709";
-const char* rec709toLAB			= "k_rec709toLAB";
-const char* LABtoRec709			= "k_LABtoRec709";
+const char* Rec709toLAB			= "k_rec709_to_lab";
+const char* LABtoRec709			= "k_lab_to_rec709";
+const char* ARRItoLAB			= "k_arri_to_lab";
+const char* LABtoARRI			= "k_lab_to_arri";
+const char* ACEStoLAB			= "k_acescct_to_lab";
+const char* LABtoACES			= "k_lab_to_acescct";
 const char* freqSharpen			= "k_freqSharpen";
 const char* freqSharpenLuma		= "k_freqSharpenLuma";
 const char* lowFreqCont			= "k_lowFreqCont";
@@ -297,13 +452,15 @@ id<MTLLibrary>					metalLibrary;      //Metal library
 id<MTLFunction>					kernelFunction;    //Compute kernel
 id<MTLComputePipelineState>		pipelineState;     //Metal pipeline
 id<MTLBuffer>					tempBuffer;
-id<MTLComputePipelineState>    _gaussian;
 id<MTLComputePipelineState>    _simple;
+id<MTLComputePipelineState>    _gaussian;
 id<MTLComputePipelineState>    _transpose;
-id<MTLComputePipelineState>    _rec709toYUV;
-id<MTLComputePipelineState>    _YUVtoRec709;
-id<MTLComputePipelineState>    _rec709toLAB;
+id<MTLComputePipelineState>    _Rec709toLAB;
 id<MTLComputePipelineState>    _LABtoRec709;
+id<MTLComputePipelineState>    _ARRItoLAB;
+id<MTLComputePipelineState>    _LABtoARRI;
+id<MTLComputePipelineState>    _ACEStoLAB;
+id<MTLComputePipelineState>    _LABtoACES;
 id<MTLComputePipelineState>    _freqSharpen;
 id<MTLComputePipelineState>    _freqSharpenLuma;
 id<MTLComputePipelineState>    _lowFreqCont;
@@ -331,33 +488,41 @@ metalLibrary		=			[device newLibraryWithSource:@(kernelSource) options:options e
 
 tempBuffer 			= 			[device newBufferWithLength:bufferLength options:0];
 
-kernelFunction  	=			[metalLibrary newFunctionWithName:[NSString stringWithUTF8String:gaussian] ];
-
-_gaussian			=			[device newComputePipelineStateWithFunction:kernelFunction error:&err];
-
 kernelFunction  	=			[metalLibrary newFunctionWithName:[NSString stringWithUTF8String:simple] ];
 
 _simple				=			[device newComputePipelineStateWithFunction:kernelFunction error:&err];
+
+kernelFunction  	=			[metalLibrary newFunctionWithName:[NSString stringWithUTF8String:gaussian] ];
+
+_gaussian			=			[device newComputePipelineStateWithFunction:kernelFunction error:&err];
 
 kernelFunction  	=			[metalLibrary newFunctionWithName:[NSString stringWithUTF8String:transpose] ];
 
 _transpose			=			[device newComputePipelineStateWithFunction:kernelFunction error:&err];
 
-kernelFunction  	=			[metalLibrary newFunctionWithName:[NSString stringWithUTF8String:rec709toYUV] ];
+kernelFunction  	=			[metalLibrary newFunctionWithName:[NSString stringWithUTF8String:Rec709toLAB] ];
 
-_rec709toYUV		=			[device newComputePipelineStateWithFunction:kernelFunction error:&err];
-
-kernelFunction  	=			[metalLibrary newFunctionWithName:[NSString stringWithUTF8String:YUVtoRec709] ];
-
-_YUVtoRec709		=			[device newComputePipelineStateWithFunction:kernelFunction error:&err];
-
-kernelFunction  	=			[metalLibrary newFunctionWithName:[NSString stringWithUTF8String:rec709toLAB] ];
-
-_rec709toLAB		=			[device newComputePipelineStateWithFunction:kernelFunction error:&err];
+_Rec709toLAB		=			[device newComputePipelineStateWithFunction:kernelFunction error:&err];
 
 kernelFunction  	=			[metalLibrary newFunctionWithName:[NSString stringWithUTF8String:LABtoRec709] ];
 
 _LABtoRec709		=			[device newComputePipelineStateWithFunction:kernelFunction error:&err];
+
+kernelFunction  	=			[metalLibrary newFunctionWithName:[NSString stringWithUTF8String:ARRItoLAB] ];
+
+_ARRItoLAB			=			[device newComputePipelineStateWithFunction:kernelFunction error:&err];
+
+kernelFunction  	=			[metalLibrary newFunctionWithName:[NSString stringWithUTF8String:LABtoARRI] ];
+
+_LABtoARRI			=			[device newComputePipelineStateWithFunction:kernelFunction error:&err];
+
+kernelFunction  	=			[metalLibrary newFunctionWithName:[NSString stringWithUTF8String:ACEStoLAB] ];
+
+_ACEStoLAB			=			[device newComputePipelineStateWithFunction:kernelFunction error:&err];
+
+kernelFunction  	=			[metalLibrary newFunctionWithName:[NSString stringWithUTF8String:LABtoACES] ];
+
+_LABtoACES			=			[device newComputePipelineStateWithFunction:kernelFunction error:&err];
 
 kernelFunction  	=			[metalLibrary newFunctionWithName:[NSString stringWithUTF8String:freqSharpen] ];
 
@@ -414,100 +579,64 @@ for(int c = 0; c < 4; c++) {
 [computeEncoder dispatchThreadgroups:threadGroups threadsPerThreadgroup: threadGroupCount];
 }
 
-switch (p_Space) {
-case 0:
-{    
+[computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 11];
+[computeEncoder setBytes:&p_Display length:sizeof(int) atIndex: 7];
+[computeEncoder setBytes:&p_Switch[2] length:sizeof(int) atIndex: 8];
+[computeEncoder setBytes:&p_Cont[0] length:sizeof(float) atIndex: 9];
+[computeEncoder setBytes:&p_Cont[1] length:sizeof(float) atIndex: 10];
+
+if(p_Space == 0) {
 if (p_Switch[0] == 1)
 p_Blur[2] = p_Blur[1] = p_Blur[0];
-
 if (p_Blur[0] > 0.0f) {
 [computeEncoder setComputePipelineState:_gaussian];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 0];
-[computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 1];
 [computeEncoder setBytes:&red length:sizeof(int) atIndex: 4];
 [computeEncoder setBytes:&p_Blur[0] length:sizeof(float) atIndex: 5];
 [computeEncoder dispatchThreadgroups:gausThreadGroupsA threadsPerThreadgroup: gausThreadGroupsCount];
-
 [computeEncoder setComputePipelineState:_transpose];
-[computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 0];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 1];
 [computeEncoder dispatchThreadgroups:transThreadGroupsA threadsPerThreadgroup: transThreadGroupsCount];
-
 [computeEncoder setComputePipelineState:_gaussian];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 0];
-[computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 1];
 [computeEncoder setBytes:&p_Height length:sizeof(int) atIndex: 2];
 [computeEncoder setBytes:&p_Width length:sizeof(int) atIndex: 3];
 [computeEncoder dispatchThreadgroups:gausThreadGroupsB threadsPerThreadgroup: gausThreadGroupsCount];
-
 [computeEncoder setComputePipelineState:_transpose];
-[computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 0];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 1];
 [computeEncoder dispatchThreadgroups:transThreadGroupsB threadsPerThreadgroup: transThreadGroupsCount];
 }
-
 if (p_Blur[1] > 0.0f) {
 [computeEncoder setComputePipelineState:_gaussian];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 0];
-[computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 1];
 [computeEncoder setBytes:&p_Width length:sizeof(int) atIndex: 2];
 [computeEncoder setBytes:&p_Height length:sizeof(int) atIndex: 3];
 [computeEncoder setBytes:&green length:sizeof(int) atIndex: 4];
 [computeEncoder setBytes:&p_Blur[1] length:sizeof(float) atIndex: 5];
 [computeEncoder dispatchThreadgroups:gausThreadGroupsA threadsPerThreadgroup: gausThreadGroupsCount];
-
 [computeEncoder setComputePipelineState:_transpose];
-[computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 0];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 1];
 [computeEncoder dispatchThreadgroups:transThreadGroupsA threadsPerThreadgroup: transThreadGroupsCount];
-
 [computeEncoder setComputePipelineState:_gaussian];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 0];
-[computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 1];
 [computeEncoder setBytes:&p_Height length:sizeof(int) atIndex: 2];
 [computeEncoder setBytes:&p_Width length:sizeof(int) atIndex: 3];
 [computeEncoder dispatchThreadgroups:gausThreadGroupsB threadsPerThreadgroup: gausThreadGroupsCount];
-
 [computeEncoder setComputePipelineState:_transpose];
-[computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 0];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 1];
 [computeEncoder dispatchThreadgroups:transThreadGroupsB threadsPerThreadgroup: transThreadGroupsCount];
 }
-
 if (p_Blur[2] > 0.0f) {
 [computeEncoder setComputePipelineState:_gaussian];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 0];
-[computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 1];
 [computeEncoder setBytes:&p_Width length:sizeof(int) atIndex: 2];
 [computeEncoder setBytes:&p_Height length:sizeof(int) atIndex: 3];
 [computeEncoder setBytes:&blue length:sizeof(int) atIndex: 4];
 [computeEncoder setBytes:&p_Blur[2] length:sizeof(float) atIndex: 5];
 [computeEncoder dispatchThreadgroups:gausThreadGroupsA threadsPerThreadgroup: gausThreadGroupsCount];
-
 [computeEncoder setComputePipelineState:_transpose];
-[computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 0];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 1];
 [computeEncoder dispatchThreadgroups:transThreadGroupsA threadsPerThreadgroup: transThreadGroupsCount];
-
 [computeEncoder setComputePipelineState:_gaussian];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 0];
-[computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 1];
 [computeEncoder setBytes:&p_Height length:sizeof(int) atIndex: 2];
 [computeEncoder setBytes:&p_Width length:sizeof(int) atIndex: 3];
 [computeEncoder dispatchThreadgroups:gausThreadGroupsB threadsPerThreadgroup: gausThreadGroupsCount];
-
 [computeEncoder setComputePipelineState:_transpose];
-[computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 0];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 1];
 [computeEncoder dispatchThreadgroups:transThreadGroupsB threadsPerThreadgroup: transThreadGroupsCount];
 }
-
 if (p_Switch[0] == 1)
 p_Sharpen[2] = p_Sharpen[1] = p_Sharpen[0];
-
 [computeEncoder setComputePipelineState:_freqSharpen];
-[computeEncoder setBuffer:srcDeviceBuf offset: 0 atIndex: 0];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 1];
 [computeEncoder setBytes:&p_Width length:sizeof(int) atIndex: 2];
 [computeEncoder setBytes:&p_Height length:sizeof(int) atIndex: 3];
 [computeEncoder setBytes:&p_Display length:sizeof(int) atIndex: 7];
@@ -516,442 +645,173 @@ for(int c = 0; c < 3; c++) {
 [computeEncoder setBytes:&p_Sharpen[c] length:sizeof(float) atIndex: 6];
 [computeEncoder dispatchThreadgroups:threadGroups threadsPerThreadgroup: threadGroupCount];
 }
-
 if (p_Display != 1) {
 if (p_Switch[0] == 1)
 p_Blur[5] = p_Blur[4] = p_Blur[3];
-
 if (p_Blur[3] > 0.0f) {
 [computeEncoder setComputePipelineState:_gaussian];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 0];
-[computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 1];
 [computeEncoder setBytes:&p_Width length:sizeof(int) atIndex: 2];
 [computeEncoder setBytes:&p_Height length:sizeof(int) atIndex: 3];
 [computeEncoder setBytes:&red length:sizeof(int) atIndex: 4];
 [computeEncoder setBytes:&p_Blur[3] length:sizeof(float) atIndex: 5];
 [computeEncoder dispatchThreadgroups:gausThreadGroupsA threadsPerThreadgroup: gausThreadGroupsCount];
-
 [computeEncoder setComputePipelineState:_transpose];
-[computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 0];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 1];
 [computeEncoder dispatchThreadgroups:transThreadGroupsA threadsPerThreadgroup: transThreadGroupsCount];
-
 [computeEncoder setComputePipelineState:_gaussian];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 0];
-[computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 1];
 [computeEncoder setBytes:&p_Height length:sizeof(int) atIndex: 2];
 [computeEncoder setBytes:&p_Width length:sizeof(int) atIndex: 3];
 [computeEncoder dispatchThreadgroups:gausThreadGroupsB threadsPerThreadgroup: gausThreadGroupsCount];
-
 [computeEncoder setComputePipelineState:_transpose];
-[computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 0];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 1];
 [computeEncoder dispatchThreadgroups:transThreadGroupsB threadsPerThreadgroup: transThreadGroupsCount];
 }
-
 if (p_Blur[4] > 0.0f) {
 [computeEncoder setComputePipelineState:_gaussian];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 0];
-[computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 1];
 [computeEncoder setBytes:&p_Width length:sizeof(int) atIndex: 2];
 [computeEncoder setBytes:&p_Height length:sizeof(int) atIndex: 3];
 [computeEncoder setBytes:&green length:sizeof(int) atIndex: 4];
 [computeEncoder setBytes:&p_Blur[4] length:sizeof(float) atIndex: 5];
 [computeEncoder dispatchThreadgroups:gausThreadGroupsA threadsPerThreadgroup: gausThreadGroupsCount];
-
 [computeEncoder setComputePipelineState:_transpose];
-[computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 0];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 1];
 [computeEncoder dispatchThreadgroups:transThreadGroupsA threadsPerThreadgroup: transThreadGroupsCount];
-
 [computeEncoder setComputePipelineState:_gaussian];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 0];
-[computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 1];
 [computeEncoder setBytes:&p_Height length:sizeof(int) atIndex: 2];
 [computeEncoder setBytes:&p_Width length:sizeof(int) atIndex: 3];
 [computeEncoder dispatchThreadgroups:gausThreadGroupsB threadsPerThreadgroup: gausThreadGroupsCount];
-
 [computeEncoder setComputePipelineState:_transpose];
-[computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 0];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 1];
 [computeEncoder dispatchThreadgroups:transThreadGroupsB threadsPerThreadgroup: transThreadGroupsCount];
 }
-
 if (p_Blur[5] > 0.0f) {
 [computeEncoder setComputePipelineState:_gaussian];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 0];
-[computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 1];
 [computeEncoder setBytes:&p_Width length:sizeof(int) atIndex: 2];
 [computeEncoder setBytes:&p_Height length:sizeof(int) atIndex: 3];
 [computeEncoder setBytes:&blue length:sizeof(int) atIndex: 4];
 [computeEncoder setBytes:&p_Blur[5] length:sizeof(float) atIndex: 5];
 [computeEncoder dispatchThreadgroups:gausThreadGroupsA threadsPerThreadgroup: gausThreadGroupsCount];
-
 [computeEncoder setComputePipelineState:_transpose];
-[computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 0];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 1];
 [computeEncoder dispatchThreadgroups:transThreadGroupsA threadsPerThreadgroup: transThreadGroupsCount];
-
 [computeEncoder setComputePipelineState:_gaussian];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 0];
-[computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 1];
 [computeEncoder setBytes:&p_Height length:sizeof(int) atIndex: 2];
 [computeEncoder setBytes:&p_Width length:sizeof(int) atIndex: 3];
 [computeEncoder dispatchThreadgroups:gausThreadGroupsB threadsPerThreadgroup: gausThreadGroupsCount];
-
 [computeEncoder setComputePipelineState:_transpose];
-[computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 0];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 1];
 [computeEncoder dispatchThreadgroups:transThreadGroupsB threadsPerThreadgroup: transThreadGroupsCount];
 }
-
 [computeEncoder setComputePipelineState:_lowFreqCont];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 0];
-[computeEncoder setBytes:&p_Width length:sizeof(int) atIndex: 2];
-[computeEncoder setBytes:&p_Height length:sizeof(int) atIndex: 3];
-[computeEncoder setBytes:&p_Display length:sizeof(int) atIndex: 7];
-[computeEncoder setBytes:&p_Switch[2] length:sizeof(int) atIndex: 8];
-[computeEncoder setBytes:&p_Cont[0] length:sizeof(float) atIndex: 9];
-[computeEncoder setBytes:&p_Cont[1] length:sizeof(float) atIndex: 10];
-for(int c = 0; c < 3; c++) {
-[computeEncoder setBytes:&c length:sizeof(int) atIndex: 4];
-[computeEncoder dispatchThreadgroups:threadGroups threadsPerThreadgroup: threadGroupCount];
-}
-}
-
-if (p_Display == 0) {
-[computeEncoder setComputePipelineState:_freqAdd];
-[computeEncoder setBuffer:srcDeviceBuf offset: 0 atIndex: 0];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 1];
 [computeEncoder setBytes:&p_Width length:sizeof(int) atIndex: 2];
 [computeEncoder setBytes:&p_Height length:sizeof(int) atIndex: 3];
 for(int c = 0; c < 3; c++) {
 [computeEncoder setBytes:&c length:sizeof(int) atIndex: 4];
 [computeEncoder dispatchThreadgroups:threadGroups threadsPerThreadgroup: threadGroupCount];
 }
-}
-}
-break;
-
-case 1:
-{
-[computeEncoder setComputePipelineState:_rec709toYUV];
-[computeEncoder setBuffer:srcDeviceBuf offset: 0 atIndex: 0];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 1];
-[computeEncoder setBytes:&p_Width length:sizeof(int) atIndex: 2];
-[computeEncoder setBytes:&p_Height length:sizeof(int) atIndex: 3];
+if (p_Display == 0) {
+[computeEncoder setComputePipelineState:_freqAdd];
+for(int c = 0; c < 3; c++) {
+[computeEncoder setBytes:&c length:sizeof(int) atIndex: 4];
 [computeEncoder dispatchThreadgroups:threadGroups threadsPerThreadgroup: threadGroupCount];
+}}}}
 
+if(p_Space != 0) {
+if(p_Space == 1){
+[computeEncoder setComputePipelineState:_Rec709toLAB];
+[computeEncoder dispatchThreadgroups:threadGroups threadsPerThreadgroup: threadGroupCount];
+}
+if(p_Space == 2){
+[computeEncoder setComputePipelineState:_ARRItoLAB];
+[computeEncoder dispatchThreadgroups:threadGroups threadsPerThreadgroup: threadGroupCount];
+}
+if(p_Space == 3){
+[computeEncoder setComputePipelineState:_ACEStoLAB];
+[computeEncoder dispatchThreadgroups:threadGroups threadsPerThreadgroup: threadGroupCount];
+}
 if (p_Blur[0] > 0.0f) {
 [computeEncoder setComputePipelineState:_gaussian];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 0];
-[computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 1];
-[computeEncoder setBytes:&p_Width length:sizeof(int) atIndex: 2];
-[computeEncoder setBytes:&p_Height length:sizeof(int) atIndex: 3];
 [computeEncoder setBytes:&red length:sizeof(int) atIndex: 4];
 [computeEncoder setBytes:&p_Blur[0] length:sizeof(float) atIndex: 5];
 [computeEncoder dispatchThreadgroups:gausThreadGroupsA threadsPerThreadgroup: gausThreadGroupsCount];
-
 [computeEncoder setComputePipelineState:_transpose];
-[computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 0];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 1];
 [computeEncoder dispatchThreadgroups:transThreadGroupsA threadsPerThreadgroup: transThreadGroupsCount];
-
 [computeEncoder setComputePipelineState:_gaussian];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 0];
-[computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 1];
 [computeEncoder setBytes:&p_Height length:sizeof(int) atIndex: 2];
 [computeEncoder setBytes:&p_Width length:sizeof(int) atIndex: 3];
 [computeEncoder dispatchThreadgroups:gausThreadGroupsB threadsPerThreadgroup: gausThreadGroupsCount];
-
 [computeEncoder setComputePipelineState:_transpose];
-[computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 0];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 1];
 [computeEncoder dispatchThreadgroups:transThreadGroupsB threadsPerThreadgroup: transThreadGroupsCount];
 }
-
 [computeEncoder setComputePipelineState:_freqSharpenLuma];
-[computeEncoder setBuffer:srcDeviceBuf offset: 0 atIndex: 0];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 1];
 [computeEncoder setBytes:&p_Width length:sizeof(int) atIndex: 2];
 [computeEncoder setBytes:&p_Height length:sizeof(int) atIndex: 3];
 [computeEncoder setBytes:&p_Sharpen[0] length:sizeof(float) atIndex: 6];
-[computeEncoder setBytes:&p_Display length:sizeof(int) atIndex: 7];
 [computeEncoder dispatchThreadgroups:threadGroups threadsPerThreadgroup: threadGroupCount];
-
 if (p_Display != 1){
 if (p_Switch[1] == 1)
 p_Blur[5] = p_Blur[4];
-
 if (p_Blur[3] > 0.0f) {
 [computeEncoder setComputePipelineState:_gaussian];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 0];
-[computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 1];
-[computeEncoder setBytes:&p_Width length:sizeof(int) atIndex: 2];
-[computeEncoder setBytes:&p_Height length:sizeof(int) atIndex: 3];
 [computeEncoder setBytes:&red length:sizeof(int) atIndex: 4];
 [computeEncoder setBytes:&p_Blur[3] length:sizeof(float) atIndex: 5];
 [computeEncoder dispatchThreadgroups:gausThreadGroupsA threadsPerThreadgroup: gausThreadGroupsCount];
-
 [computeEncoder setComputePipelineState:_transpose];
-[computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 0];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 1];
 [computeEncoder dispatchThreadgroups:transThreadGroupsA threadsPerThreadgroup: transThreadGroupsCount];
-
 [computeEncoder setComputePipelineState:_gaussian];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 0];
-[computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 1];
 [computeEncoder setBytes:&p_Height length:sizeof(int) atIndex: 2];
 [computeEncoder setBytes:&p_Width length:sizeof(int) atIndex: 3];
 [computeEncoder dispatchThreadgroups:gausThreadGroupsB threadsPerThreadgroup: gausThreadGroupsCount];
-
 [computeEncoder setComputePipelineState:_transpose];
-[computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 0];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 1];
 [computeEncoder dispatchThreadgroups:transThreadGroupsB threadsPerThreadgroup: transThreadGroupsCount];
 }
-
 if (p_Blur[4] > 0.0f) {
 [computeEncoder setComputePipelineState:_gaussian];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 0];
-[computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 1];
 [computeEncoder setBytes:&p_Width length:sizeof(int) atIndex: 2];
 [computeEncoder setBytes:&p_Height length:sizeof(int) atIndex: 3];
 [computeEncoder setBytes:&green length:sizeof(int) atIndex: 4];
 [computeEncoder setBytes:&p_Blur[4] length:sizeof(float) atIndex: 5];
 [computeEncoder dispatchThreadgroups:gausThreadGroupsA threadsPerThreadgroup: gausThreadGroupsCount];
-
 [computeEncoder setComputePipelineState:_transpose];
-[computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 0];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 1];
 [computeEncoder dispatchThreadgroups:transThreadGroupsA threadsPerThreadgroup: transThreadGroupsCount];
-
 [computeEncoder setComputePipelineState:_gaussian];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 0];
-[computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 1];
 [computeEncoder setBytes:&p_Height length:sizeof(int) atIndex: 2];
 [computeEncoder setBytes:&p_Width length:sizeof(int) atIndex: 3];
 [computeEncoder dispatchThreadgroups:gausThreadGroupsB threadsPerThreadgroup: gausThreadGroupsCount];
-
 [computeEncoder setComputePipelineState:_transpose];
-[computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 0];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 1];
 [computeEncoder dispatchThreadgroups:transThreadGroupsB threadsPerThreadgroup: transThreadGroupsCount];
 }
-
 if (p_Blur[5] > 0.0f) {
 [computeEncoder setComputePipelineState:_gaussian];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 0];
-[computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 1];
 [computeEncoder setBytes:&p_Width length:sizeof(int) atIndex: 2];
 [computeEncoder setBytes:&p_Height length:sizeof(int) atIndex: 3];
 [computeEncoder setBytes:&blue length:sizeof(int) atIndex: 4];
 [computeEncoder setBytes:&p_Blur[5] length:sizeof(float) atIndex: 5];
 [computeEncoder dispatchThreadgroups:gausThreadGroupsA threadsPerThreadgroup: gausThreadGroupsCount];
-
 [computeEncoder setComputePipelineState:_transpose];
-[computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 0];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 1];
 [computeEncoder dispatchThreadgroups:transThreadGroupsA threadsPerThreadgroup: transThreadGroupsCount];
-
 [computeEncoder setComputePipelineState:_gaussian];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 0];
-[computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 1];
 [computeEncoder setBytes:&p_Height length:sizeof(int) atIndex: 2];
 [computeEncoder setBytes:&p_Width length:sizeof(int) atIndex: 3];
 [computeEncoder dispatchThreadgroups:gausThreadGroupsB threadsPerThreadgroup: gausThreadGroupsCount];
-
 [computeEncoder setComputePipelineState:_transpose];
-[computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 0];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 1];
 [computeEncoder dispatchThreadgroups:transThreadGroupsB threadsPerThreadgroup: transThreadGroupsCount];
 }
-
 [computeEncoder setComputePipelineState:_lowFreqContLuma];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 0];
 [computeEncoder setBytes:&p_Width length:sizeof(int) atIndex: 2];
 [computeEncoder setBytes:&p_Height length:sizeof(int) atIndex: 3];
-[computeEncoder setBytes:&p_Display length:sizeof(int) atIndex: 7];
-[computeEncoder setBytes:&p_Switch[2] length:sizeof(int) atIndex: 8];
-[computeEncoder setBytes:&p_Cont[0] length:sizeof(float) atIndex: 9];
-[computeEncoder setBytes:&p_Cont[1] length:sizeof(float) atIndex: 10];
 [computeEncoder dispatchThreadgroups:threadGroups threadsPerThreadgroup: threadGroupCount];
-}
-
 if (p_Display == 0) {
 [computeEncoder setComputePipelineState:_freqAdd];
-[computeEncoder setBuffer:srcDeviceBuf offset: 0 atIndex: 0];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 1];
-[computeEncoder setBytes:&p_Width length:sizeof(int) atIndex: 2];
-[computeEncoder setBytes:&p_Height length:sizeof(int) atIndex: 3];
 [computeEncoder setBytes:&red length:sizeof(int) atIndex: 4];
 [computeEncoder dispatchThreadgroups:threadGroups threadsPerThreadgroup: threadGroupCount];
-
-[computeEncoder setComputePipelineState:_YUVtoRec709];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 0];
-[computeEncoder dispatchThreadgroups:threadGroups threadsPerThreadgroup: threadGroupCount];
-}
-}
-break;
-
-case 2:
-{
-[computeEncoder setComputePipelineState:_rec709toLAB];
-[computeEncoder setBuffer:srcDeviceBuf offset: 0 atIndex: 0];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 1];
-[computeEncoder setBytes:&p_Width length:sizeof(int) atIndex: 2];
-[computeEncoder setBytes:&p_Height length:sizeof(int) atIndex: 3];
-[computeEncoder dispatchThreadgroups:threadGroups threadsPerThreadgroup: threadGroupCount];
-
-if (p_Blur[0] > 0.0f) {
-[computeEncoder setComputePipelineState:_gaussian];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 0];
-[computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 1];
-[computeEncoder setBytes:&red length:sizeof(int) atIndex: 4];
-[computeEncoder setBytes:&p_Blur[0] length:sizeof(float) atIndex: 5];
-[computeEncoder dispatchThreadgroups:gausThreadGroupsA threadsPerThreadgroup: gausThreadGroupsCount];
-
-[computeEncoder setComputePipelineState:_transpose];
-[computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 0];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 1];
-[computeEncoder dispatchThreadgroups:transThreadGroupsA threadsPerThreadgroup: transThreadGroupsCount];
-
-[computeEncoder setComputePipelineState:_gaussian];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 0];
-[computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 1];
-[computeEncoder setBytes:&p_Height length:sizeof(int) atIndex: 2];
-[computeEncoder setBytes:&p_Width length:sizeof(int) atIndex: 3];
-[computeEncoder dispatchThreadgroups:gausThreadGroupsB threadsPerThreadgroup: gausThreadGroupsCount];
-
-[computeEncoder setComputePipelineState:_transpose];
-[computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 0];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 1];
-[computeEncoder dispatchThreadgroups:transThreadGroupsB threadsPerThreadgroup: transThreadGroupsCount];
-}
-
-[computeEncoder setComputePipelineState:_freqSharpenLuma];
-[computeEncoder setBuffer:srcDeviceBuf offset: 0 atIndex: 0];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 1];
-[computeEncoder setBytes:&p_Width length:sizeof(int) atIndex: 2];
-[computeEncoder setBytes:&p_Height length:sizeof(int) atIndex: 3];
-[computeEncoder setBytes:&p_Sharpen[0] length:sizeof(float) atIndex: 6];
-[computeEncoder setBytes:&p_Display length:sizeof(int) atIndex: 7];
-[computeEncoder dispatchThreadgroups:threadGroups threadsPerThreadgroup: threadGroupCount];
-
-if (p_Display != 1){
-if (p_Switch[1] == 1)
-p_Blur[5] = p_Blur[4];
-
-if (p_Blur[3] > 0.0f) {
-[computeEncoder setComputePipelineState:_gaussian];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 0];
-[computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 1];
-[computeEncoder setBytes:&p_Width length:sizeof(int) atIndex: 2];
-[computeEncoder setBytes:&p_Height length:sizeof(int) atIndex: 3];
-[computeEncoder setBytes:&red length:sizeof(int) atIndex: 4];
-[computeEncoder setBytes:&p_Blur[3] length:sizeof(float) atIndex: 5];
-[computeEncoder dispatchThreadgroups:gausThreadGroupsA threadsPerThreadgroup: gausThreadGroupsCount];
-
-[computeEncoder setComputePipelineState:_transpose];
-[computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 0];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 1];
-[computeEncoder dispatchThreadgroups:transThreadGroupsA threadsPerThreadgroup: transThreadGroupsCount];
-
-[computeEncoder setComputePipelineState:_gaussian];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 0];
-[computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 1];
-[computeEncoder setBytes:&p_Height length:sizeof(int) atIndex: 2];
-[computeEncoder setBytes:&p_Width length:sizeof(int) atIndex: 3];
-[computeEncoder dispatchThreadgroups:gausThreadGroupsB threadsPerThreadgroup: gausThreadGroupsCount];
-
-[computeEncoder setComputePipelineState:_transpose];
-[computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 0];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 1];
-[computeEncoder dispatchThreadgroups:transThreadGroupsB threadsPerThreadgroup: transThreadGroupsCount];
-}
-
-if (p_Blur[4] > 0.0f) {
-[computeEncoder setComputePipelineState:_gaussian];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 0];
-[computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 1];
-[computeEncoder setBytes:&p_Width length:sizeof(int) atIndex: 2];
-[computeEncoder setBytes:&p_Height length:sizeof(int) atIndex: 3];
-[computeEncoder setBytes:&green length:sizeof(int) atIndex: 4];
-[computeEncoder setBytes:&p_Blur[4] length:sizeof(float) atIndex: 5];
-[computeEncoder dispatchThreadgroups:gausThreadGroupsA threadsPerThreadgroup: gausThreadGroupsCount];
-
-[computeEncoder setComputePipelineState:_transpose];
-[computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 0];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 1];
-[computeEncoder dispatchThreadgroups:transThreadGroupsA threadsPerThreadgroup: transThreadGroupsCount];
-
-[computeEncoder setComputePipelineState:_gaussian];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 0];
-[computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 1];
-[computeEncoder setBytes:&p_Height length:sizeof(int) atIndex: 2];
-[computeEncoder setBytes:&p_Width length:sizeof(int) atIndex: 3];
-[computeEncoder dispatchThreadgroups:gausThreadGroupsB threadsPerThreadgroup: gausThreadGroupsCount];
-
-[computeEncoder setComputePipelineState:_transpose];
-[computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 0];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 1];
-[computeEncoder dispatchThreadgroups:transThreadGroupsB threadsPerThreadgroup: transThreadGroupsCount];
-}
-
-if (p_Blur[5] > 0.0f) {
-[computeEncoder setComputePipelineState:_gaussian];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 0];
-[computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 1];
-[computeEncoder setBytes:&p_Width length:sizeof(int) atIndex: 2];
-[computeEncoder setBytes:&p_Height length:sizeof(int) atIndex: 3];
-[computeEncoder setBytes:&blue length:sizeof(int) atIndex: 4];
-[computeEncoder setBytes:&p_Blur[5] length:sizeof(float) atIndex: 5];
-[computeEncoder dispatchThreadgroups:gausThreadGroupsA threadsPerThreadgroup: gausThreadGroupsCount];
-
-[computeEncoder setComputePipelineState:_transpose];
-[computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 0];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 1];
-[computeEncoder dispatchThreadgroups:transThreadGroupsA threadsPerThreadgroup: transThreadGroupsCount];
-
-[computeEncoder setComputePipelineState:_gaussian];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 0];
-[computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 1];
-[computeEncoder setBytes:&p_Height length:sizeof(int) atIndex: 2];
-[computeEncoder setBytes:&p_Width length:sizeof(int) atIndex: 3];
-[computeEncoder dispatchThreadgroups:gausThreadGroupsB threadsPerThreadgroup: gausThreadGroupsCount];
-
-[computeEncoder setComputePipelineState:_transpose];
-[computeEncoder setBuffer:tempBuffer offset: 0 atIndex: 0];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 1];
-[computeEncoder dispatchThreadgroups:transThreadGroupsB threadsPerThreadgroup: transThreadGroupsCount];
-}
-
-[computeEncoder setComputePipelineState:_lowFreqContLuma];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 0];
-[computeEncoder setBytes:&p_Width length:sizeof(int) atIndex: 2];
-[computeEncoder setBytes:&p_Height length:sizeof(int) atIndex: 3];
-[computeEncoder setBytes:&p_Display length:sizeof(int) atIndex: 7];
-[computeEncoder setBytes:&p_Switch[2] length:sizeof(int) atIndex: 8];
-[computeEncoder setBytes:&p_Cont[0] length:sizeof(float) atIndex: 9];
-[computeEncoder setBytes:&p_Cont[1] length:sizeof(float) atIndex: 10];
-[computeEncoder dispatchThreadgroups:threadGroups threadsPerThreadgroup: threadGroupCount];
-}
-
-if (p_Display == 0) {
-[computeEncoder setComputePipelineState:_freqAdd];
-[computeEncoder setBuffer:srcDeviceBuf offset: 0 atIndex: 0];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 1];
-[computeEncoder setBytes:&p_Width length:sizeof(int) atIndex: 2];
-[computeEncoder setBytes:&p_Height length:sizeof(int) atIndex: 3];
-[computeEncoder setBytes:&red length:sizeof(int) atIndex: 4];
-[computeEncoder dispatchThreadgroups:threadGroups threadsPerThreadgroup: threadGroupCount];
-
+if(p_Space == 1){
 [computeEncoder setComputePipelineState:_LABtoRec709];
-[computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 0];
 [computeEncoder dispatchThreadgroups:threadGroups threadsPerThreadgroup: threadGroupCount];
 }
+if(p_Space == 2){
+[computeEncoder setComputePipelineState:_LABtoARRI];
+[computeEncoder dispatchThreadgroups:threadGroups threadsPerThreadgroup: threadGroupCount];
 }
+if(p_Space == 3){
+[computeEncoder setComputePipelineState:_LABtoACES];
+[computeEncoder dispatchThreadgroups:threadGroups threadsPerThreadgroup: threadGroupCount];
 }
+}}}
 [computeEncoder endEncoding];
 [commandBuffer commit];
 }

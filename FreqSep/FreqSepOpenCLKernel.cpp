@@ -24,93 +24,275 @@ size_t szBuffBytes;
 cl_int error;
 
 const char *KernelSource = "\n" \
-"__kernel void k_rec709toLAB(__global float *id, __global float *od, int w, int h) \n" \
-"{ \n" \
+"float3 make_float3( float A, float B, float C) { \n" \
+"float3 out; \n" \
+"out.x = A; \n" \
+"out.y = B; \n" \
+"out.z = C; \n" \
+"return out; \n" \
+"} \n" \
+"float normalizedLogCToRelativeExposure( float x); \n" \
+"float relativeExposureToLogC( float x); \n" \
+"float3 ArrilogC_to_XYZ( float3 Alexa); \n" \
+"float3 XYZ_to_ArrilogC( float3 XYZ); \n" \
+"float from_func_Rec709(float v); \n" \
+"float to_func_Rec709(float v); \n" \
+"float3 Rec709_to_XYZ( float3 rgb); \n" \
+"float3 XYZ_to_Rec709(float3 xyz);\n"
+"float3 XYZ_to_LAB( float3 XYZ); \n" \
+"float3 LAB_to_XYZ( float3 LAB); \n" \
+"float3 Rec709_to_LAB( float3 rgb); \n" \
+"float3 LAB_to_Rec709( float3 lab); \n" \
+"float3 ACEScct_to_XYZ( float3 in); \n" \
+"float3 XYZ_to_ACEScct( float3 in); \n" \
+"float normalizedLogCToRelativeExposure( float x) { \n" \
+"if (x > 0.149659f) \n" \
+"return (pow(10.0f, (x - 0.385537f) / 0.247189f) - 0.052272f) / 5.555556f; \n" \
+"else \n" \
+"return (x - 0.092809f) / 5.367650f; \n" \
+"} \n" \
+"float relativeExposureToLogC( float x) { \n" \
+"if (x > 0.010591f) \n" \
+"return 0.247190f * log10(5.555556f * x + 0.052272f) + 0.385537f; \n" \
+"else \n" \
+"return 5.367655f * x + 0.092809f; \n" \
+"} \n" \
+"float3 ArrilogC_to_XYZ( float3 Alexa) { \n" \
+"float r_lin = normalizedLogCToRelativeExposure(Alexa.x); \n" \
+"float g_lin = normalizedLogCToRelativeExposure(Alexa.y); \n" \
+"float b_lin = normalizedLogCToRelativeExposure(Alexa.z); \n" \
+"float3 XYZ; \n" \
+"XYZ.x = r_lin * 0.638008f + g_lin * 0.214704f + b_lin * 0.097744f; \n" \
+"XYZ.y = r_lin * 0.291954f + g_lin * 0.823841f - b_lin * 0.115795f; \n" \
+"XYZ.z = r_lin * 0.002798f - g_lin * 0.067034f + b_lin * 1.153294f; \n" \
+"return XYZ; \n" \
+"} \n" \
+"float3 XYZ_to_ArrilogC( float3 XYZ) { \n" \
+"float3 Alexa; \n" \
+"Alexa.x = XYZ.x * 1.789066f - XYZ.y * 0.482534f - XYZ.z * 0.200076f; \n" \
+"Alexa.y = XYZ.x * -0.639849f + XYZ.y * 1.3964f + XYZ.z * 0.194432f; \n" \
+"Alexa.z = XYZ.x * -0.041532f + XYZ.y * 0.082335f + XYZ.z * 0.878868f; \n" \
+"Alexa.x = relativeExposureToLogC(Alexa.x); \n" \
+"Alexa.y = relativeExposureToLogC(Alexa.y); \n" \
+"Alexa.z = relativeExposureToLogC(Alexa.z); \n" \
+"return Alexa; \n" \
+"} \n" \
+"float from_func_Rec709(float v) { \n" \
+"if (v < 0.08145f) \n" \
+"return (v < 0.0f) ? 0.0f : v * (1.0f / 4.5f); \n" \
+"else \n" \
+"return pow( (v + 0.0993f) * (1.0f / 1.0993f), (1.0f / 0.45f) ); \n" \
+"} \n" \
+"float to_func_Rec709(float v) { \n" \
+"if (v < 0.0181f) \n" \
+"return (v < 0.0f) ? 0.0f : v * 4.5f; \n" \
+"else \n" \
+"return 1.0993f * pow(v, 0.45f) - (1.0993f - 1.0f); \n" \
+"} \n" \
+"float3 Rec709_to_XYZ( float3 rgb) { \n" \
+"rgb.x = from_func_Rec709(rgb.x); \n" \
+"rgb.y = from_func_Rec709(rgb.y); \n" \
+"rgb.z = from_func_Rec709(rgb.z); \n" \
+"float3 xyz; \n" \
+"xyz.x = 0.4124564f * rgb.x + 0.3575761f * rgb.y + 0.1804375f * rgb.z; \n" \
+"xyz.y = 0.2126729f * rgb.x + 0.7151522f * rgb.y + 0.0721750f * rgb.z; \n" \
+"xyz.z = 0.0193339f * rgb.x + 0.1191920f * rgb.y + 0.9503041f * rgb.z; \n" \
+"return xyz; \n" \
+"} \n" \
+"float3 XYZ_to_Rec709(float3 xyz) { \n" \
+"float3 rgb; \n" \
+"rgb.x =  3.2404542f * xyz.x + -1.5371385f * xyz.y + -0.4985314f * xyz.z; \n" \
+"rgb.y = -0.9692660f * xyz.x +  1.8760108f * xyz.y +  0.0415560f * xyz.z; \n" \
+"rgb.z =  0.0556434f * xyz.x + -0.2040259f * xyz.y +  1.0572252f * xyz.z; \n" \
+"rgb.x = to_func_Rec709(rgb.x); \n" \
+"rgb.y = to_func_Rec709(rgb.y); \n" \
+"rgb.z = to_func_Rec709(rgb.z); \n" \
+"return rgb; \n" \
+"} \n" \
+"float3 XYZ_to_LAB( float3 XYZ) { \n" \
+"float fx, fy, fz; \n" \
+"float Xn = 0.950489f; \n" \
+"float Zn = 1.08884f; \n" \
+"if(XYZ.x / Xn > 0.008856f) \n" \
+"fx = pow(XYZ.x / Xn, 1.0f / 3.0f); \n" \
+"else \n" \
+"fx = 7.787f * (XYZ.x / Xn) + 0.137931f; \n" \
+"if(XYZ.y > 0.008856f) \n" \
+"fy = pow(XYZ.y, 1.0f / 3.0f); \n" \
+"else \n" \
+"fy = 7.787f * XYZ.y + 0.137931f; \n" \
+"if(XYZ.z / Zn > 0.008856f) \n" \
+"fz = pow(XYZ.z / Zn, 1.0f / 3.0f); \n" \
+"else \n" \
+"fz = 7.787f * (XYZ.z / Zn) + 0.137931f; \n" \
+"float3 Lab; \n" \
+"Lab.x = 1.16f * fy - 0.16f; \n" \
+"Lab.y = 2.5f * (fx - fy) + 0.5f; \n" \
+"Lab.z = 1.0f * (fy - fz) + 0.5f; \n" \
+"return Lab; \n" \
+"} \n" \
+"float3 LAB_to_XYZ( float3 LAB) { \n" \
+"float3 XYZ; \n" \
+"float Xn = 0.950489f; \n" \
+"float Zn = 1.08884f; \n" \
+"float cy = (LAB.x + 0.16f) / 1.16f; \n" \
+"if(cy >= 0.206893f) \n" \
+"XYZ.y = cy * cy * cy; \n" \
+"else \n" \
+"XYZ.y = (cy - 0.137931f) / 7.787f; \n" \
+"float cx = (LAB.y - 0.5f) / 2.5f + cy; \n" \
+"if(cx >= 0.206893f) \n" \
+"XYZ.x = Xn * cx * cx * cx; \n" \
+"else \n" \
+"XYZ.x = Xn * (cx - 0.137931f) / 7.787f; \n" \
+"float cz = cy - (LAB.z - 0.5f); \n" \
+"if(cz >= 0.206893f) \n" \
+"XYZ.z = Zn * cz * cz * cz; \n" \
+"else \n" \
+"XYZ.z = Zn * (cz - 0.137931f) / 7.787f; \n" \
+"return XYZ; \n" \
+"} \n" \
+"float3 Rec709_to_LAB( float3 rgb) { \n" \
+"float3 lab; \n" \
+"lab = Rec709_to_XYZ(rgb); \n" \
+"lab = XYZ_to_LAB(lab); \n" \
+"return lab; \n" \
+"} \n" \
+"float3 LAB_to_Rec709( float3 lab) { \n" \
+"float3 rgb; \n" \
+"rgb = LAB_to_XYZ(lab); \n" \
+"rgb = XYZ_to_Rec709(rgb); \n" \
+"return rgb; \n" \
+"} \n" \
+"float3 ACEScct_to_XYZ( float3 in) { \n" \
+"const float Y_BRK = 0.155251141552511f; \n" \
+"const float A = 10.5402377416545f; \n" \
+"const float B = 0.0729055341958355f; \n" \
+"float3 out; \n" \
+"in.x = in.x > Y_BRK ? pow( 2.0f, in.x * 17.52f - 9.72f) : (in.x - B) / A; \n" \
+"in.y = in.y > Y_BRK ? pow( 2.0f, in.y * 17.52f - 9.72f) : (in.y - B) / A; \n" \
+"in.z = in.z > Y_BRK ? pow( 2.0f, in.z * 17.52f - 9.72f) : (in.z - B) / A; \n" \
+"out.x = 0.6624541811f * in.x + 0.1340042065f * in.y + 0.156187687f * in.z; \n" \
+"out.y = 0.2722287168f * in.x + 0.6740817658f * in.y + 0.0536895174f * in.z; \n" \
+"out.z = -0.0055746495f * in.x + 0.0040607335f * in.y + 1.0103391003f * in.z; \n" \
+"return out; \n" \
+"} \n" \
+"float3 XYZ_to_ACEScct( float3 in) { \n" \
+"const float X_BRK = 0.0078125f; \n" \
+"const float A = 10.5402377416545f; \n" \
+"const float B = 0.0729055341958355f; \n" \
+"float3 out; \n" \
+"out.x = 1.6410233797f * in.x + -0.3248032942f * in.y + -0.2364246952f * in.z; \n" \
+"out.y = -0.6636628587f * in.x + 1.6153315917f * in.y + 0.0167563477f * in.z; \n" \
+"out.z = 0.0117218943f * in.x + -0.008284442f * in.y + 0.9883948585f * in.z; \n" \
+"out.x = out.x <= X_BRK ? A * out.x + B : (log2(out.x) + 9.72f) / 17.52f; \n" \
+"out.y = out.y <= X_BRK ? A * out.y + B : (log2(out.y) + 9.72f) / 17.52f; \n" \
+"out.z = out.z <= X_BRK ? A * out.z + B : (log2(out.z) + 9.72f) / 17.52f; \n" \
+"return out; \n" \
+"} \n" \
+"__kernel void k_arri_to_lab(__global float* p_Input, __global float* p_Output, int p_Width, int p_Height) { \n" \
 "int x = get_global_id(0); \n" \
 "int y = get_global_id(1); \n" \
-"if ((x < w) && (y < h)) \n" \
+"if ((x < p_Width) && (y < p_Height)) \n" \
 "{ \n" \
-"const int index = (y * w + x) * 4; \n" \
-"float linR = id[index + 0] < 0.08145f ? (id[index + 0] < 0.0f ? 0.0f : id[index + 0] * (1.0f / 4.5f)) : pow((id[index + 0] + 0.0993f) * (1.0f / 1.0993f), (1.0f / 0.45f)); \n" \
-"float linG = id[index + 1] < 0.08145f ? (id[index + 1] < 0.0f ? 0.0f : id[index + 1] * (1.0f / 4.5f)) : pow((id[index + 1] + 0.0993f) * (1.0f / 1.0993f), (1.0f / 0.45f)); \n" \
-"float linB = id[index + 2] < 0.08145f ? (id[index + 2] < 0.0f ? 0.0f : id[index + 2] * (1.0f / 4.5f)) : pow((id[index + 2] + 0.0993f) * (1.0f / 1.0993f), (1.0f / 0.45f)); \n" \
-"float xyzR = 0.4124564f * linR + 0.3575761f * linG + 0.1804375f * linB; \n" \
-"float xyzG = 0.2126729f * linR + 0.7151522f * linG + 0.0721750f * linB; \n" \
-"float xyzB = 0.0193339f * linR + 0.1191920f * linG + 0.9503041f * linB; \n" \
-"xyzR /= (0.412453f + 0.357580f + 0.180423f); \n" \
-"xyzG /= (0.212671f + 0.715160f + 0.072169f); \n" \
-"xyzB /= (0.019334f + 0.119193f + 0.950227f); \n" \
-"float fx = xyzR >= 0.008856f ? pow(xyzR, 1.0f / 3.0f) : 7.787f * xyzR + 16.0f / 116.0f; \n" \
-"float fy = xyzG >= 0.008856f ? pow(xyzG, 1.0f / 3.0f) : 7.787f * xyzG + 16.0f / 116.0f; \n" \
-"float fz = xyzB >= 0.008856f ? pow(xyzB, 1.0f / 3.0f) : 7.787f * xyzB + 16.0f / 116.0f;     \n" \
-"float L = (116.0f * fy - 16.0f) / 100.0f; \n" \
-"od[index + 0] = L; \n" \
-"od[index + 1] = (500.0f * (fx - fy)) / 200.0f + 0.5f; \n" \
-"od[index + 2] = (200.0f * (fy - fz)) / 200.0f + 0.5f; \n" \
-"id[index + 0] = L; \n" \
+"const int index = (y * p_Width + x) * 4; \n" \
+"float3 Alexa = make_float3(p_Input[index], p_Input[index + 1], p_Input[index + 2]); \n" \
+"float3 lab = ArrilogC_to_XYZ(Alexa); \n" \
+"lab = XYZ_to_LAB(lab); \n" \
+"p_Output[index] = lab.x; \n" \
+"p_Output[index + 1] = lab.y; \n" \
+"p_Output[index + 2] = lab.z; \n" \
+"p_Input[index] = lab.x; \n" \
 "} \n" \
 "} \n" \
-"__kernel void k_LABtoRec709(__global float *id, int w, int h) \n" \
-"{ \n" \
+"__kernel void k_lab_to_arri(__global float* p_Input, int p_Width, int p_Height) { \n" \
 "int x = get_global_id(0); \n" \
 "int y = get_global_id(1); \n" \
-"if ((x < w) && (y < h)) \n" \
+"if ((x < p_Width) && (y < p_Height)) \n" \
 "{ \n" \
-"const int index = (y * w + x) * 4; \n" \
-"float l = id[index + 0] * 100.0f; \n" \
-"float a = (id[index + 1] - 0.5f) * 200.0f; \n" \
-"float b = (id[index + 2] - 0.5f) * 200.0f; \n" \
-"float cy = (l + 16.0f) / 116.0f; \n" \
-"float CY = cy >= 0.206893f ? (cy * cy * cy) : (cy - 16.0f / 116.0f) / 7.787f; \n" \
-"float y = (0.212671f + 0.715160f + 0.072169f) * CY; \n" \
-"float cx = a / 500.0f + cy; \n" \
-"float CX = cx >= 0.206893f ? (cx * cx * cx) : (cx - 16.0f / 116.0f) / 7.787f; \n" \
-"float x = (0.412453f + 0.357580f + 0.180423f) * CX; \n" \
-"float cz = cy - b / 200.0f; \n" \
-"float CZ = cz >= 0.206893f ? (cz * cz * cz) : (cz - 16.0f / 116.0f) / 7.787f; \n" \
-"float z = (0.019334f + 0.119193f + 0.950227f) * CZ; \n" \
-"float r =  3.2404542f * x + -1.5371385f * y + -0.4985314f * z; \n" \
-"float g = -0.9692660f * x +  1.8760108f * y +  0.0415560f * z; \n" \
-"float _b =  0.0556434f * x + -0.2040259f * y +  1.0572252f * z; \n" \
-"float R = r < 0.0181f ? (r < 0.0f ? 0.0f : r * 4.5f) : 1.0993f * pow(r, 0.45f) - (1.0993f - 1.0f); \n" \
-"float G = g < 0.0181f ? (g < 0.0f ? 0.0f : g * 4.5f) : 1.0993f * pow(g, 0.45f) - (1.0993f - 1.0f); \n" \
-"float B = _b < 0.0181f ? (_b < 0.0f ? 0.0f : _b * 4.5f) : 1.0993f * pow(_b, 0.45f) - (1.0993f - 1.0f); \n" \
-"id[index + 0] = R; \n" \
-"id[index + 1] = G; \n" \
-"id[index + 2] = B; \n" \
+"const int index = (y * p_Width + x) * 4; \n" \
+"float3 lab = make_float3(p_Input[index], p_Input[index + 1], p_Input[index + 2]); \n" \
+"float3 Alexa; \n" \
+"Alexa = LAB_to_XYZ(lab); \n" \
+"Alexa = XYZ_to_ArrilogC(Alexa); \n" \
+"p_Input[index] = Alexa.x; \n" \
+"p_Input[index + 1] = Alexa.y; \n" \
+"p_Input[index + 2] = Alexa.z; \n" \
 "} \n" \
 "} \n" \
-"__kernel void k_rec709toYUV(__global float *id, __global float *od, int w, int h) \n" \
-"{ \n" \
+"__kernel void k_acescct_to_lab(__global float* p_Input, __global float* p_Output, int p_Width, int p_Height) { \n" \
 "int x = get_global_id(0); \n" \
 "int y = get_global_id(1); \n" \
-"if ((x < w) && (y < h)) \n" \
+"if ((x < p_Width) && (y < p_Height)) \n" \
 "{ \n" \
-"const int index = (y * w + x) * 4; \n" \
-"float Y = 0.2126f * id[index + 0] + 0.7152f * id[index + 1] + 0.0722f * id[index + 2]; \n" \
-"od[index + 0] = Y; \n" \
-"od[index + 1] = -0.09991f * id[index + 0] - 0.33609f * id[index + 1] + 0.436f * id[index + 2]; \n" \
-"od[index + 2] = 0.615f * id[index + 0] - 0.55861f * id[index + 1] - 0.05639f * id[index + 2]; \n" \
-"id[index + 0] = Y; \n" \
+"const int index = (y * p_Width + x) * 4; \n" \
+"float3 aces = make_float3(p_Input[index], p_Input[index + 1], p_Input[index + 2]); \n" \
+"float3 lab = ACEScct_to_XYZ(aces); \n" \
+"lab = XYZ_to_LAB(lab); \n" \
+"p_Output[index] = lab.x; \n" \
+"p_Output[index + 1] = lab.y; \n" \
+"p_Output[index + 2] = lab.z; \n" \
+"p_Input[index] = lab.x; \n" \
 "} \n" \
 "} \n" \
-"__kernel void k_YUVtoRec709(__global float *id, int w, int h) \n" \
-"{ \n" \
+"__kernel void k_lab_to_acescct(__global float* p_Input, int p_Width, int p_Height) { \n" \
 "int x = get_global_id(0); \n" \
 "int y = get_global_id(1); \n" \
-"if ((x < w) && (y < h)) \n" \
+"if ((x < p_Width) && (y < p_Height)) \n" \
 "{ \n" \
-"const int index = (y * w + x) * 4; \n" \
-"float r = id[index + 0] + 1.28033f * id[index + 2]; \n" \
-"float g = id[index + 0] - 0.21482f * id[index + 1] - 0.38059f * id[index + 2]; \n" \
-"float b = id[index + 0] + 2.12798f * id[index + 1]; \n" \
-"id[index + 0] = r; \n" \
-"id[index + 1] = g; \n" \
-"id[index + 2] = b; \n" \
+"const int index = (y * p_Width + x) * 4; \n" \
+"float3 lab = make_float3(p_Input[index], p_Input[index + 1], p_Input[index + 2]); \n" \
+"float3 aces; \n" \
+"aces = LAB_to_XYZ(lab); \n" \
+"aces = XYZ_to_ACEScct(aces); \n" \
+"p_Input[index] = aces.x; \n" \
+"p_Input[index + 1] = aces.y; \n" \
+"p_Input[index + 2] = aces.z; \n" \
 "} \n" \
 "} \n" \
-"__kernel void k_gaussian(__global float *id, __global float *od, int w, int h, float blur, int c) \n" \
+"__kernel void k_rec709_to_lab(__global float* p_Input, __global float* p_Output, int p_Width, int p_Height) { \n" \
+"int x = get_global_id(0); \n" \
+"int y = get_global_id(1); \n" \
+"if ((x < p_Width) && (y < p_Height)) \n" \
 "{ \n" \
+"const int index = (y * p_Width + x) * 4; \n" \
+"float3 rgb = make_float3(p_Input[index], p_Input[index + 1], p_Input[index + 2]); \n" \
+"float3 lab = Rec709_to_LAB(rgb); \n" \
+"p_Output[index] = lab.x; \n" \
+"p_Output[index + 1] = lab.y; \n" \
+"p_Output[index + 2] = lab.z; \n" \
+"p_Input[index] = lab.x; \n" \
+"} \n" \
+"} \n" \
+"__kernel void k_lab_to_rec709(__global float* p_Input, int p_Width, int p_Height) { \n" \
+"int x = get_global_id(0); \n" \
+"int y = get_global_id(1); \n" \
+"if ((x < p_Width) && (y < p_Height)) \n" \
+"{ \n" \
+"const int index = (y * p_Width + x) * 4; \n" \
+"float3 lab = make_float3(p_Input[index], p_Input[index + 1], p_Input[index + 2]); \n" \
+"float3 rgb = LAB_to_Rec709(lab); \n" \
+"p_Input[index] = rgb.x; \n" \
+"p_Input[index + 1] = rgb.y; \n" \
+"p_Input[index + 2] = rgb.z; \n" \
+"} \n" \
+"} \n" \
+"__kernel void k_transpose(__global float* p_Input, __global float* p_Output, int p_Width, int p_Height, __local float* buffer, int c) { \n" \
+"int xIndex = get_global_id(0); \n" \
+"int yIndex = get_global_id(1); \n" \
+"if ((xIndex < p_Width) && (yIndex < p_Height)) \n" \
+"{ \n" \
+"buffer[get_local_id(1) * (get_local_size(0) + 1) + get_local_id(0)] = p_Input[(yIndex * p_Width + xIndex)]; \n" \
+"} \n" \
+"barrier(CLK_LOCAL_MEM_FENCE); \n" \
+"xIndex = get_group_id(1) * get_local_size(1) + get_local_id(0); \n" \
+"yIndex = get_group_id(0) * get_local_size(0) + get_local_id(1); \n" \
+"if((xIndex < p_Height) && (yIndex < p_Width)) \n" \
+"{ \n" \
+"p_Output[(yIndex * p_Height + xIndex) * 4 + c] = buffer[get_local_id(0) * (get_local_size(1) + 1) + get_local_id(1)]; \n" \
+"} \n" \
+"} \n" \
+"__kernel void k_gaussian(__global float* p_Input, __global float* p_Output, int p_Width, int p_Height, float blur, int c) { \n" \
 "float nsigma = blur < 0.1f ? 0.1f : blur; \n" \
 "float alpha = 1.695f / nsigma; \n" \
 "float ema = exp(-alpha); \n" \
@@ -126,111 +308,75 @@ const char *KernelSource = "\n" \
 "coefp = (a0 + a1) / (1.0f + b1 + b2); \n" \
 "coefn = (a2 + a3) / (1.0f + b1 + b2); \n" \
 "int x = get_group_id(0) * get_local_size(0) + get_local_id(0); \n" \
-"if (x >= w) return; \n" \
-"id += x * 4 + c; \n" \
-"od += x; \n" \
+"if (x >= p_Width) return; \n" \
+"p_Input += x * 4 + c; \n" \
+"p_Output += x; \n" \
 "float xp, yp, yb; \n" \
-"xp = *id; \n" \
+"xp = *p_Input; \n" \
 "yb = coefp * xp; \n" \
 "yp = yb; \n" \
-"for (int y = 0; y < h; y++) \n" \
-"{ \n" \
-"float xc = *id; \n" \
+"for (int y = 0; y < p_Height; y++) { \n" \
+"float xc = *p_Input; \n" \
 "float yc = a0 * xc + a1 * xp - b1 * yp - b2 * yb; \n" \
-"*od = yc; \n" \
-"id += w * 4; \n" \
-"od += w; \n" \
+"*p_Output = yc; \n" \
+"p_Input += p_Width * 4; \n" \
+"p_Output += p_Width; \n" \
 "xp = xc; \n" \
 "yb = yp; \n" \
 "yp = yc; \n" \
 "} \n" \
-"id -= w * 4; \n" \
-"od -= w; \n" \
+"p_Input -= p_Width * 4; \n" \
+"p_Output -= p_Width; \n" \
 "float xn, xa, yn, ya; \n" \
-"xn = xa = *id; \n" \
+"xn = xa = *p_Input; \n" \
 "yn = coefn * xn; \n" \
 "ya = yn; \n" \
-"for (int y = h - 1; y >= 0; y--) \n" \
-"{ \n" \
-"float xc = *id; \n" \
+"for (int y = p_Height - 1; y >= 0; y--) { \n" \
+"float xc = *p_Input; \n" \
 "float yc = a2 * xn + a3 * xa - b1 * yn - b2 * ya; \n" \
 "xa = xn; \n" \
 "xn = xc; \n" \
 "ya = yn; \n" \
 "yn = yc; \n" \
-"*od = *od + yc; \n" \
-"id -= w * 4; \n" \
-"od -= w; \n" \
+"*p_Output = *p_Output + yc; \n" \
+"p_Input -= p_Width * 4; \n" \
+"p_Output -= p_Width; \n" \
 "} \n" \
 "} \n" \
-"__kernel void k_transpose(__global float *id, __global float *od, int w, int h, __local float *buffer, int c) \n" \
-"{ \n" \
-"int xIndex = get_global_id(0); \n" \
-"int yIndex = get_global_id(1); \n" \
-"if((xIndex < w) && (yIndex < h)) \n" \
-"{ \n" \
-"buffer[get_local_id(1) * (get_local_size(0) + 1) + get_local_id(0)] = id[(yIndex * w + xIndex)]; \n" \
-"} \n" \
-"barrier(CLK_LOCAL_MEM_FENCE); \n" \
-"xIndex = get_group_id(1) * get_local_size(1) + get_local_id(0); \n" \
-"yIndex = get_group_id(0) * get_local_size(0) + get_local_id(1); \n" \
-"if((xIndex < h) && (yIndex < w)) \n" \
-"{ \n" \
-"od[(yIndex * h + xIndex) * 4 + c] = buffer[get_local_id(0) * (get_local_size(1) + 1) + get_local_id(1)]; \n" \
-"} \n" \
-"} \n" \
-"__kernel void k_simple(__global float *id, __global float *od, int w, int h, int c)      \n" \
-"{                                 				    \n" \
-"const int x = get_global_id(0); \n" \
-"const int y = get_global_id(1);				    \n" \
-"if ((x < w) && (y < h)) \n" \
-"{   \n" \
-"const int index = (y * w + x) * 4; \n" \
-"od[index + c] = id[index + c];  \n" \
-"} \n" \
-"} \n" \
-"__kernel void k_freqSharpen(__global float *id, __global float *od, int w, int h, float sharpen, int p_Display, int c) \n" \
-"{ \n" \
-"const int x = get_global_id(0); \n" \
-"const int y = get_global_id(1);	 \n" \
+"__kernel void k_freqSharpen(__global float* p_Input, __global float* p_Output, int p_Width, int p_Height, float sharpen, int p_Display, int c) { \n" \
+"int x = get_global_id(0); \n" \
+"int y = get_global_id(1); \n" \
 "float offset = p_Display == 1 ? 0.5f : 0.0f; \n" \
-"if ((x < w) && (y < h)) \n" \
-"{   \n" \
-"const int index = (y * w + x) * 4;										 \n" \
-"id[index + c] = (id[index + c] - od[index + c]) * sharpen + offset; \n" \
-"if (p_Display == 1) { \n" \
-"od[index + c] = id[index + c]; \n" \
-"} \n" \
-"} \n" \
-"} \n" \
-"__kernel void k_freqSharpenLuma(__global float *id, __global float *od, int w, int h, float sharpen, int p_Display) \n" \
+"if ((x < p_Width) && (y < p_Height)) \n" \
 "{ \n" \
-"const int x = get_global_id(0); \n" \
-"const int y = get_global_id(1);	 \n" \
-"float offset = p_Display == 1 ? 0.5f : 0.0f; \n" \
-"if ((x < w) && (y < h)) \n" \
-"{   \n" \
-"const int index = (y * w + x) * 4;										 \n" \
-"id[index] = (id[index] - od[index]) * sharpen + offset; \n" \
+"const int index = (y * p_Width + x) * 4; \n" \
+"p_Input[index + c] = (p_Input[index + c] - p_Output[index + c]) * sharpen + offset; \n" \
 "if (p_Display == 1) \n" \
-"od[index] = od[index + 1] = od[index + 2] = id[index]; \n" \
+"p_Output[index + c] = p_Input[index + c]; \n" \
+"}  \n" \
+"} \n" \
+"__kernel void k_freqSharpenLuma(__global float* p_Input, __global float* p_Output, int p_Width, int p_Height, float sharpen, int p_Display) { \n" \
+"int x = get_global_id(0); \n" \
+"int y = get_global_id(1); \n" \
+"float offset = p_Display == 1 ? 0.5f : 0.0f; \n" \
+"if ((x < p_Width) && (y < p_Height)) \n" \
+"{ \n" \
+"const int index = (y * p_Width + x) * 4;									 \n" \
+"p_Input[index] = (p_Input[index] - p_Output[index]) * sharpen + offset; \n" \
+"if (p_Display == 1) \n" \
+"p_Output[index] = p_Output[index + 1] = p_Output[index + 2] = p_Input[index]; \n" \
 "} \n" \
 "} \n" \
-"__kernel void k_lowFreqCont(__global float *id, int w, int h, float contrast, float pivot, int curve, int p_Display, int c) \n" \
+"__kernel void k_lowFreqCont(__global float* p_Input, int p_Width, int p_Height, float contrast, float pivot, int curve, int p_Display, int c) { \n" \
+"int x = get_global_id(0); \n" \
+"int y = get_global_id(1); \n" \
+"if ((x < p_Width) && (y < p_Height)) \n" \
 "{ \n" \
-"const int x = get_global_id(0); \n" \
-"const int y = get_global_id(1); \n" \
-"if ((x < w) && (y < h)) \n" \
-"{ \n" \
-"const int index = (y * w + x) * 4; \n" \
+"const int index = (y * p_Width + x) * 4; \n" \
 "float graph = 0.0f; \n" \
-"if(curve == 1) \n" \
-"id[index + c] = id[index + c] <= pivot ? pow(id[index + c] / pivot, contrast) * pivot : (1.0f - pow(1.0f - (id[index + c] - pivot) / (1.0f - pivot), contrast)) * (1.0f - pivot) + pivot; \n" \
-"else \n" \
-"id[index + c] = (id[index + c] - pivot) * contrast + pivot; \n" \
 "if(p_Display == 3){ \n" \
-"float width = w; \n" \
-"float height = h; \n" \
+"float width = p_Width; \n" \
+"float height = p_Height; \n" \
 "float X = x; \n" \
 "float Y = y; \n" \
 "float ramp = X / (width - 1.0f); \n" \
@@ -239,27 +385,35 @@ const char *KernelSource = "\n" \
 "else \n" \
 "ramp = (ramp - pivot) * contrast + pivot; \n" \
 "graph = ramp >= (Y - 5.0f) / height && ramp <= (Y + 5.0f) / height ? 1.0f : 0.0f; \n" \
-"id[index + c] = graph == 0.0f ? id[index + c] : graph; \n" \
 "} \n" \
+"if(curve == 1){ \n" \
+"if(p_Input[index + c] > 0.0f && p_Input[index + c] < 1.0f) \n" \
+"p_Input[index + c] = p_Input[index + c] <= pivot ? pow(p_Input[index + c] / pivot, contrast) * pivot : (1.0f - pow(1.0f - (p_Input[index + c] - pivot) / (1.0f - pivot), contrast)) * (1.0f - pivot) + pivot; \n" \
+"} else { \n" \
+"p_Input[index + c] = (p_Input[index + c] - pivot) * contrast + pivot; \n" \
+"} \n" \
+"if(p_Display == 3) \n" \
+"p_Input[index + c] = graph == 0.0f ? p_Input[index + c] : graph; \n" \
 "}  \n" \
 "} \n" \
-"__kernel void k_lowFreqContLuma(__global float *id, int w, int h, float contrast, float pivot, int curve, int p_Display) \n" \
+"__kernel void k_lowFreqContLuma(__global float* p_Input, int p_Width, int p_Height, float contrast, float pivot, int curve, int p_Display) { \n" \
+"int x = get_global_id(0); \n" \
+"int y = get_global_id(1); \n" \
+"if ((x < p_Width) && (y < p_Height)) \n" \
 "{ \n" \
-"const int x = get_global_id(0); \n" \
-"const int y = get_global_id(1); \n" \
-"if ((x < w) && (y < h)) \n" \
-"{ \n" \
-"const int index = (y * w + x) * 4; \n" \
+"const int index = (y * p_Width + x) * 4; \n" \
 "float graph = 0.0f; \n" \
-"if(curve == 1) \n" \
-"id[index] = id[index] <= pivot ? pow(id[index] / pivot, contrast) * pivot : (1.0f - pow(1.0f - (id[index] - pivot) / (1.0f - pivot), contrast)) * (1.0f - pivot) + pivot; \n" \
-"else \n" \
-"id[index] = (id[index] - pivot) * contrast + pivot; \n" \
+"if(curve == 1){ \n" \
+"if(p_Input[index] > 0.0f && p_Input[index] < 1.0f) \n" \
+"p_Input[index] = p_Input[index] <= pivot ? pow(p_Input[index] / pivot, contrast) * pivot : (1.0f - pow(1.0f - (p_Input[index] - pivot) / (1.0f - pivot), contrast)) * (1.0f - pivot) + pivot; \n" \
+"} else { \n" \
+"p_Input[index] = (p_Input[index] - pivot) * contrast + pivot; \n" \
+"} \n" \
 "if(p_Display == 2) \n" \
-"id[index + 2] = id[index + 1] = id[index]; \n" \
+"p_Input[index + 2] = p_Input[index + 1] = p_Input[index]; \n" \
 "if(p_Display == 3){ \n" \
-"float width = w; \n" \
-"float height = h; \n" \
+"float width = p_Width; \n" \
+"float height = p_Height; \n" \
 "float X = x; \n" \
 "float Y = y; \n" \
 "float ramp = X / (width - 1.0f); \n" \
@@ -268,19 +422,27 @@ const char *KernelSource = "\n" \
 "else \n" \
 "ramp = (ramp - pivot) * contrast + pivot; \n" \
 "graph = ramp >= (Y - 5.0f) / height && ramp <= (Y + 5.0f) / height ? 1.0f : 0.0f; \n" \
-"id[index] = graph == 0.0f ? id[index] : graph; \n" \
-"id[index + 2] = id[index + 1] = id[index]; \n" \
+"p_Input[index] = graph == 0.0f ? p_Input[index] : graph; \n" \
+"p_Input[index + 2] = p_Input[index + 1] = p_Input[index]; \n" \
 "} \n" \
 "}  \n" \
 "} \n" \
-"__kernel void k_freqAdd(__global float *id, __global float *od, int w, int h, int c) \n" \
+"__kernel void k_freqAdd(__global float* p_Input, __global float* p_Output, int p_Width, int p_Height, int c) { \n" \
+"int x = get_global_id(0); \n" \
+"int y = get_global_id(1); \n" \
+"if ((x < p_Width) && (y < p_Height)) \n" \
 "{ \n" \
-"const int x = get_global_id(0); \n" \
-"const int y = get_global_id(1);				    \n" \
-"if ((x < w) && (y < h)) \n" \
-"{   \n" \
-"const int index = (y * w + x) * 4;																									 \n" \
-"od[index + c] = id[index + c] + od[index + c]; \n" \
+"const int index = (y * p_Width + x) * 4;											   \n" \
+"p_Output[index + c] = p_Input[index + c] + p_Output[index + c]; \n" \
+"} \n" \
+"} \n" \
+"__kernel void k_simple(__global float* p_Input, __global float* p_Output, int p_Width, int p_Height, int c) { \n" \
+"int x = get_global_id(0); \n" \
+"int y = get_global_id(1); \n" \
+"if ((x < p_Width) && (y < p_Height)) \n" \
+"{ \n" \
+"const int index = (y * p_Width + x) * 4; \n" \
+"p_Output[index + c] = p_Input[index + c]; \n" \
 "} \n" \
 "} \n" \
 "\n";
@@ -361,14 +523,12 @@ int blue = 2;
 szBuffBytes = p_Width * p_Height * sizeof(float);
 cl_command_queue cmdQ = static_cast<cl_command_queue>(p_CmdQ);
 
-// store device id and kernel per command queue (required for multi-GPU systems)
 static std::map<cl_command_queue, cl_device_id> deviceIdMap;
 static std::map<cl_command_queue, cl_kernel> kernelMap;
 
-static Locker locker; // simple lock to control access to the above maps from multiple threads
+static Locker locker;
 locker.Lock();
 
-// find the device id corresponding to the command queue
 cl_device_id deviceId = NULL;
 if (deviceIdMap.find(cmdQ) == deviceIdMap.end()) {
 error = clGetCommandQueueInfo(cmdQ, CL_QUEUE_DEVICE, sizeof(cl_device_id), &deviceId, NULL);
@@ -401,10 +561,12 @@ cl_kernel FreqSharpenLuma = NULL;
 cl_kernel LowFreqCont = NULL;
 cl_kernel LowFreqContLuma = NULL;
 cl_kernel FreqAdd = NULL;
-cl_kernel Rec709toYUV = NULL;
-cl_kernel YUVtoRec709 = NULL;
 cl_kernel Rec709toLAB = NULL;
 cl_kernel LABtoRec709 = NULL;
+cl_kernel ARRItoLAB = NULL;
+cl_kernel LABtoARRI = NULL;
+cl_kernel ACEStoLAB = NULL;
+cl_kernel LABtoACES = NULL;
 
 Gausfilter = clCreateKernel(program, "k_gaussian", &error);
 CheckError(error, "Unable to create kernel");
@@ -430,16 +592,22 @@ CheckError(error, "Unable to create kernel");
 FreqAdd = clCreateKernel(program, "k_freqAdd", &error);
 CheckError(error, "Unable to create kernel");
 
-Rec709toYUV = clCreateKernel(program, "k_rec709toYUV", &error);
+Rec709toLAB = clCreateKernel(program, "k_rec709_to_lab", &error);
 CheckError(error, "Unable to create kernel");
 
-YUVtoRec709 = clCreateKernel(program, "k_YUVtoRec709", &error);
+LABtoRec709 = clCreateKernel(program, "k_lab_to_rec709", &error);
 CheckError(error, "Unable to create kernel");
 
-Rec709toLAB = clCreateKernel(program, "k_rec709toLAB", &error);
+ARRItoLAB = clCreateKernel(program, "k_arri_to_lab", &error);
 CheckError(error, "Unable to create kernel");
 
-LABtoRec709 = clCreateKernel(program, "k_LABtoRec709", &error);
+LABtoARRI = clCreateKernel(program, "k_lab_to_arri", &error);
+CheckError(error, "Unable to create kernel");
+
+ACEStoLAB = clCreateKernel(program, "k_acescct_to_lab", &error);
+CheckError(error, "Unable to create kernel");
+
+LABtoACES = clCreateKernel(program, "k_lab_to_acescct", &error);
 CheckError(error, "Unable to create kernel");
 
 locker.Unlock();
@@ -511,17 +679,6 @@ error |= clSetKernelArg(FreqAdd, 2, sizeof(int), &p_Width);
 error |= clSetKernelArg(FreqAdd, 3, sizeof(int), &p_Height);
 CheckError(error, "Unable to set kernel arguments");
 
-error = clSetKernelArg(Rec709toYUV, 0, sizeof(cl_mem), &p_Input);
-error |= clSetKernelArg(Rec709toYUV, 1, sizeof(cl_mem), &p_Output);
-error |= clSetKernelArg(Rec709toYUV, 2, sizeof(int), &p_Width);
-error |= clSetKernelArg(Rec709toYUV, 3, sizeof(int), &p_Height);
-CheckError(error, "Unable to set kernel arguments");
-
-error = clSetKernelArg(YUVtoRec709, 0, sizeof(cl_mem), &p_Output);
-error |= clSetKernelArg(YUVtoRec709, 1, sizeof(int), &p_Width);
-error |= clSetKernelArg(YUVtoRec709, 2, sizeof(int), &p_Height);
-CheckError(error, "Unable to set kernel arguments");
-
 error = clSetKernelArg(Rec709toLAB, 0, sizeof(cl_mem), &p_Input);
 error |= clSetKernelArg(Rec709toLAB, 1, sizeof(cl_mem), &p_Output);
 error |= clSetKernelArg(Rec709toLAB, 2, sizeof(int), &p_Width);
@@ -533,17 +690,36 @@ error |= clSetKernelArg(LABtoRec709, 1, sizeof(int), &p_Width);
 error |= clSetKernelArg(LABtoRec709, 2, sizeof(int), &p_Height);
 CheckError(error, "Unable to set kernel arguments");
 
+error = clSetKernelArg(ARRItoLAB, 0, sizeof(cl_mem), &p_Input);
+error |= clSetKernelArg(ARRItoLAB, 1, sizeof(cl_mem), &p_Output);
+error |= clSetKernelArg(ARRItoLAB, 2, sizeof(int), &p_Width);
+error |= clSetKernelArg(ARRItoLAB, 3, sizeof(int), &p_Height);
+CheckError(error, "Unable to set kernel arguments");
+
+error = clSetKernelArg(LABtoARRI, 0, sizeof(cl_mem), &p_Output);
+error |= clSetKernelArg(LABtoARRI, 1, sizeof(int), &p_Width);
+error |= clSetKernelArg(LABtoARRI, 2, sizeof(int), &p_Height);
+CheckError(error, "Unable to set kernel arguments");
+
+error = clSetKernelArg(ACEStoLAB, 0, sizeof(cl_mem), &p_Input);
+error |= clSetKernelArg(ACEStoLAB, 1, sizeof(cl_mem), &p_Output);
+error |= clSetKernelArg(ACEStoLAB, 2, sizeof(int), &p_Width);
+error |= clSetKernelArg(ACEStoLAB, 3, sizeof(int), &p_Height);
+CheckError(error, "Unable to set kernel arguments");
+
+error = clSetKernelArg(LABtoACES, 0, sizeof(cl_mem), &p_Output);
+error |= clSetKernelArg(LABtoACES, 1, sizeof(int), &p_Width);
+error |= clSetKernelArg(LABtoACES, 2, sizeof(int), &p_Height);
+CheckError(error, "Unable to set kernel arguments");
+
 for(int c = 0; c < 4; c++) {
 error |= clSetKernelArg(Simple, 4, sizeof(int), &c);
 clEnqueueNDRangeKernel(cmdQ, Simple, 2, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
 }
 
-switch (p_Space) {
-case 0:
-{    
+if(p_Space == 0) {
 if (p_Switch[0] == 1)
 p_Blur[2] = p_Blur[1] = p_Blur[0];
-
 if (p_Blur[0] > 0.0f) {
 error = clSetKernelArg(Gausfilter, 0, sizeof(cl_mem), &p_Input);
 error |= clSetKernelArg(Gausfilter, 2, sizeof(int), &p_Width);
@@ -563,7 +739,6 @@ error |= clSetKernelArg(Transpose, 3, sizeof(int), &p_Width);
 clEnqueueNDRangeKernel(cmdQ, Gausfilter, 1, NULL, gausGlobalWorkSizeB, gausLocalWorkSize, 0, NULL, NULL);
 clEnqueueNDRangeKernel(cmdQ, Transpose, 2, NULL, TransGlobalWorkSizeB, TransLocalWorkSize, 0, NULL, NULL);
 }
-
 if (p_Blur[1] > 0.0f) {
 error = clSetKernelArg(Gausfilter, 0, sizeof(cl_mem), &p_Input);
 error |= clSetKernelArg(Gausfilter, 2, sizeof(int), &p_Width);
@@ -583,7 +758,6 @@ error |= clSetKernelArg(Transpose, 3, sizeof(int), &p_Width);
 clEnqueueNDRangeKernel(cmdQ, Gausfilter, 1, NULL, gausGlobalWorkSizeB, gausLocalWorkSize, 0, NULL, NULL);
 clEnqueueNDRangeKernel(cmdQ, Transpose, 2, NULL, TransGlobalWorkSizeB, TransLocalWorkSize, 0, NULL, NULL);
 }
-
 if (p_Blur[2] > 0.0f) {
 error = clSetKernelArg(Gausfilter, 0, sizeof(cl_mem), &p_Input);
 error |= clSetKernelArg(Gausfilter, 2, sizeof(int), &p_Width);
@@ -603,20 +777,16 @@ error |= clSetKernelArg(Transpose, 3, sizeof(int), &p_Width);
 clEnqueueNDRangeKernel(cmdQ, Gausfilter, 1, NULL, gausGlobalWorkSizeB, gausLocalWorkSize, 0, NULL, NULL);
 clEnqueueNDRangeKernel(cmdQ, Transpose, 2, NULL, TransGlobalWorkSizeB, TransLocalWorkSize, 0, NULL, NULL);
 }
-
 if (p_Switch[0] == 1)
 p_Sharpen[2] = p_Sharpen[1] = p_Sharpen[0];
-
 for(int c = 0; c < 3; c++) {
 error |= clSetKernelArg(FreqSharpen, 4, sizeof(float), &p_Sharpen[c]);
 error |= clSetKernelArg(FreqSharpen, 6, sizeof(int), &c);
 clEnqueueNDRangeKernel(cmdQ, FreqSharpen, 2, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
 }
-
 if (p_Display != 1) {
 if (p_Switch[0] == 1)
 p_Blur[5] = p_Blur[4] = p_Blur[3];
-
 if (p_Blur[3] > 0.0f) {
 error = clSetKernelArg(Gausfilter, 0, sizeof(cl_mem), &p_Output);
 error |= clSetKernelArg(Gausfilter, 2, sizeof(int), &p_Width);
@@ -635,7 +805,6 @@ error |= clSetKernelArg(Transpose, 3, sizeof(int), &p_Width);
 clEnqueueNDRangeKernel(cmdQ, Gausfilter, 1, NULL, gausGlobalWorkSizeB, gausLocalWorkSize, 0, NULL, NULL);
 clEnqueueNDRangeKernel(cmdQ, Transpose, 2, NULL, TransGlobalWorkSizeB, TransLocalWorkSize, 0, NULL, NULL);
 }
-
 if (p_Blur[4] > 0.0f) {
 error = clSetKernelArg(Gausfilter, 0, sizeof(cl_mem), &p_Output);
 error |= clSetKernelArg(Gausfilter, 2, sizeof(int), &p_Width);
@@ -654,7 +823,6 @@ error |= clSetKernelArg(Transpose, 3, sizeof(int), &p_Width);
 clEnqueueNDRangeKernel(cmdQ, Gausfilter, 1, NULL, gausGlobalWorkSizeB, gausLocalWorkSize, 0, NULL, NULL);
 clEnqueueNDRangeKernel(cmdQ, Transpose, 2, NULL, TransGlobalWorkSizeB, TransLocalWorkSize, 0, NULL, NULL);
 }
-
 if (p_Blur[5] > 0.0f) {
 error = clSetKernelArg(Gausfilter, 0, sizeof(cl_mem), &p_Output);
 error |= clSetKernelArg(Gausfilter, 2, sizeof(int), &p_Width);
@@ -673,126 +841,25 @@ error |= clSetKernelArg(Transpose, 3, sizeof(int), &p_Width);
 clEnqueueNDRangeKernel(cmdQ, Gausfilter, 1, NULL, gausGlobalWorkSizeB, gausLocalWorkSize, 0, NULL, NULL);
 clEnqueueNDRangeKernel(cmdQ, Transpose, 2, NULL, TransGlobalWorkSizeB, TransLocalWorkSize, 0, NULL, NULL);
 }
-
 for(int c = 0; c < 3; c++) {
 error |= clSetKernelArg(LowFreqCont, 7, sizeof(int), &c);
 clEnqueueNDRangeKernel(cmdQ, LowFreqCont, 2, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
 }
-}
-
-if (p_Display == 0) {
+if (p_Display == 0)
 for(int c = 0; c < 3; c++) {
 error |= clSetKernelArg(FreqAdd, 4, sizeof(int), &c);
 clEnqueueNDRangeKernel(cmdQ, FreqAdd, 2, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
-}
-}
-}
-break;
+}}}
 
-case 1:
-{
-error = clSetKernelArg(Gausfilter, 0, sizeof(cl_mem), &p_Output);
-CheckError(error, "Unable to set kernel arguments");
-
-clEnqueueNDRangeKernel(cmdQ, Rec709toYUV, 2, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
-
-if (p_Blur[0] > 0.0f) {
-error |= clSetKernelArg(Gausfilter, 2, sizeof(int), &p_Width);
-error |= clSetKernelArg(Gausfilter, 3, sizeof(int), &p_Height);
-error |= clSetKernelArg(Gausfilter, 4, sizeof(float), &p_Blur[0]);
-error |= clSetKernelArg(Gausfilter, 5, sizeof(int), &red);
-clEnqueueNDRangeKernel(cmdQ, Gausfilter, 1, NULL, gausGlobalWorkSizeA, gausLocalWorkSize, 0, NULL, NULL);
-error |= clSetKernelArg(Transpose, 2, sizeof(int), &p_Width);
-error |= clSetKernelArg(Transpose, 3, sizeof(int), &p_Height);
-error |= clSetKernelArg(Transpose, 5, sizeof(int), &red);
-clEnqueueNDRangeKernel(cmdQ, Transpose, 2, NULL, TransGlobalWorkSizeA, TransLocalWorkSize, 0, NULL, NULL);
-error |= clSetKernelArg(Gausfilter, 2, sizeof(int), &p_Height);
-error |= clSetKernelArg(Gausfilter, 3, sizeof(int), &p_Width);
-error |= clSetKernelArg(Transpose, 2, sizeof(int), &p_Height);
-error |= clSetKernelArg(Transpose, 3, sizeof(int), &p_Width);
-CheckError(error, "Unable to set kernel arguments");
-clEnqueueNDRangeKernel(cmdQ, Gausfilter, 1, NULL, gausGlobalWorkSizeB, gausLocalWorkSize, 0, NULL, NULL);
-clEnqueueNDRangeKernel(cmdQ, Transpose, 2, NULL, TransGlobalWorkSizeB, TransLocalWorkSize, 0, NULL, NULL);
-}
-
-clEnqueueNDRangeKernel(cmdQ, FreqSharpenLuma, 2, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
-
-if (p_Display != 1){
-if (p_Switch[1] == 1)
-p_Blur[5] = p_Blur[4];
-
-if (p_Blur[3] > 0.0f) {
-error |= clSetKernelArg(Gausfilter, 2, sizeof(int), &p_Width);
-error |= clSetKernelArg(Gausfilter, 3, sizeof(int), &p_Height);
-error |= clSetKernelArg(Gausfilter, 4, sizeof(float), &p_Blur[3]);
-error |= clSetKernelArg(Gausfilter, 5, sizeof(int), &red);
-clEnqueueNDRangeKernel(cmdQ, Gausfilter, 1, NULL, gausGlobalWorkSizeA, gausLocalWorkSize, 0, NULL, NULL);
-error |= clSetKernelArg(Transpose, 2, sizeof(int), &p_Width);
-error |= clSetKernelArg(Transpose, 3, sizeof(int), &p_Height);
-error |= clSetKernelArg(Transpose, 5, sizeof(int), &red);
-clEnqueueNDRangeKernel(cmdQ, Transpose, 2, NULL, TransGlobalWorkSizeA, TransLocalWorkSize, 0, NULL, NULL);
-error |= clSetKernelArg(Gausfilter, 2, sizeof(int), &p_Height);
-error |= clSetKernelArg(Gausfilter, 3, sizeof(int), &p_Width);
-error |= clSetKernelArg(Transpose, 2, sizeof(int), &p_Height);
-error |= clSetKernelArg(Transpose, 3, sizeof(int), &p_Width);
-clEnqueueNDRangeKernel(cmdQ, Gausfilter, 1, NULL, gausGlobalWorkSizeB, gausLocalWorkSize, 0, NULL, NULL);
-clEnqueueNDRangeKernel(cmdQ, Transpose, 2, NULL, TransGlobalWorkSizeB, TransLocalWorkSize, 0, NULL, NULL);
-}
-
-if (p_Blur[4] > 0.0f) {
-error |= clSetKernelArg(Gausfilter, 2, sizeof(int), &p_Width);
-error |= clSetKernelArg(Gausfilter, 3, sizeof(int), &p_Height);
-error |= clSetKernelArg(Gausfilter, 4, sizeof(float), &p_Blur[4]);
-error |= clSetKernelArg(Gausfilter, 5, sizeof(int), &green);
-clEnqueueNDRangeKernel(cmdQ, Gausfilter, 1, NULL, gausGlobalWorkSizeA, gausLocalWorkSize, 0, NULL, NULL);
-error |= clSetKernelArg(Transpose, 2, sizeof(int), &p_Width);
-error |= clSetKernelArg(Transpose, 3, sizeof(int), &p_Height);
-error |= clSetKernelArg(Transpose, 5, sizeof(int), &green);
-clEnqueueNDRangeKernel(cmdQ, Transpose, 2, NULL, TransGlobalWorkSizeA, TransLocalWorkSize, 0, NULL, NULL);
-error |= clSetKernelArg(Gausfilter, 2, sizeof(int), &p_Height);
-error |= clSetKernelArg(Gausfilter, 3, sizeof(int), &p_Width);
-error |= clSetKernelArg(Transpose, 2, sizeof(int), &p_Height);
-error |= clSetKernelArg(Transpose, 3, sizeof(int), &p_Width);
-clEnqueueNDRangeKernel(cmdQ, Gausfilter, 1, NULL, gausGlobalWorkSizeB, gausLocalWorkSize, 0, NULL, NULL);
-clEnqueueNDRangeKernel(cmdQ, Transpose, 2, NULL, TransGlobalWorkSizeB, TransLocalWorkSize, 0, NULL, NULL);
-}
-
-if (p_Blur[5] > 0.0f) {
-error |= clSetKernelArg(Gausfilter, 2, sizeof(int), &p_Width);
-error |= clSetKernelArg(Gausfilter, 3, sizeof(int), &p_Height);
-error |= clSetKernelArg(Gausfilter, 4, sizeof(float), &p_Blur[5]);
-error |= clSetKernelArg(Gausfilter, 5, sizeof(int), &blue);
-clEnqueueNDRangeKernel(cmdQ, Gausfilter, 1, NULL, gausGlobalWorkSizeA, gausLocalWorkSize, 0, NULL, NULL);
-error |= clSetKernelArg(Transpose, 2, sizeof(int), &p_Width);
-error |= clSetKernelArg(Transpose, 3, sizeof(int), &p_Height);
-error |= clSetKernelArg(Transpose, 5, sizeof(int), &blue);
-clEnqueueNDRangeKernel(cmdQ, Transpose, 2, NULL, TransGlobalWorkSizeA, TransLocalWorkSize, 0, NULL, NULL);
-error |= clSetKernelArg(Gausfilter, 2, sizeof(int), &p_Height);
-error |= clSetKernelArg(Gausfilter, 3, sizeof(int), &p_Width);
-error |= clSetKernelArg(Transpose, 2, sizeof(int), &p_Height);
-error |= clSetKernelArg(Transpose, 3, sizeof(int), &p_Width);
-clEnqueueNDRangeKernel(cmdQ, Gausfilter, 1, NULL, gausGlobalWorkSizeB, gausLocalWorkSize, 0, NULL, NULL);
-clEnqueueNDRangeKernel(cmdQ, Transpose, 2, NULL, TransGlobalWorkSizeB, TransLocalWorkSize, 0, NULL, NULL);
-}
-
-clEnqueueNDRangeKernel(cmdQ, LowFreqContLuma, 2, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
-}
-
-if (p_Display == 0) {
-error |= clSetKernelArg(FreqAdd, 4, sizeof(int), &red);
-clEnqueueNDRangeKernel(cmdQ, FreqAdd, 2, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
-clEnqueueNDRangeKernel(cmdQ, YUVtoRec709, 2, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
-}
-}
-break;
-
-case 2:
-{
-error = clSetKernelArg(Gausfilter, 0, sizeof(cl_mem), &p_Output);
-CheckError(error, "Unable to set kernel arguments");
-
+if(p_Space != 0) {
+if(p_Space == 1)
 clEnqueueNDRangeKernel(cmdQ, Rec709toLAB, 2, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
-
+if(p_Space == 2)
+clEnqueueNDRangeKernel(cmdQ, ARRItoLAB, 2, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
+if(p_Space == 3)
+clEnqueueNDRangeKernel(cmdQ, ACEStoLAB, 2, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
+error = clSetKernelArg(Gausfilter, 0, sizeof(cl_mem), &p_Output);
+CheckError(error, "Unable to set kernel arguments");
 if (p_Blur[0] > 0.0f) {
 error |= clSetKernelArg(Gausfilter, 2, sizeof(int), &p_Width);
 error |= clSetKernelArg(Gausfilter, 3, sizeof(int), &p_Height);
@@ -811,13 +878,10 @@ CheckError(error, "Unable to set kernel arguments");
 clEnqueueNDRangeKernel(cmdQ, Gausfilter, 1, NULL, gausGlobalWorkSizeB, gausLocalWorkSize, 0, NULL, NULL);
 clEnqueueNDRangeKernel(cmdQ, Transpose, 2, NULL, TransGlobalWorkSizeB, TransLocalWorkSize, 0, NULL, NULL);
 }
-
 clEnqueueNDRangeKernel(cmdQ, FreqSharpenLuma, 2, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
-
 if (p_Display != 1){
 if (p_Switch[1] == 1)
 p_Blur[5] = p_Blur[4];
-
 if (p_Blur[3] > 0.0f) {
 error |= clSetKernelArg(Gausfilter, 2, sizeof(int), &p_Width);
 error |= clSetKernelArg(Gausfilter, 3, sizeof(int), &p_Height);
@@ -835,7 +899,6 @@ error |= clSetKernelArg(Transpose, 3, sizeof(int), &p_Width);
 clEnqueueNDRangeKernel(cmdQ, Gausfilter, 1, NULL, gausGlobalWorkSizeB, gausLocalWorkSize, 0, NULL, NULL);
 clEnqueueNDRangeKernel(cmdQ, Transpose, 2, NULL, TransGlobalWorkSizeB, TransLocalWorkSize, 0, NULL, NULL);
 }
-
 if (p_Blur[4] > 0.0f) {
 error |= clSetKernelArg(Gausfilter, 2, sizeof(int), &p_Width);
 error |= clSetKernelArg(Gausfilter, 3, sizeof(int), &p_Height);
@@ -853,7 +916,6 @@ error |= clSetKernelArg(Transpose, 3, sizeof(int), &p_Width);
 clEnqueueNDRangeKernel(cmdQ, Gausfilter, 1, NULL, gausGlobalWorkSizeB, gausLocalWorkSize, 0, NULL, NULL);
 clEnqueueNDRangeKernel(cmdQ, Transpose, 2, NULL, TransGlobalWorkSizeB, TransLocalWorkSize, 0, NULL, NULL);
 }
-
 if (p_Blur[5] > 0.0f) {
 error |= clSetKernelArg(Gausfilter, 2, sizeof(int), &p_Width);
 error |= clSetKernelArg(Gausfilter, 3, sizeof(int), &p_Height);
@@ -871,17 +933,16 @@ error |= clSetKernelArg(Transpose, 3, sizeof(int), &p_Width);
 clEnqueueNDRangeKernel(cmdQ, Gausfilter, 1, NULL, gausGlobalWorkSizeB, gausLocalWorkSize, 0, NULL, NULL);
 clEnqueueNDRangeKernel(cmdQ, Transpose, 2, NULL, TransGlobalWorkSizeB, TransLocalWorkSize, 0, NULL, NULL);
 }
-
 clEnqueueNDRangeKernel(cmdQ, LowFreqContLuma, 2, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
-}
-
 if (p_Display == 0) {
 error |= clSetKernelArg(FreqAdd, 4, sizeof(int), &red);
 clEnqueueNDRangeKernel(cmdQ, FreqAdd, 2, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
+if(p_Space == 1)
 clEnqueueNDRangeKernel(cmdQ, LABtoRec709, 2, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
-}
-}
-}
-
+if(p_Space == 2)
+clEnqueueNDRangeKernel(cmdQ, LABtoARRI, 2, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
+if(p_Space == 3)
+clEnqueueNDRangeKernel(cmdQ, LABtoACES, 2, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
+}}}
 clReleaseMemObject(tempBuffer);
 }
