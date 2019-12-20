@@ -1,0 +1,4426 @@
+#ifndef __ACES_FUNCTIONS_CUDA_H_INCLUDED__
+#define __ACES_FUNCTIONS_CUDA_H_INCLUDED__
+
+typedef struct
+{
+float x, y, z, w, m;
+} float5;
+
+typedef struct
+{
+float2 c0, c1;
+} mat2;
+
+typedef struct
+{
+float3 c0, c1, c2;
+} mat3;
+
+typedef struct
+{
+float2 red; float2 green; float2 blue; float2 white;
+} Chromaticities;
+
+typedef struct
+{
+float x; float y;
+} SplineMapPoint;
+
+typedef struct
+{
+float coefsLow[6]; float coefsHigh[6];
+SplineMapPoint minPoint; SplineMapPoint midPoint; SplineMapPoint maxPoint;
+float slopeLow; float slopeHigh;
+} SegmentedSplineParams_c5;
+
+typedef struct
+{
+float coefsLow[10]; float coefsHigh[10];
+SplineMapPoint minPoint; SplineMapPoint midPoint; SplineMapPoint maxPoint;
+float slopeLow; float slopeHigh;
+} SegmentedSplineParams_c9;
+
+typedef struct
+{
+float x; float y; float slope;
+} TsPoint;
+
+typedef struct
+{
+TsPoint Min; TsPoint Mid; TsPoint Max;
+float coefsLow[6]; float coefsHigh[6];
+} TsParams;
+
+#define REF_PT				((7120.0f - 1520.0f) / 8000.0f * (100.0f / 55.0f) - log10f(0.18f)) * 1.0f
+#define AP0_2_XYZ_MAT		RGBtoXYZ( AP0)
+#define XYZ_2_AP0_MAT		XYZtoRGB( AP0)
+#define AP1_2_XYZ_MAT		RGBtoXYZ( AP1)
+#define XYZ_2_AP1_MAT		XYZtoRGB( AP1)
+//#define AP0_2_AP1_MAT		mult_f33_f33( AP0_2_XYZ_MAT, XYZ_2_AP1_MAT)
+//#define AP1_2_AP0_MAT		mult_f33_f33( AP1_2_XYZ_MAT, XYZ_2_AP0_MAT)
+#define AP1_RGB2Y			make_float3(AP1_2_XYZ_MAT.c0.y, AP1_2_XYZ_MAT.c1.y, AP1_2_XYZ_MAT.c2.y)
+#define D60_2_D65_CAT		calculate_cat_matrix( AP0.white, REC709_PRI.white)
+
+__constant__ mat3 MM = { {0.5f, -1.0f, 0.5f}, {-1.0f, 1.0f, 0.5f}, {0.5f, 0.0f, 0.0f} };
+__constant__ mat3 M1 = { {0.5f, -1.0f, 0.5f}, {-1.0f, 1.0f, 0.5f}, {0.5f, 0.0f, 0.0f} };
+__constant__ float TINY = 1e-10f;
+__constant__ float DIM_SURROUND_GAMMA = 0.9811f;
+__constant__ float ODT_SAT_FACTOR = 0.93f;
+__constant__ float MIN_STOP_SDR = -6.5f;
+__constant__ float MAX_STOP_SDR = 6.5f;
+__constant__ float MIN_STOP_RRT = -15.0f;
+__constant__ float MAX_STOP_RRT = 18.0f;
+__constant__ float MIN_LUM_SDR = 0.02f;
+__constant__ float MAX_LUM_SDR = 48.0f;
+__constant__ float MIN_LUM_RRT = 0.0001f;
+__constant__ float MAX_LUM_RRT = 10000.0f;
+__constant__ float RRT_GLOW_GAIN = 0.05f;
+__constant__ float RRT_GLOW_MID = 0.08f;
+__constant__ float RRT_RED_SCALE = 0.82f;
+__constant__ float RRT_RED_PIVOT = 0.03f;
+__constant__ float RRT_RED_HUE = 0.0f;
+__constant__ float RRT_RED_WIDTH = 135.0f;
+__constant__ float RRT_SAT_FACTOR = 0.96f;
+__constant__ float X_BRK = 0.0078125f;
+__constant__ float Y_BRK = 0.155251141552511f;
+__constant__ float A = 10.5402377416545f;
+__constant__ float B = 0.0729055341958355f;
+__constant__ float sqrt3over4 = 0.433012701892219f;
+__constant__ float pq_m1 = 0.1593017578125f;
+__constant__ float pq_m2 = 78.84375f;
+__constant__ float pq_c1 = 0.8359375f;
+__constant__ float pq_c2 = 18.8515625f;
+__constant__ float pq_c3 = 18.6875f;
+__constant__ float pq_C = 10000.0f;
+__constant__ mat3 CDD_TO_CID = 
+{ {0.75573f, 0.05901f, 0.16134f}, {0.22197f, 0.96928f, 0.07406f}, {0.02230f, -0.02829f, 0.76460f} };
+__constant__ mat3 EXP_TO_ACES = 
+{ {0.72286f, 0.11923f, 0.01427f}, {0.12630f, 0.76418f, 0.08213f}, {0.15084f, 0.11659f, 0.90359f} };
+__constant__ Chromaticities AP0 =
+{ {0.7347f, 0.2653f}, {0.0f, 1.0f}, {0.0001f, -0.077f}, {0.32168f, 0.33767f} };
+__constant__ Chromaticities AP1 =
+{ {0.713f, 0.293f}, {0.165f, 0.83f}, {0.128f, 0.044f}, {0.32168f, 0.33767f} };
+__constant__ Chromaticities REC709_PRI =
+{ {0.64f, 0.33f}, {0.3f, 0.6f}, {0.15f, 0.06f}, {0.3127f, 0.329f} };
+__constant__ Chromaticities P3D60_PRI =
+{ {0.68f, 0.32f}, {0.265f, 0.69f}, {0.15f, 0.06f}, {0.32168, 0.33767f} };
+__constant__ Chromaticities P3D65_PRI =
+{ {0.68f, 0.32f}, {0.265f, 0.69f}, {0.15f, 0.06f}, {0.3127f, 0.329f} };
+__constant__ Chromaticities P3DCI_PRI =
+{ {0.68f, 0.32f}, {0.265f, 0.69f}, {0.15f, 0.06f}, {0.314f, 0.351f} };
+__constant__ Chromaticities ARRI_ALEXA_WG_PRI =
+{ {0.684f, 0.313f}, {0.221f, 0.848f}, {0.0861f, -0.102f}, {0.3127f, 0.329f} };
+__constant__ Chromaticities REC2020_PRI =
+{ {0.708f, 0.292f}, {0.17f, 0.797f}, {0.131f, 0.046f}, {0.3127f, 0.329f} };
+__constant__ Chromaticities RIMMROMM_PRI =
+{ {0.7347f, 0.2653f}, {0.1596f, 0.8404f}, {0.0366f, 0.0001f}, {0.3457f, 0.3585f} };
+__constant__ mat3 CONE_RESP_MAT_BRADFORD =
+{ {0.8951f, -0.7502f, 0.0389f}, {0.2664f, 1.7135f, -0.0685f}, {-0.1614f, 0.0367f, 1.0296f} };
+__constant__ mat3 CONE_RESP_MAT_CAT02 =
+{ {0.7328f, -0.7036f, 0.003f}, {0.4296f, 1.6975f, 0.0136f}, {-0.1624f, 0.0061f, 0.9834f} };
+
+__constant__ mat3 AP0_2_XYZ_MAT_B = 
+{ {0.9525523959f, 0.3439664498f, 0.0f}, {0.0f, 0.7281660966f, 0.0f}, {0.0000936786f, -0.0721325464f, 1.0088251844f} };
+__constant__ mat3 XYZ_2_AP0_MAT_B = 
+{ {1.0498110175f, -0.4959030231f, 0.0f}, {0.0f, 1.3733130458f, 0.0f}, {-0.0000974845f, 0.0982400361f, 0.9912520182f} };
+__constant__ mat3 AP1_2_XYZ_MAT_B = 
+{ {0.6624541811f, 0.2722287168f, -0.0055746495f}, {0.1340042065f, 0.6740817658f, 0.0040607335f}, {0.156187687f, 0.0536895174f, 1.0103391003f} };
+__constant__ mat3 XYZ_2_AP1_MAT_B = 
+{ {1.6410233797f, -0.6636628587f, 0.0117218943f}, {-0.3248032942f, 1.6153315917f, -0.008284442f}, {-0.2364246952f, 0.0167563477f, 0.9883948585f} };
+__constant__ mat3 AP0_2_AP1_MAT_B = 
+{ {1.4514393161f, -0.0765537734f, 0.0083161484f}, {-0.2365107469f, 1.1762296998f, -0.0060324498f}, {-0.2149285693f, -0.0996759264f, 0.9977163014f} };
+__constant__ mat3 AP1_2_AP0_MAT_B = 
+{ {0.6954522414f, 0.0447945634f, -0.0055258826f}, {0.1406786965f, 0.8596711185f, 0.0040252103f}, {0.1638690622f, 0.0955343182f, 1.0015006723f} };
+__constant__ mat3 D60_2_D65_CAT_B = 
+{ {0.987224f, -0.00759836f, 0.00307257f}, {-0.00611327f, 1.00186f, -0.00509595f}, {0.0159533f, 0.00533002f, 1.08168f} };
+__constant__ float3 AP1_RGB2Y_B = {0.2722287168f, 0.6740817658f, 0.0536895174f};
+
+__device__ inline int size( float array[])
+{
+int Size = sizeof(array)/sizeof(array[0]);
+return Size + 1;
+}
+
+__device__ inline int size_f2( float2 array[])
+{
+int Size = sizeof(array)/sizeof(array[0]);
+return Size + 1;
+}
+
+__device__ inline Chromaticities make_chromaticities( float2 A, float2 B, float2 C, float2 D)
+{
+Chromaticities E;
+E.red = A; E.green = B; E.blue = C; E.white = D;
+return E;
+}
+
+__device__ inline mat2 make_mat2( float2 A, float2 B)
+{
+mat2 C;
+C.c0 = A; C.c1 = B;
+return C;
+}
+
+__device__ inline mat3 make_mat3( float3 A, float3 B, float3 C)
+{
+mat3 D;
+D.c0 = A; D.c1 = B; D.c2 = C;
+return D;
+}
+
+__device__ inline float min_f3( float3 a)
+{
+return fminf( a.x, fminf( a.y, a.z));
+}
+
+__device__ inline float max_f3( float3 a)
+{
+return fmaxf( a.x, fmaxf( a.y, a.z));
+}
+
+__device__ inline float3 max_f3_f( float3 a, float b)
+{
+float3 out;
+out.x = fmaxf(a.x, b); out.y = fmaxf(a.y, b); out.z = fmaxf(a.z, b);
+return out;
+}
+
+__device__ inline float clip( float v)
+{
+return fminf(v, 1.0f);
+}
+
+__device__ inline float3 clip_f3( float3 in)
+{
+float3 out;
+out.x = clip( in.x); out.y = clip( in.y); out.z = clip( in.z);
+return out;
+}
+
+__device__ inline float3 add_f_f3( float a, float3 b)
+{
+float3 out;
+out.x = a + b.x; out.y = a + b.y; out.z = a + b.z;
+return out;
+}
+
+__device__ inline float3 pow_f3( float3 a, float b)
+{
+float3 out;
+out.x = powf(a.x, b); out.y = powf(a.y, b); out.z = powf(a.z, b);
+return out;
+}
+
+__device__ inline float3 exp10_f3( float3 a)
+{
+float3 out;
+out.x = exp10f(a.x); out.y = exp10f(a.y); out.z = exp10f(a.z);
+return out;
+}
+
+__device__ inline float3 log10_f3( float3 a)
+{
+float3 out;
+out.x = log10f(a.x); out.y = log10f(a.y); out.z = log10f(a.z);
+return out;
+}
+
+__device__ inline float _sign( float x)
+{
+float y;
+if (x < 0.0f) y = -1.0f;
+else if (x > 0.0f) y = 1.0f;
+else y = 0.0f;
+return y;
+}
+
+__device__ inline float3 mult_f_f3( float f, float3 x)
+{
+float3 r;
+r.x = f * x.x; r.y = f * x.y; r.z = f * x.z;
+return r;
+}
+
+__device__ inline float3 add_f3_f3( float3 x, float3 y)
+{
+float3 r;
+r.x = x.x + y.x; r.y = x.y + y.y; r.z = x.z + y.z;
+return r;
+}
+
+__device__ inline float3 sub_f3_f3( float3 x, float3 y)
+{
+float3 r;
+r.x = x.x - y.x; r.y = x.y - y.y; r.z = x.z - y.z;
+return r;
+}
+
+__device__ inline float3 cross_f3_f3( float3 x, float3 y)
+{
+float3 r;
+r.z = x.x * y.y - x.y * y.x; r.x = x.y * y.z - x.z * y.y; r.y = x.z * y.x - x.x * y.z;
+return r;
+}
+
+__device__ inline float clamp( float A, float mn, float mx) {
+return fmaxf( mn, fminf(A, mx));
+}
+
+__device__ inline float3 clamp_f3( float3 A, float mn, float mx)
+{
+float3 out;
+out.x = clamp( A.x, mn, mx); out.y = clamp( A.y, mn, mx); out.z = clamp( A.z, mn, mx);
+return out;
+}
+
+__device__ inline float dot_f3_f3( float3 x, float3 y)
+{
+return x.x * y.x + x.y * y.y + x.z * y.z;
+}
+
+__device__ inline float length_f3( float3 x)
+{
+return sqrtf( x.x * x.x + x.y * x.y + x.z * x.z );
+}
+
+__device__ inline mat2 transpose_f22( mat2 A)
+{
+mat2 B;
+B.c0 = make_float2(A.c0.x, A.c1.x); B.c1 = make_float2(A.c0.y, A.c1.y);
+return B;
+}
+
+__device__ inline mat3 transpose_f33( mat3 A)
+{
+float r[3][3];
+float a[3][3] = {{A.c0.x, A.c0.y, A.c0.z}, {A.c1.x, A.c1.y, A.c1.z}, {A.c2.x, A.c2.y, A.c2.z}};
+for( int i = 0; i < 3; ++i){
+for( int j = 0; j < 3; ++j){
+r[i][j] = a[j][i];}}
+mat3 R = make_mat3(make_float3(r[0][0], r[0][1], r[0][2]), make_float3(r[1][0], r[1][1], r[1][2]), make_float3(r[2][0], r[2][1], r[2][2]));
+return R;
+}
+
+__device__ inline mat3 mult_f_f33( float f, mat3 A)
+{
+float r[3][3];
+float a[3][3] = {{A.c0.x, A.c0.y, A.c0.z}, {A.c1.x, A.c1.y, A.c1.z}, {A.c2.x, A.c2.y, A.c2.z}};
+for( int i = 0; i < 3; ++i ){
+for( int j = 0; j < 3; ++j ){
+r[i][j] = f * a[i][j];}}
+mat3 R = make_mat3(make_float3(r[0][0], r[0][1], r[0][2]), make_float3(r[1][0], r[1][1], r[1][2]), make_float3(r[2][0], r[2][1], r[2][2]));
+return R;
+}
+
+__device__ inline float3 mult_f3_f33( float3 X, mat3 A)
+{
+float r[3];
+float x[3] = {X.x, X.y, X.z};
+float a[3][3] = {{A.c0.x, A.c0.y, A.c0.z}, {A.c1.x, A.c1.y, A.c1.z}, {A.c2.x, A.c2.y, A.c2.z}};
+for( int i = 0; i < 3; ++i){
+r[i] = 0.0f;
+for( int j = 0; j < 3; ++j){
+r[i] = r[i] + x[j] * a[j][i];}}
+return make_float3(r[0], r[1], r[2]);
+}
+
+__device__ inline mat3 mult_f33_f33( mat3 A, mat3 B)
+{
+float r[3][3];
+float a[3][3] = {{A.c0.x, A.c0.y, A.c0.z},
+{A.c1.x, A.c1.y, A.c1.z},
+{A.c2.x, A.c2.y, A.c2.z}};
+float b[3][3] = {{B.c0.x, B.c0.y, B.c0.z},
+{B.c1.x, B.c1.y, B.c1.z},
+{B.c2.x, B.c2.y, B.c2.z}};
+for( int i = 0; i < 3; ++i){
+for( int j = 0; j < 3; ++j){
+r[i][j] = 0.0f;
+for( int k = 0; k < 3; ++k){
+r[i][j] = r[i][j] + a[i][k] * b[k][j];
+}}}
+mat3 R = make_mat3(make_float3(r[0][0], r[0][1], r[0][2]), make_float3(r[1][0], r[1][1], r[1][2]), make_float3(r[2][0], r[2][1], r[2][2]));
+return R;
+}
+
+__device__ inline mat3 add_f33_f33( mat3 A, mat3 B)
+{
+float r[3][3];
+float a[3][3] = {{A.c0.x, A.c0.y, A.c0.z}, {A.c1.x, A.c1.y, A.c1.z}, {A.c2.x, A.c2.y, A.c2.z}};
+float b[3][3] = {{B.c0.x, B.c0.y, B.c0.z}, {B.c1.x, B.c1.y, B.c1.z}, {B.c2.x, B.c2.y, B.c2.z}};
+for( int i = 0; i < 3; ++i ){
+for( int j = 0; j < 3; ++j ){
+r[i][j] = a[i][j] + b[i][j];}}
+mat3 R = make_mat3(make_float3(r[0][0], r[0][1], r[0][2]), make_float3(r[1][0], r[1][1], r[1][2]), make_float3(r[2][0], r[2][1], r[2][2]));
+return R;
+}
+
+__device__ inline mat3 invert_f33( mat3 A)
+{
+mat3 R;
+float result[3][3];
+float a[3][3] = {{A.c0.x, A.c0.y, A.c0.z}, {A.c1.x, A.c1.y, A.c1.z}, {A.c2.x, A.c2.y, A.c2.z}};
+float det = a[0][0] * a[1][1] * a[2][2] + a[0][1] * a[1][2] * a[2][0]
++ a[0][2] * a[1][0] * a[2][1] - a[2][0] * a[1][1] * a[0][2]
+- a[2][1] * a[1][2] * a[0][0] - a[2][2] * a[1][0] * a[0][1];
+if( det != 0.0f ){
+result[0][0] = a[1][1] * a[2][2] - a[1][2] * a[2][1]; result[0][1] = a[2][1] * a[0][2] - a[2][2] * a[0][1];
+result[0][2] = a[0][1] * a[1][2] - a[0][2] * a[1][1]; result[1][0] = a[2][0] * a[1][2] - a[1][0] * a[2][2];
+result[1][1] = a[0][0] * a[2][2] - a[2][0] * a[0][2]; result[1][2] = a[1][0] * a[0][2] - a[0][0] * a[1][2];
+result[2][0] = a[1][0] * a[2][1] - a[2][0] * a[1][1]; result[2][1] = a[2][0] * a[0][1] - a[0][0] * a[2][1];
+result[2][2] = a[0][0] * a[1][1] - a[1][0] * a[0][1];
+R = make_mat3(make_float3(result[0][0], result[0][1], result[0][2]), make_float3(result[1][0], result[1][1],
+result[1][2]), make_float3(result[2][0], result[2][1], result[2][2]));
+return mult_f_f33( 1.0f / det, R);
+}
+R = make_mat3(make_float3(1.0f, 0.0f, 0.0f), make_float3(0.0f, 1.0f, 0.0f), make_float3(0.0f, 0.0f, 1.0f));
+return R;
+}
+
+__device__ inline float lookup1D( float table[], float pMin, float pMax, float p)
+{
+int Size = size(table);
+if( p < pMin ) return table[ 0 ];
+if( p > pMax ) return table[ Size - 1 ];
+float t = (p - pMin) / (pMax - pMin ) * (Size - 1.0f);
+int i = floor(t);
+float s = t - i;
+return table[i] * ( 1.0f - s ) + table[i + 1] * s;
+}
+
+__device__ inline float lookupCubic1D( float table[], float pMin, float pMax, float p)
+{
+int Size = size(table);
+if( p < pMin ) return table[ 0 ];
+if( p > pMax ) return table[ Size - 1 ];
+float t = (p - pMin) / (pMax - pMin) * (Size - 1 );
+int i = floor(t);
+float s = t - i;
+float m0;
+float m1;
+if( i > 0 ){
+m0 = (table[i + 1] - table[i - 1]) / 2.0f;
+}
+if( i < Size-2 ){
+m1 = (table[i + 2] - table[i]) / 2.0f;
+}
+if( i == 0) {
+m0 = (3 * table[i+1] - table[i] - m1);
+}
+if( i == Size - 2 ){
+m1 = (3.0f * table[i + 1] - table[i] - m0);
+}
+return table[i] * (2.0f * s*s*s - 3.0f * s*s + 1.0f) + m0 * (s*s*s - 2.0f * s*s + s) + table[i + 1] * (-2.0f * s*s*s + 3.0f * s*s) + m1 * (s*s*s - s*s);
+}
+
+__device__ inline float interpolate1D( float2 table[], int Size, float p)
+{
+if( p <= table[0].x ) return table[0].y;
+if( p >= table[Size - 1].x ) return table[Size - 1].y;
+for( int i = 0; i < Size - 1; ++i ){
+if( table[i].x <= p && p < table[i + 1].x ){
+float s = (p - table[i].x) / (table[i + 1].x - table[i].x);
+return table[i].y * ( 1.0f - s ) + table[i+1].y * s;}}
+return 0.0f;
+}
+
+__device__ inline float interpolateCubic1D( float2 table[], float p)
+{
+int Size = size_f2(table);
+if( p <= table[0].x ) return table[0].y;
+if( p >= table[Size - 1].x ) return table[Size - 1].y;
+if( Size == 2 ) {
+float s = (p - table[0].x) / (table[1].x - table[0].x);
+return (1.0f - s) * table[0].y + s * table[1].y;
+}
+for( int i = 0; i < Size - 1; ++i ){
+if( table[i].x <= p && p < table[i+1].x ){
+float s = (p - table[i].x) / (table[i + 1].x - table[i].x);
+float dx1 = (table[i + 1].x - table[i].x);
+float dy1 = (table[i + 1].y - table[i].y);
+float m0;
+float m1;
+if( i > 0 ){
+float dy0 = (table[i].y - table[i - 1].y);
+float dx0 = (table[i].x - table[i - 1].x);
+m0 = (dy1 + dx1 * dy0 / dx0) / 2.0f;
+}
+if( i < Size - 2 ){
+float dx2 = (table[i + 2].x - table[i + 1].x);
+float dy2 = (table[i + 2].y - table[i + 1].y);
+m1 = (dy1 + dx1 * dy2 / dx2) / 2.0f;
+}
+if( i == 0) {
+m0 = (3.0f * dy1 - m1) / 2.0f;
+}
+if( i == Size - 2 ){
+m1 = (3.0f * dy1 - m0) / 2.0f;
+}
+return table[i].y * (2.0f * s*s*s - 3.0f * s*s + 1.0f) + m0 * (s*s*s - 2.0f * s*s + s) + table[i + 1].y * (-2.0f * s*s*s + 3.0f * s*s) + m1 * (s*s*s - s*s);
+}}
+return 0.0f;
+}
+
+__device__ inline mat3 RGBtoXYZ( Chromaticities N)
+{
+mat3 M = make_mat3(make_float3(N.red.x, N.red.y, 1.0f - (N.red.x + N.red.y)),
+make_float3(N.green.x, N.green.y, 1.0f - (N.green.x + N.green.y)), make_float3(N.blue.x, N.blue.y, 1.0f - (N.blue.x + N.blue.y)));
+float3 wh = make_float3(N.white.x / N.white.y, 1.0f, (1.0f - (N.white.x + N.white.y)) / N.white.y);
+wh = mult_f3_f33(wh, invert_f33(M));
+mat3 WH = make_mat3(make_float3(wh.x, 0.0f, 0.0f), make_float3(0.0f, wh.y, 0.0f), make_float3(0.0f, 0.0f, wh.z));
+M = mult_f33_f33(WH, M);
+return M;
+}
+
+__device__ inline mat3 XYZtoRGB( Chromaticities N)
+{
+mat3 M = invert_f33(RGBtoXYZ(N));
+return M;
+}
+
+__device__ inline float SLog3_to_linear( float SLog )
+{
+float out = 0.0f;
+if (SLog >= 171.2102946929f / 1023.0f){
+out = exp10f((SLog * 1023.0f - 420.0f) / 261.5f) * (0.18f + 0.01f) - 0.01f;
+} else {
+out = (SLog * 1023.0f - 95.0f) * 0.01125000f / (171.2102946929f - 95.0f);}
+return out;
+}
+
+__device__ inline float vLogToLinScene( float x)
+{
+const float cutInv = 0.181f;
+const float b = 0.00873f;
+const float c = 0.241514f;
+const float d = 0.598206f;
+if (x <= cutInv)
+return (x - 0.125f) / 5.6f;
+else
+return exp10f((x - d) / c) - b;
+}
+
+__device__ inline float SLog1_to_lin( float SLog, float b, float ab, float w)
+{
+float lin = 0.0f;
+if (SLog >= ab)
+lin = ( exp10f(( ( ( SLog - b) / ( w - b) - 0.616596f - 0.03f) / 0.432699f)) - 0.037584f) * 0.9f;
+else if (SLog < ab)
+lin = ( ( ( SLog - b) / ( w - b) - 0.030001222851889303f) / 5.0f) * 0.9f;
+return lin;
+}
+
+__device__ inline float SLog2_to_lin( float SLog, float b, float ab, float w)
+{
+float lin = 0.0f;
+if (SLog >= ab)
+lin = ( 219.0f * ( exp10f(( ( ( SLog - b) / ( w - b) - 0.616596f - 0.03f) / 0.432699f)) - 0.037584f) / 155.0f) * 0.9f;
+else if (SLog < ab)
+lin = ( ( ( SLog - b) / ( w - b) - 0.030001222851889303f) / 3.53881278538813f) * 0.9f;
+return lin;
+}
+
+__device__ inline float CanonLog_to_linear ( float clog)
+{
+float out = 0.0f;
+if(clog < 0.12512248f)
+out = -( powf( 10.0f, ( 0.12512248f - clog ) / 0.45310179f ) - 1.0f ) / 10.1596f;
+else
+out = ( powf( 10.0f, ( clog - 0.12512248f ) / 0.45310179f ) - 1.0f ) / 10.1596f;
+return out;
+}
+
+__device__ inline float CanonLog2_to_linear ( float clog2)
+{
+float out = 0.0f;
+if(clog2 < 0.092864125f)
+out = -( powf( 10.0f, ( 0.092864125f - clog2 ) / 0.24136077f ) - 1.0f ) / 87.099375f;
+else
+out = ( powf( 10.0f, ( clog2 - 0.092864125f ) / 0.24136077f ) - 1.0f ) / 87.099375f;
+return out;
+}
+
+__device__ inline float CanonLog3_to_linear ( float clog3)
+{
+float out = 0.0f;
+if(clog3 < 0.097465473f)
+out = -( powf( 10.0f, ( 0.12783901f - clog3 ) / 0.36726845f ) - 1.0f ) / 14.98325f;
+else if(clog3 <= 0.15277891f)
+out = ( clog3 - 0.12512219f ) / 1.9754798f;
+else
+out = ( powf( 10.0f, ( clog3 - 0.12240537f ) / 0.36726845f ) - 1.0f ) / 14.98325f;
+return out;
+}
+
+__device__ inline float Log3G10_to_linear_2016 ( float log3g10)
+{
+float a, b, c, mirror, linear;
+a = 0.224282f;
+b = 155.975327f;
+c = 0.01f;
+mirror = 1.0f;
+if (log3g10 < 0.0f){
+mirror = -1.0f;
+log3g10 = -log3g10;}
+linear = (exp10f(log3g10 / a) - 1.0f) / b;
+linear = linear * mirror - c;
+return linear;
+}
+
+__device__ inline float Log3G10_to_linear ( float log3g10)
+{
+float a, b, c, g, linear;
+a = 0.224282f; b = 155.975327f; c = 0.01f; g = 15.1927f;
+linear = log3g10 < 0.0f ? (log3g10 / g) : (exp10f(log3g10 / a) - 1.0f) / b;
+linear = linear - c;
+return linear;
+}
+
+__device__ inline float3 XYZ_2_xyY( float3 XYZ)
+{
+float3 xyY;
+float divisor = (XYZ.x + XYZ.y + XYZ.z);
+if (divisor == 0.0f) divisor = 1e-10f;
+xyY.x = XYZ.x / divisor;
+xyY.y = XYZ.y / divisor;
+xyY.z = XYZ.y;
+return xyY;
+}
+
+__device__ inline float3 xyY_2_XYZ( float3 xyY)
+{
+float3 XYZ;
+XYZ.x = xyY.x * xyY.z / fmaxf( xyY.y, 1e-10f);
+XYZ.y = xyY.z;
+XYZ.z = (1.0f - xyY.x - xyY.y) * xyY.z / fmaxf( xyY.y, 1e-10f);
+return XYZ;
+}
+
+__device__ inline float rgb_2_hue( float3 rgb)
+{
+float hue = 0.0f;
+if (rgb.x == rgb.y && rgb.y == rgb.z) {
+hue = 0.0f;
+} else {
+hue = (180.0f/3.14159265358979323846264338327950288f) * atan2f( sqrtf(3.0f) * (rgb.y - rgb.z), 2.0f * rgb.x - rgb.y - rgb.z);
+}
+if (hue < 0.0f) hue = hue + 360.0f;
+return hue;
+}
+
+__device__ inline float rgb_2_yc( float3 rgb, float ycRadiusWeight)
+{
+float r = rgb.x;
+float g = rgb.y;
+float b = rgb.z;
+float chroma = sqrtf(b * (b - g) + g * (g - r) + r * (r - b));
+return ( b + g + r + ycRadiusWeight * chroma) / 3.0f;
+}
+
+__device__ inline mat3 calculate_cat_matrix( float2 src_xy, float2 des_xy)
+{
+mat3 coneRespMat = CONE_RESP_MAT_BRADFORD;
+const float3 src_xyY = { src_xy.x, src_xy.y, 1.0f };
+const float3 des_xyY = { des_xy.x, des_xy.y, 1.0f };
+float3 src_XYZ = xyY_2_XYZ( src_xyY );
+float3 des_XYZ = xyY_2_XYZ( des_xyY );
+float3 src_coneResp = mult_f3_f33( src_XYZ, coneRespMat);
+float3 des_coneResp = mult_f3_f33( des_XYZ, coneRespMat);
+mat3 vkMat = {
+{ des_coneResp.x / src_coneResp.x, 0.0f, 0.0f },
+{ 0.0f, des_coneResp.y / src_coneResp.y, 0.0f },
+{ 0.0f, 0.0f, des_coneResp.z / src_coneResp.z }
+};
+mat3 cat_matrix = mult_f33_f33( coneRespMat, mult_f33_f33( vkMat, invert_f33( coneRespMat ) ) );
+return cat_matrix;
+}
+
+__device__ inline mat3 calc_sat_adjust_matrix( float sat, float3 rgb2Y)
+{
+float M[3][3];
+M[0][0] = (1.0f - sat) * rgb2Y.x + sat; M[1][0] = (1.0f - sat) * rgb2Y.x; M[2][0] = (1.0f - sat) * rgb2Y.x;
+M[0][1] = (1.0f - sat) * rgb2Y.y; M[1][1] = (1.0f - sat) * rgb2Y.y + sat; M[2][1] = (1.0f - sat) * rgb2Y.y;
+M[0][2] = (1.0f - sat) * rgb2Y.z; M[1][2] = (1.0f - sat) * rgb2Y.z; M[2][2] = (1.0f - sat) * rgb2Y.z + sat;
+mat3 R = make_mat3(make_float3(M[0][0], M[0][1], M[0][2]), make_float3(M[1][0], M[1][1], M[1][2]), make_float3(M[2][0], M[2][1], M[2][2]));
+R = transpose_f33(R);
+return R;
+}
+
+__device__ inline float moncurve_f( float x, float gamma, float offs )
+{
+float y;
+const float fs = (( gamma - 1.0f) / offs) * powf( offs * gamma / ( ( gamma - 1.0f) * ( 1.0f + offs)), gamma);
+const float xb = offs / ( gamma - 1.0f);
+if ( x >= xb)
+y = powf( ( x + offs) / ( 1.0f + offs), gamma);
+else
+y = x * fs;
+return y;
+}
+
+__device__ inline float moncurve_r( float y, float gamma, float offs )
+{
+float x;
+const float yb = powf( offs * gamma / ( ( gamma - 1.0f) * ( 1.0f + offs)), gamma);
+const float rs = powf( ( gamma - 1.0f) / offs, gamma - 1.0f) * powf( ( 1.0f + offs) / gamma, gamma);
+if ( y >= yb)
+x = ( 1.0f + offs) * powf( y, 1.0f / gamma) - offs;
+else
+x = y * rs;
+return x;
+}
+
+__device__ inline float3 moncurve_f_f3( float3 x, float gamma, float offs)
+{
+float3 y;
+y.x = moncurve_f( x.x, gamma, offs); y.y = moncurve_f( x.y, gamma, offs); y.z = moncurve_f( x.z, gamma, offs);
+return y;
+}
+
+__device__ inline float3 moncurve_r_f3( float3 y, float gamma, float offs)
+{
+float3 x;
+x.x = moncurve_r( y.x, gamma, offs); x.y = moncurve_r( y.y, gamma, offs); x.z = moncurve_r( y.z, gamma, offs);
+return x;
+}
+
+__device__ inline float bt1886_f( float V, float gamma, float Lw, float Lb)
+{
+float a = powf( powf( Lw, 1.0f/gamma) - powf( Lb, 1.0f/gamma), gamma);
+float b = powf( Lb, 1.0f/gamma) / ( powf( Lw, 1.0f/gamma) - powf( Lb, 1.0f/gamma));
+float L = a * powf( fmaxf( V + b, 0.0f), gamma);
+return L;
+}
+
+__device__ inline float bt1886_r( float L, float gamma, float Lw, float Lb)
+{
+float a = powf( powf( Lw, 1.0f/gamma) - powf( Lb, 1.0f/gamma), gamma);
+float b = powf( Lb, 1.0f/gamma) / ( powf( Lw, 1.0f/gamma) - powf( Lb, 1.0f/gamma));
+float V = powf( fmaxf( L / a, 0.0f), 1.0f/gamma) - b;
+return V;
+}
+
+__device__ inline float3 bt1886_f_f3( float3 V, float gamma, float Lw, float Lb)
+{
+float3 L;
+L.x = bt1886_f( V.x, gamma, Lw, Lb); L.y = bt1886_f( V.y, gamma, Lw, Lb); L.z = bt1886_f( V.z, gamma, Lw, Lb);
+return L;
+}
+
+__device__ inline float3 bt1886_r_f3( float3 L, float gamma, float Lw, float Lb)
+{
+float3 V;
+V.x = bt1886_r( L.x, gamma, Lw, Lb); V.y = bt1886_r( L.y, gamma, Lw, Lb); V.z = bt1886_r( L.z, gamma, Lw, Lb);
+return V;
+}
+
+__device__ inline float smpteRange_to_fullRange( float in)
+{
+const float REFBLACK = ( 64.0f / 1023.0f);
+const float REFWHITE = ( 940.0f / 1023.0f);
+return (( in - REFBLACK) / ( REFWHITE - REFBLACK));
+}
+
+__device__ inline float fullRange_to_smpteRange( float in)
+{
+const float REFBLACK = ( 64.0f / 1023.0f);
+const float REFWHITE = ( 940.0f / 1023.0f);
+return ( in * ( REFWHITE - REFBLACK) + REFBLACK );
+}
+
+__device__ inline float3 smpteRange_to_fullRange_f3( float3 rgbIn)
+{
+float3 rgbOut;
+rgbOut.x = smpteRange_to_fullRange( rgbIn.x); rgbOut.y = smpteRange_to_fullRange( rgbIn.y); rgbOut.z = smpteRange_to_fullRange( rgbIn.z);
+return rgbOut;
+}
+
+__device__ inline float3 fullRange_to_smpteRange_f3( float3 rgbIn)
+{
+float3 rgbOut;
+rgbOut.x = fullRange_to_smpteRange( rgbIn.x); rgbOut.y = fullRange_to_smpteRange( rgbIn.y); rgbOut.z = fullRange_to_smpteRange( rgbIn.z);
+return rgbOut;
+}
+
+__device__ inline float3 dcdm_decode( float3 XYZp)
+{
+float3 XYZ;
+XYZ.x = (52.37f/48.0f) * powf( XYZp.x, 2.6f);
+XYZ.y = (52.37f/48.0f) * powf( XYZp.y, 2.6f);
+XYZ.z = (52.37f/48.0f) * powf( XYZp.z, 2.6f);
+return XYZ;
+}
+
+__device__ inline float3 dcdm_encode( float3 XYZ)
+{
+float3 XYZp;
+XYZp.x = powf( (48.0f/52.37f) * XYZ.x, 1.0f/2.6f);
+XYZp.y = powf( (48.0f/52.37f) * XYZ.y, 1.0f/2.6f);
+XYZp.z = powf( (48.0f/52.37f) * XYZ.z, 1.0f/2.6f);
+return XYZp;
+}
+
+__device__ inline float ST2084_2_Y( float N )
+{
+float Np = powf( N, 1.0f / pq_m2 );
+float L = Np - pq_c1;
+if ( L < 0.0f )
+L = 0.0f;
+L = L / ( pq_c2 - pq_c3 * Np );
+L = powf( L, 1.0f / pq_m1 );
+return L * pq_C;
+}
+
+__device__ inline float Y_2_ST2084( float C )
+{
+float L = C / pq_C;
+float Lm = powf( L, pq_m1 );
+float N = ( pq_c1 + pq_c2 * Lm ) / ( 1.0f + pq_c3 * Lm );
+N = powf( N, pq_m2 );
+return N;
+}
+
+__device__ inline float3 Y_2_ST2084_f3( float3 in)
+{
+float3 out;
+out.x = Y_2_ST2084( in.x); out.y = Y_2_ST2084( in.y); out.z = Y_2_ST2084( in.z);
+return out;
+}
+
+__device__ inline float3 ST2084_2_Y_f3( float3 in)
+{
+float3 out;
+out.x = ST2084_2_Y( in.x); out.y = ST2084_2_Y( in.y); out.z = ST2084_2_Y( in.z);
+return out;
+}
+
+__device__ inline float3 ST2084_2_HLG_1000nits_f3( float3 PQ)
+{
+float3 displayLinear = ST2084_2_Y_f3( PQ);
+float Y_d = 0.2627f * displayLinear.x + 0.6780f * displayLinear.y + 0.0593f * displayLinear.z;
+const float L_w = 1000.0f;
+const float L_b = 0.0f;
+const float alpha = (L_w - L_b);
+const float beta = L_b;
+const float gamma = 1.2f;
+float3 sceneLinear;
+if (Y_d == 0.0f) {
+sceneLinear.x = 0.0f; sceneLinear.y = 0.0f; sceneLinear.z = 0.0f;
+} else {
+sceneLinear.x = powf( (Y_d - beta) / alpha, (1.0f - gamma) / gamma) * ((displayLinear.x - beta) / alpha);
+sceneLinear.y = powf( (Y_d - beta) / alpha, (1.0f - gamma) / gamma) * ((displayLinear.y - beta) / alpha);
+sceneLinear.z = powf( (Y_d - beta) / alpha, (1.0f - gamma) / gamma) * ((displayLinear.z - beta) / alpha);
+}
+const float a = 0.17883277f;
+const float b = 0.28466892f;
+const float c = 0.55991073f;
+float3 HLG;
+if (sceneLinear.x <= 1.0f / 12.0f) {
+HLG.x = sqrtf(3.0f * sceneLinear.x);
+} else {
+HLG.x = a * logf(12.0f * sceneLinear.x-b)+c;
+}
+if (sceneLinear.y <= 1.0f / 12.0f) {
+HLG.y = sqrtf(3.0f * sceneLinear.y);
+} else {
+HLG.y = a * logf(12.0f * sceneLinear.y-b)+c;
+}
+if (sceneLinear.z <= 1.0f / 12.0f) {
+HLG.z = sqrtf(3.0f * sceneLinear.z);
+} else {
+HLG.z = a * logf(12.0f * sceneLinear.z - b) + c;
+}
+return HLG;
+}
+
+__device__ inline float3 HLG_2_ST2084_1000nits_f3( float3 HLG)
+{
+const float a = 0.17883277f;
+const float b = 0.28466892f;
+const float c = 0.55991073f;
+const float L_w = 1000.0f;
+const float L_b = 0.0f;
+const float alpha = (L_w - L_b);
+const float beta = L_b;
+const float gamma = 1.2f;
+float3 sceneLinear;
+if ( HLG.x >= 0.0f && HLG.x <= 0.5f) {
+sceneLinear.x = powf(HLG.x, 2.0f) / 3.0f;
+} else {
+sceneLinear.x = (expf((HLG.x - c) / a) + b) / 12.0f;
+}
+if ( HLG.y >= 0.0f && HLG.y <= 0.5f) {
+sceneLinear.y = powf(HLG.y, 2.0f) / 3.0f;
+} else {
+sceneLinear.y = (expf((HLG.y - c) / a) + b) / 12.0f;
+}
+if ( HLG.z >= 0.0f && HLG.z <= 0.5f) {
+sceneLinear.z = powf(HLG.z, 2.0f) / 3.0f;
+} else {
+sceneLinear.z = (expf((HLG.z - c) / a) + b) / 12.0f;
+}
+float Y_s = 0.2627f * sceneLinear.x + 0.6780f * sceneLinear.y + 0.0593f * sceneLinear.z;
+float3 displayLinear;
+displayLinear.x = alpha * powf( Y_s, gamma - 1.0f) * sceneLinear.x + beta;
+displayLinear.y = alpha * powf( Y_s, gamma - 1.0f) * sceneLinear.y + beta;
+displayLinear.z = alpha * powf( Y_s, gamma - 1.0f) * sceneLinear.z + beta;
+float3 PQ = Y_2_ST2084_f3( displayLinear);
+return PQ;
+}
+__device__ inline float rgb_2_saturation( float3 rgb)
+{
+return ( fmaxf( max_f3(rgb), TINY) - fmaxf( min_f3(rgb), TINY)) / fmaxf( max_f3(rgb), 1e-2f);
+}
+
+__device__ inline SegmentedSplineParams_c5 RRT_PARAMS()
+{
+SegmentedSplineParams_c5 A = {{ -4.0f, -4.0f, -3.1573765773f, -0.4852499958f, 1.8477324706f, 1.8477324706f},
+{ -0.7185482425f, 2.0810307172f, 3.6681241237f, 4.0f, 4.0f, 4.0f}, {0.18f * exp2f(-15.0f), 0.0001f},
+{0.18f, 4.8f}, {0.18f * exp2f(18.0f), 10000.0f}, 0.0f, 0.0f};
+return A;
+};
+
+__device__ inline float segmented_spline_c5_fwd( float x)
+{
+SegmentedSplineParams_c5 C = RRT_PARAMS();
+const int N_KNOTS_LOW = 4;
+const int N_KNOTS_HIGH = 4;
+float logx = log10f( fmaxf(x, 0.0f));
+float logy = 0.0f;
+if ( logx <= log10f(C.minPoint.x) ) {
+logy = logx * C.slopeLow + ( log10f(C.minPoint.y) - C.slopeLow * log10f(C.minPoint.x) );
+} else if (( logx > log10f(C.minPoint.x) ) && ( logx < log10f(C.midPoint.x) )) {
+float knot_coord = (N_KNOTS_LOW - 1) * (logx - log10f(C.minPoint.x)) / (log10f(C.midPoint.x) - log10f(C.minPoint.x));
+int j = knot_coord;
+float t = knot_coord - j;
+float3 cf = make_float3( C.coefsLow[ j], C.coefsLow[ j + 1], C.coefsLow[ j + 2]);
+float3 monomials = make_float3( t * t, t, 1.0f );
+logy = dot_f3_f3( monomials, mult_f3_f33( cf, MM));
+} else if (( logx >= log10f(C.midPoint.x) ) && ( logx < log10f(C.maxPoint.x) )) {
+float knot_coord = (N_KNOTS_HIGH-1) * (logx-log10(C.midPoint.x)) / (log10f(C.maxPoint.x) - log10(C.midPoint.x));
+int j = knot_coord;
+float t = knot_coord - j;
+float3 cf = { C.coefsHigh[ j], C.coefsHigh[ j + 1], C.coefsHigh[ j + 2]};
+float3 monomials = make_float3( t * t, t, 1.0f );
+logy = dot_f3_f3( monomials, mult_f3_f33( cf, MM));
+} else {
+logy = logx * C.slopeHigh + ( log10f(C.maxPoint.y) - C.slopeHigh * log10f(C.maxPoint.x) );
+}
+return exp10f(logy);
+}
+
+__device__ inline SegmentedSplineParams_c9 ODT_48nits()
+{
+SegmentedSplineParams_c9 A =
+{{ -1.6989700043f, -1.6989700043f, -1.4779f, -1.2291f, -0.8648f, -0.448f, 0.00518f, 0.4511080334f, 0.9113744414f, 0.9113744414f},
+{ 0.5154386965f, 0.8470437783f, 1.1358f, 1.3802f, 1.5197f, 1.5985f, 1.6467f, 1.6746091357f, 1.6878733390f, 1.6878733390f },
+{segmented_spline_c5_fwd( 0.18f * exp2f(-6.5f) ), 0.02f}, {segmented_spline_c5_fwd( 0.18f ), 4.8f},
+{segmented_spline_c5_fwd( 0.18f * exp2f(6.5f) ), 48.0f}, 0.0f, 0.04f};
+return A;
+};
+
+__device__ inline SegmentedSplineParams_c9 ODT_1000nits()
+{
+SegmentedSplineParams_c9 A =
+{{ -4.9706219331f, -3.0293780669f, -2.1262f, -1.5105f, -1.0578f, -0.4668f, 0.11938f, 0.7088134201f, 1.2911865799f, 1.2911865799f },
+{ 0.8089132070f, 1.1910867930f, 1.5683f, 1.9483f, 2.3083f, 2.6384f, 2.8595f, 2.9872608805f, 3.0127391195f, 3.0127391195f },
+{segmented_spline_c5_fwd( 0.18f * exp2f(-12.0f) ), 0.0001f}, {segmented_spline_c5_fwd( 0.18f ), 10.0f},
+{segmented_spline_c5_fwd( 0.18 * exp2f(10.0f) ), 1000.0f}, 3.0f, 0.06f};
+return A;
+};
+
+__device__ inline SegmentedSplineParams_c9 ODT_2000nits()
+{
+SegmentedSplineParams_c9 A =
+{{ -4.9706219331f, -3.0293780669f, -2.1262f, -1.5105f, -1.0578f, -0.4668f, 0.11938f, 0.7088134201f, 1.2911865799f, 1.2911865799f },
+{ 0.8019952042f, 1.1980047958f, 1.5943f, 1.9973f, 2.3783f, 2.7684f, 3.0515f, 3.2746293562f, 3.3274306351f, 3.3274306351f },
+{segmented_spline_c5_fwd( 0.18f * exp2f(-12.0f) ), 0.0001f}, {segmented_spline_c5_fwd( 0.18f ), 10.0f},
+{segmented_spline_c5_fwd( 0.18f * exp2f(11.0f) ), 2000.0f}, 3.0f, 0.12f};
+return A;
+};
+
+__device__ inline SegmentedSplineParams_c9 ODT_4000nits()
+{
+SegmentedSplineParams_c9 A =
+{{ -4.9706219331f, -3.0293780669f, -2.1262f, -1.5105f, -1.0578f, -0.4668f, 0.11938f, 0.7088134201f, 1.2911865799f, 1.2911865799f },
+{ 0.7973186613f, 1.2026813387f, 1.6093f, 2.0108f, 2.4148f, 2.8179f, 3.1725f, 3.5344995451f, 3.6696204376f, 3.6696204376f },
+{segmented_spline_c5_fwd( 0.18f * exp2f(-12.0f) ), 0.0001f}, {segmented_spline_c5_fwd( 0.18f ), 10.0f},
+{segmented_spline_c5_fwd( 0.18f * exp2f(12.0f) ), 4000.0f}, 3.0f, 0.3f};
+return A;
+};
+
+__device__ inline float segmented_spline_c5_rev( float y)
+{
+SegmentedSplineParams_c5 C = RRT_PARAMS();
+const int N_KNOTS_LOW = 4;
+const int N_KNOTS_HIGH = 4;
+const float KNOT_INC_LOW = (log10f(C.midPoint.x) - log10f(C.minPoint.x)) / (N_KNOTS_LOW - 1.0f);
+const float KNOT_INC_HIGH = (log10f(C.maxPoint.x) - log10f(C.midPoint.x)) / (N_KNOTS_HIGH - 1.0f);
+float KNOT_Y_LOW[ N_KNOTS_LOW];
+for (int i = 0; i < N_KNOTS_LOW; i = i + 1) {
+KNOT_Y_LOW[i] = ( C.coefsLow[i] + C.coefsLow[i + 1]) / 2.0f;
+};
+float KNOT_Y_HIGH[ N_KNOTS_HIGH];
+for (int i = 0; i < N_KNOTS_HIGH; i = i+1) {
+KNOT_Y_HIGH[ i] = ( C.coefsHigh[i] + C.coefsHigh[i + 1]) / 2.0f;
+};
+float logy = log10f( fmaxf(y, 1e-10f));
+float logx;
+if (logy <= log10f(C.minPoint.y)) {
+logx = log10f(C.minPoint.x);
+} else if ( (logy > log10f(C.minPoint.y)) && (logy <= log10f(C.midPoint.y)) ) {
+unsigned int j = 0;
+float3 cf = make_float3(0.0f, 0.0f, 0.0f);
+if ( logy > KNOT_Y_LOW[0] && logy <= KNOT_Y_LOW[1]) {
+cf.x = C.coefsLow[0]; cf.y = C.coefsLow[1]; cf.z = C.coefsLow[2]; j = 0;
+} else if ( logy > KNOT_Y_LOW[ 1] && logy <= KNOT_Y_LOW[ 2]) {
+cf.x = C.coefsLow[1]; cf.y = C.coefsLow[2]; cf.z = C.coefsLow[3]; j = 1;
+} else if ( logy > KNOT_Y_LOW[ 2] && logy <= KNOT_Y_LOW[ 3]) {
+cf.x = C.coefsLow[2]; cf.y = C.coefsLow[3]; cf.z = C.coefsLow[4]; j = 2;
+}
+const float3 tmp = mult_f3_f33( cf, MM);
+float a = tmp.x; float b = tmp.y; float c = tmp.z;
+c = c - logy;
+const float d = sqrtf( b * b - 4.0f * a * c);
+const float t = ( 2.0f * c) / ( -d - b);
+logx = log10f(C.minPoint.x) + ( t + j) * KNOT_INC_LOW;
+} else if ( (logy > log10f(C.midPoint.y)) && (logy < log10f(C.maxPoint.y)) ) {
+unsigned int j = 0;
+float3 cf = make_float3(0.0f, 0.0f, 0.0f);
+if ( logy > KNOT_Y_HIGH[ 0] && logy <= KNOT_Y_HIGH[ 1]) {
+cf.x = C.coefsHigh[0]; cf.y = C.coefsHigh[1]; cf.z = C.coefsHigh[2]; j = 0;
+} else if ( logy > KNOT_Y_HIGH[ 1] && logy <= KNOT_Y_HIGH[ 2]) {
+cf.x = C.coefsHigh[1]; cf.y = C.coefsHigh[2]; cf.z = C.coefsHigh[3]; j = 1;
+} else if ( logy > KNOT_Y_HIGH[ 2] && logy <= KNOT_Y_HIGH[ 3]) {
+cf.x = C.coefsHigh[2]; cf.y = C.coefsHigh[3]; cf.z = C.coefsHigh[4]; j = 2;
+}
+const float3 tmp = mult_f3_f33( cf, MM);
+float a = tmp.x; float b = tmp.y; float c = tmp.z;
+c = c - logy;
+const float d = sqrtf( b * b - 4.0f * a * c);
+const float t = ( 2.0f * c) / ( -d - b);
+logx = log10f(C.midPoint.x) + ( t + j) * KNOT_INC_HIGH;
+} else {
+logx = log10f(C.maxPoint.x);
+}
+return exp10f( logx);
+}
+
+__device__ inline float segmented_spline_c9_fwd( float x, SegmentedSplineParams_c9 C)
+{
+const int N_KNOTS_LOW = 8;
+const int N_KNOTS_HIGH = 8;
+
+float logx = log10f( fmaxf(x, 0.0f));
+float logy = 0.0f;
+if ( logx <= log10f(C.minPoint.x) ) {
+logy = logx * C.slopeLow + ( log10f(C.minPoint.y) - C.slopeLow * log10f(C.minPoint.x) );
+} else if (( logx > log10f(C.minPoint.x) ) && ( logx < log10f(C.midPoint.x) )) {
+float knot_coord = (N_KNOTS_LOW - 1) * (logx - log10f(C.minPoint.x)) / (log10f(C.midPoint.x) - log10f(C.minPoint.x));
+int j = knot_coord;
+float t = knot_coord - j;
+float3 cf = { C.coefsLow[ j], C.coefsLow[ j + 1], C.coefsLow[ j + 2]};
+float3 monomials = make_float3( t * t, t, 1.0f );
+logy = dot_f3_f3( monomials, mult_f3_f33( cf, MM));
+} else if (( logx >= log10f(C.midPoint.x) ) && ( logx < log10f(C.maxPoint.x) )) {
+float knot_coord = (N_KNOTS_HIGH - 1) * (logx - log10f(C.midPoint.x)) / (log10f(C.maxPoint.x) - log10f(C.midPoint.x));
+int j = knot_coord;
+float t = knot_coord - j;
+float3 cf = { C.coefsHigh[ j], C.coefsHigh[ j + 1], C.coefsHigh[ j + 2]};
+float3 monomials = make_float3( t * t, t, 1.0f );
+logy = dot_f3_f3( monomials, mult_f3_f33( cf, MM));
+} else {
+logy = logx * C.slopeHigh + ( log10f(C.maxPoint.y) - C.slopeHigh * log10f(C.maxPoint.x) );
+}
+return exp10f(logy);
+}
+
+__device__ inline float segmented_spline_c9_rev( float y, SegmentedSplineParams_c9 C)
+{
+const int N_KNOTS_LOW = 8;
+const int N_KNOTS_HIGH = 8;
+const float KNOT_INC_LOW = (log10f(C.midPoint.x) - log10f(C.minPoint.x)) / (N_KNOTS_LOW - 1.0f);
+const float KNOT_INC_HIGH = (log10f(C.maxPoint.x) - log10f(C.midPoint.x)) / (N_KNOTS_HIGH - 1.0f);
+float KNOT_Y_LOW[ N_KNOTS_LOW];
+for (int i = 0; i < N_KNOTS_LOW; i = i + 1) {
+KNOT_Y_LOW[ i] = ( C.coefsLow[i] + C.coefsLow[i + 1]) / 2.0f;
+};
+float KNOT_Y_HIGH[ N_KNOTS_HIGH];
+for (int i = 0; i < N_KNOTS_HIGH; i = i + 1) {
+KNOT_Y_HIGH[ i] = ( C.coefsHigh[i] + C.coefsHigh[i + 1]) / 2.0f;
+};
+float logy = log10f( fmaxf( y, 1e-10f));
+float logx;
+if (logy <= log10f(C.minPoint.y)) {
+logx = log10f(C.minPoint.x);
+} else if ( (logy > log10f(C.minPoint.y)) && (logy <= log10f(C.midPoint.y)) ) {
+unsigned int j = 0;
+float3 cf = make_float3(0.0f, 0.0f, 0.0f);
+if ( logy > KNOT_Y_LOW[ 0] && logy <= KNOT_Y_LOW[ 1]) {
+cf.x = C.coefsLow[0]; cf.y = C.coefsLow[1]; cf.z = C.coefsLow[2]; j = 0;
+} else if ( logy > KNOT_Y_LOW[ 1] && logy <= KNOT_Y_LOW[ 2]) {
+cf.x = C.coefsLow[1]; cf.y = C.coefsLow[2]; cf.z = C.coefsLow[3]; j = 1;
+} else if ( logy > KNOT_Y_LOW[ 2] && logy <= KNOT_Y_LOW[ 3]) {
+cf.x = C.coefsLow[2]; cf.y = C.coefsLow[3]; cf.z = C.coefsLow[4]; j = 2;
+} else if ( logy > KNOT_Y_LOW[ 3] && logy <= KNOT_Y_LOW[ 4]) {
+cf.x = C.coefsLow[3]; cf.y = C.coefsLow[4]; cf.z = C.coefsLow[5]; j = 3;
+} else if ( logy > KNOT_Y_LOW[ 4] && logy <= KNOT_Y_LOW[ 5]) {
+cf.x = C.coefsLow[4]; cf.y = C.coefsLow[5]; cf.z = C.coefsLow[6]; j = 4;
+} else if ( logy > KNOT_Y_LOW[ 5] && logy <= KNOT_Y_LOW[ 6]) {
+cf.x = C.coefsLow[5]; cf.y = C.coefsLow[6]; cf.z = C.coefsLow[7]; j = 5;
+} else if ( logy > KNOT_Y_LOW[ 6] && logy <= KNOT_Y_LOW[ 7]) {
+cf.x = C.coefsLow[6]; cf.y = C.coefsLow[7]; cf.z = C.coefsLow[8]; j = 6;
+}
+const float3 tmp = mult_f3_f33( cf, MM);
+float a = tmp.x; float b = tmp.y; float c = tmp.z;
+c = c - logy;
+const float d = sqrtf( b * b - 4.0f * a * c);
+const float t = ( 2.0f * c) / ( -d - b);
+logx = log10f(C.minPoint.x) + ( t + j) * KNOT_INC_LOW;
+} else if ( (logy > log10f(C.midPoint.y)) && (logy < log10f(C.maxPoint.y)) ) {
+unsigned int j = 0;
+float3 cf = make_float3(0.0f, 0.0f, 0.0f);
+if ( logy > KNOT_Y_HIGH[ 0] && logy <= KNOT_Y_HIGH[ 1]) {
+cf.x = C.coefsHigh[0]; cf.y = C.coefsHigh[1]; cf.z = C.coefsHigh[2]; j = 0;
+} else if ( logy > KNOT_Y_HIGH[ 1] && logy <= KNOT_Y_HIGH[ 2]) {
+cf.x = C.coefsHigh[1]; cf.y = C.coefsHigh[2]; cf.z = C.coefsHigh[3]; j = 1;
+} else if ( logy > KNOT_Y_HIGH[ 2] && logy <= KNOT_Y_HIGH[ 3]) {
+cf.x = C.coefsHigh[2]; cf.y = C.coefsHigh[3]; cf.z = C.coefsHigh[4]; j = 2;
+} else if ( logy > KNOT_Y_HIGH[ 3] && logy <= KNOT_Y_HIGH[ 4]) {
+cf.x = C.coefsHigh[3]; cf.y = C.coefsHigh[4]; cf.z = C.coefsHigh[5]; j = 3;
+} else if ( logy > KNOT_Y_HIGH[ 4] && logy <= KNOT_Y_HIGH[ 5]) {
+cf.x = C.coefsHigh[4]; cf.y = C.coefsHigh[5]; cf.z = C.coefsHigh[6]; j = 4;
+} else if ( logy > KNOT_Y_HIGH[ 5] && logy <= KNOT_Y_HIGH[ 6]) {
+cf.x = C.coefsHigh[5]; cf.y = C.coefsHigh[6]; cf.z = C.coefsHigh[7]; j = 5;
+} else if ( logy > KNOT_Y_HIGH[ 6] && logy <= KNOT_Y_HIGH[ 7]) {
+cf.x = C.coefsHigh[6]; cf.y = C.coefsHigh[7]; cf.z = C.coefsHigh[8]; j = 6;
+}
+const float3 tmp = mult_f3_f33( cf, MM);
+float a = tmp.x; float b = tmp.y; float c = tmp.z;
+c = c - logy;
+const float d = sqrtf( b * b - 4.0f * a * c);
+const float t = ( 2.0f * c) / ( -d - b);
+logx = log10f(C.midPoint.x) + ( t + j) * KNOT_INC_HIGH;
+} else {
+logx = log10f(C.maxPoint.x);
+}
+return exp10f( logx);
+}
+
+__device__ inline float3 segmented_spline_c9_rev_f3( float3 rgbPre) {
+SegmentedSplineParams_c9 C = ODT_48nits();
+float3 rgbPost;
+rgbPost.x = segmented_spline_c9_rev( rgbPre.x, C);
+rgbPost.y = segmented_spline_c9_rev( rgbPre.y, C);
+rgbPost.z = segmented_spline_c9_rev( rgbPre.z, C);
+return rgbPost;
+}
+
+__device__ inline float3 segmented_spline_c5_rev_f3( float3 rgbPre) {
+float3 rgbPost;
+rgbPost.x = segmented_spline_c5_rev( rgbPre.x);
+rgbPost.y = segmented_spline_c5_rev( rgbPre.y);
+rgbPost.z = segmented_spline_c5_rev( rgbPre.z);
+return rgbPost;
+}
+
+__device__ inline float lin_to_ACEScc( float in) {
+if (in <= 0.0f)
+return -0.3584474886f;
+else if (in < exp2f(-15.0f))
+return (log2f( exp2f(-16.0f) + in * 0.5f) + 9.72f) / 17.52f;
+else
+return (log2f(in) + 9.72f) / 17.52f;
+}
+
+__device__ inline float3 ACES_to_ACEScc( float3 ACES) {
+ACES = max_f3_f( ACES, 0.0f);
+float3 lin_AP1 = mult_f3_f33( ACES, AP0_2_AP1_MAT_B);
+float3 out;
+out.x = lin_to_ACEScc( lin_AP1.x); out.y = lin_to_ACEScc( lin_AP1.y); out.z = lin_to_ACEScc( lin_AP1.z);
+return out;
+}
+
+__device__ inline float ACEScc_to_lin( float in) {
+if (in < -0.3013698630f)
+return (exp2f(in * 17.52f - 9.72f) - exp2f(-16.0f)) * 2.0f;
+else
+return exp2f(in * 17.52f - 9.72f);
+}
+
+__device__ inline float3 ACEScc_to_ACES( float3 ACEScc) {
+float3 lin_AP1;
+lin_AP1.x = ACEScc_to_lin( ACEScc.x); lin_AP1.y = ACEScc_to_lin( ACEScc.y); lin_AP1.z = ACEScc_to_lin( ACEScc.z);
+float3 ACES = mult_f3_f33( lin_AP1, AP1_2_AP0_MAT_B);
+return ACES;
+}
+
+__device__ inline float3 ACES_to_ACEScg( float3 ACES) {
+ACES = max_f3_f( ACES, 0.0f);
+float3 ACEScg = mult_f3_f33( ACES, AP0_2_AP1_MAT_B);
+return ACEScg;
+}
+
+__device__ inline float3 ACEScg_to_ACES( float3 ACEScg) {
+float3 ACES = mult_f3_f33( ACEScg, AP1_2_AP0_MAT_B);
+return ACES;
+}
+
+__device__ inline float ACESproxy_to_lin( float in)
+{
+float StepsPerStop = 50.0f;
+float MidCVoffset = 425.0f;
+return exp2f(( in - MidCVoffset)/StepsPerStop - 2.5f);
+}
+
+__device__ inline float3 ACESproxy_to_ACES( float3 In)
+{
+float3 ACESproxy;
+ACESproxy.x = In.x * 1023.0f;
+ACESproxy.y = In.y * 1023.0f;
+ACESproxy.z = In.z * 1023.0f;
+float3 lin_AP1;
+lin_AP1.x = ACESproxy_to_lin( ACESproxy.x);
+lin_AP1.y = ACESproxy_to_lin( ACESproxy.y);
+lin_AP1.z = ACESproxy_to_lin( ACESproxy.z);
+float3 ACES = mult_f3_f33( lin_AP1, AP1_2_AP0_MAT_B);
+return ACES;
+}
+
+__device__ inline float lin_to_ACESproxy( float in)
+{
+float StepsPerStop = 50.0f;
+float MidCVoffset = 425.0f;
+float CVmin = 64.0f;
+float CVmax = 940.0f;
+if (in <= exp2f(-9.72f))
+return CVmin;
+else
+return fmaxf( CVmin, fminf( CVmax, round( (log2f(in) + 2.5f) * StepsPerStop + MidCVoffset)));
+}
+
+__device__ inline float3 ACES_to_ACESproxy( float3 ACES)
+{
+ACES = max_f3_f( ACES, 0.0f); 
+float3 lin_AP1 = mult_f3_f33( ACES, AP0_2_AP1_MAT_B);
+float ACESproxy[3];
+ACESproxy[0] = lin_to_ACESproxy( lin_AP1.x );
+ACESproxy[1] = lin_to_ACESproxy( lin_AP1.y );
+ACESproxy[2] = lin_to_ACESproxy( lin_AP1.z );
+float3 out;    
+out.x = ACESproxy[0] / 1023.0f;
+out.y = ACESproxy[1] / 1023.0f;
+out.z = ACESproxy[2] / 1023.0f;
+return out;
+}
+/*
+__device__ inline float3 ADX_to_ACES( float3 ADX10)
+{
+float2 LUT_1D[11] = 
+{ {-0.19f, -6.0f},
+{ 0.01f, -2.721718645f},
+{ 0.028f, -2.521718645f},
+{ 0.054f, -2.321718645f},
+{ 0.095f, -2.121718645f},
+{ 0.145f, -1.921718645f},
+{ 0.22f, -1.721718645f},
+{ 0.3f, -1.521718645f},
+{ 0.4f, -1.321718645f},
+{ 0.5f, -1.121718645f},
+{ 0.6f, -0.926545676714876f} };
+float3 adx;
+adx.x = ADX10.x * 1023.0f;
+adx.y = ADX10.y * 1023.0f;
+adx.z = ADX10.z * 1023.0f;
+float3 cdd;
+cdd.x = ( adx.x - 95.0f) / 500.0f;
+cdd.y = ( adx.y - 95.0f) / 500.0f;
+cdd.z = ( adx.z - 95.0f) / 500.0f;
+float3 cid = mult_f3_f33( cdd, CDD_TO_CID);
+float3 logE;
+if ( cid.x <= 0.6f) logE.x = interpolate1D( LUT_1D, 11, cid.x);
+if ( cid.y <= 0.6f) logE.y = interpolate1D( LUT_1D, 11, cid.y);
+if ( cid.z <= 0.6f) logE.z = interpolate1D( LUT_1D, 11, cid.z);
+if ( cid.x > 0.6f) logE.x = ( 100.0f / 55.0f) * cid.x - REF_PT;
+if ( cid.y > 0.6f) logE.y = ( 100.0f / 55.0f) * cid.y - REF_PT;
+if ( cid.z > 0.6f) logE.z = ( 100.0f / 55.0f) * cid.z - REF_PT;
+float3 exp;
+exp.x = powf( 10.0f, logE.x);
+exp.y = powf( 10.0f, logE.y);
+exp.z = powf( 10.0f, logE.z);
+float3 aces = mult_f3_f33( exp, EXP_TO_ACES);
+return aces;
+}
+*/
+__device__ inline float3 convertFromLinear( float3 aces) {
+aces.x = aces.x < 0.00130127f ? (aces.x - 0.00130127f) / 0.04911331f :
+aces.x < 0.001897934f ? (logf(aces.x) + 6.644415f) / 37.74261f : 
+aces.x < 0.118428f ? logf(aces.x) * (0.02871031f * logf(aces.x) + 0.383914f) + 1.288383f : 
+(logf(aces.x) + 4.645361f) / 4.1865183f;
+aces.y =   aces.y < 0.00130127f ? (aces.y - 0.00130127f) / 0.04911331f :
+aces.y < 0.001897934f ? (logf(aces.y) + 6.644415f) / 37.74261f : 
+aces.y < 0.118428f ? logf(aces.y) * (0.02871031f * logf(aces.y) + 0.383914f) + 1.288383f : 
+(logf(aces.y) + 4.645361f) / 4.1865183f;
+aces.z =   aces.z < 0.00130127f ? (aces.z - 0.00130127f) / 0.04911331f :
+aces.z < 0.001897934f ? (logf(aces.z) + 6.644415f) / 37.74261f : 
+aces.z < 0.118428f ? logf(aces.z) * (0.02871031f * logf(aces.z) + 0.383914f) + 1.288383f : 
+(logf(aces.z) + 4.645361f) / 4.1865183f;
+return aces;
+}
+
+__device__ inline float3 convertToLinear( float3 aces) {
+aces.x = aces.x < 0.0f ? 0.04911331f * aces.x + 0.001301270f : 
+aces.x < 0.01f ? expf(37.74261f * aces.x - 6.644415f) : 
+aces.x < 0.6f ? expf(-6.685996f + 2.302585f * powf(6.569476f * aces.x - 0.03258072f, 0.5f)) : 
+expf(fminf(4.1865183f * aces.x - 4.645361f, 86.4f));
+aces.y = aces.y < 0.0f ? 0.04911331f * aces.y + 0.001301270f : 
+aces.y < 0.01f ? expf(37.74261f * aces.y - 6.644415f) : 
+aces.y < 0.6f ? expf(-6.685996f + 2.302585f * powf(6.569476f * aces.y - 0.03258072f, 0.5f)) : 
+expf(fminf(4.1865183f * aces.y - 4.645361f, 86.4f));
+aces.z = aces.z < 0.0f ? 0.04911331f * aces.z + 0.001301270f : 
+aces.z < 0.01f ? expf(37.74261f * aces.z - 6.644415f) : 
+aces.z < 0.6f ? expf(-6.685996f + 2.302585f * powf(6.569476f * aces.z - 0.03258072f, 0.5f)) : 
+expf(fminf(4.1865183f * aces.z - 4.645361f, 86.4f));
+return aces;
+}
+
+__device__ inline float3 ADX_to_ACES( float3 aces) {
+aces.x = aces.x * 2.048f - 0.19f;
+aces.y = aces.y * 2.048f - 0.19f;
+aces.z = aces.z * 2.048f - 0.19f;
+aces = mult_f3_f33(aces, CDD_TO_CID);
+aces = convertToLinear(aces);
+aces = mult_f3_f33(aces, EXP_TO_ACES);
+return aces;
+}
+
+__device__ inline float3 ACES_to_ADX( float3 aces) {
+aces = mult_f3_f33(aces, invert_f33(EXP_TO_ACES));
+aces = convertFromLinear(aces);
+aces =  mult_f3_f33(aces, invert_f33(CDD_TO_CID));
+aces.x = (aces.x + 0.19f) / 2.048f;
+aces.y = (aces.y + 0.19f) / 2.048f;
+aces.z = (aces.z + 0.19f) / 2.048f;
+return aces;
+}
+
+__device__ inline float normalizedLogCToRelativeExposure( float x)
+{
+if (x > 0.149659f)
+return (exp10f((x - 0.385537f) / 0.247189f) - 0.052272f) / 5.555556f;
+else
+return (x - 0.092809f) / 5.367650f;
+}
+
+__device__ inline float3 IDT_Alexa_v3_logC_EI800( float3 Alexa)
+{
+float r_lin = normalizedLogCToRelativeExposure(Alexa.x);
+float g_lin = normalizedLogCToRelativeExposure(Alexa.y);
+float b_lin = normalizedLogCToRelativeExposure(Alexa.z);
+
+float3 aces;
+aces.x = r_lin * 0.680206f + g_lin * 0.236137f + b_lin * 0.083658f;
+aces.y = r_lin * 0.085415f + g_lin * 1.017471f + b_lin * -0.102886f;
+aces.z = r_lin * 0.002057f + g_lin * -0.062563f + b_lin * 1.060506f;
+
+return aces;
+}
+
+__device__ inline float3 IDT_Alexa_v3_raw_EI800_CCT6500( float3 In)
+{
+float black = 256.0f / 65535.0f;
+float r_lin = (In.x - black);
+float g_lin = (In.y - black);
+float b_lin = (In.z - black);
+
+float3 aces;
+aces.x = r_lin * 0.809931f + g_lin * 0.162741f + b_lin * 0.027328f;
+aces.y = r_lin * 0.083731f + g_lin * 1.108667f + b_lin * -0.192397f;
+aces.z = r_lin * 0.044166f + g_lin * -0.272038f + b_lin * 1.227872f;
+
+return aces;
+}
+
+__device__ inline float3 IDT_Panasonic_V35( float3 VLog)
+{
+mat3 mat = { {0.724382758f, 0.166748484f, 0.108497411f}, {0.021354009f, 0.985138372f, -0.006319092f}, {-0.009234278f, -0.00104295f, 1.010272625f} };
+
+float rLin = vLogToLinScene(VLog.x);
+float gLin = vLogToLinScene(VLog.y);
+float bLin = vLogToLinScene(VLog.z);
+
+float3 out;
+out.x = mat.c0.x * rLin + mat.c0.y * gLin + mat.c0.z * bLin;
+out.y = mat.c1.x * rLin + mat.c1.y * gLin + mat.c1.z * bLin;
+out.z = mat.c2.x * rLin + mat.c2.y * gLin + mat.c2.z * bLin;
+
+return out;
+}
+
+__device__ inline float3 IDT_REDWideGamutRGB_Log3G10( float3 log3G10)
+{
+float r_lin = Log3G10_to_linear(log3G10.x);
+float g_lin = Log3G10_to_linear(log3G10.y);
+float b_lin = Log3G10_to_linear(log3G10.z);
+
+float3 aces;
+aces.x = r_lin * 0.785043f + g_lin * 0.083844f + b_lin * 0.131118f;
+aces.y = r_lin * 0.023172f + g_lin * 1.087892f + b_lin * -0.111055f;
+aces.z = r_lin * -0.073769f + g_lin * -0.314639f + b_lin * 1.388537f;
+
+return aces;
+}
+
+__device__ inline float3 IDT_Canon_C100_A_D55( float3 In)
+{
+float iR, iG, iB;
+iR = (In.x * 1023.0f - 64.0f) / 876.0f;
+iG = (In.y * 1023.0f - 64.0f) / 876.0f;
+iB = (In.z * 1023.0f - 64.0f) / 876.0f;
+
+float3 pmtx;
+pmtx.x = 1.08190037262167 * iR -0.180298701368782 * iG +0.0983983287471069 * iB
++1.9458545364518 * iR*iG -0.509539936937375 * iG*iB -0.47489567735516 * iB*iR
+-0.778086752197068 * iR*iR -0.7412266070049 * iG*iG +0.557894437042701 * iB*iB
+-3.27787395719078 * iR*iR*iG +0.254878417638717 * iR*iR*iB +3.45581530576474 * iR*iG*iG
++0.335471713974739 * iR*iG*iB -0.43352125478476 * iR*iB*iB -1.65050137344141 * iG*iG*iB +1.46581418175682 * iG*iB*iB
++0.944646566605676 * iR*iR*iR -0.723653099155881 * iG*iG*iG -0.371076501167857 * iB*iB*iB;
+
+pmtx.y = -0.00858997792576314 * iR +1.00673740119621 * iG +0.00185257672955608 * iB
++0.0848736138296452 * iR*iG +0.347626906448902 * iG*iB +0.0020230274463939 * iB*iR
+-0.0790508414091524 * iR*iR -0.179497582958716 * iG*iG -0.175975123357072 * iB*iB
++2.30205579706951 * iR*iR*iG -0.627257613385219 * iR*iR*iB -2.90795250918851 * iR*iG*iG
++1.37002437502321 * iR*iG*iB -0.108668158565563 * iR*iB*iB -2.21150552827555 * iG*iG*iB + 1.53315057595445 * iG*iB*iB
+-0.543188706699505 * iR*iR*iR +1.63793038490376 * iG*iG*iG -0.444588616836587 * iB*iB*iB;
+
+pmtx.z = 0.12696639806511 * iR -0.011891441127869 * iG +0.884925043062759 * iB
++1.34780279822258 * iR*iG +1.03647352257365 * iG*iB +0.459113289955922 * iB*iR
+-0.878157422295268 * iR*iR -1.3066278750436 * iG*iG -0.658604313413283 * iB*iB
+-1.4444077996703 * iR*iR*iG +0.556676588785173 * iR*iR*iB +2.18798497054968 * iR*iG*iG
+-1.43030768398665 * iR*iG*iB -0.0388323570817641 * iR*iB*iB +2.63698573112453 * iG*iG*iB -1.66598882056039 * iG*iB*iB
++0.33450249360103 * iR*iR*iR -1.65856930730901 * iG*iG*iG +0.521956184547685 * iB*iB*iB;
+
+float3 lin;
+lin.x = CanonLog_to_linear( pmtx.x);
+lin.y = CanonLog_to_linear( pmtx.y);
+lin.z = CanonLog_to_linear( pmtx.z);
+
+float3 aces;
+aces.x = 0.561538969f * lin.x + 0.402060105f * lin.y + 0.036400926f * lin.z;
+aces.y = 0.092739623f * lin.x + 0.924121198f * lin.y - 0.016860821f * lin.z;
+aces.z = 0.084812961f * lin.x + 0.006373835f * lin.y + 0.908813204f * lin.z;
+
+return aces;
+}
+
+__device__ inline float3 IDT_Canon_C100_A_Tng( float3 In)
+{
+float iR, iG, iB;
+iR = (In.x * 1023.0f - 64.0f) / 876.0f;
+iG = (In.y * 1023.0f - 64.0f) / 876.0f;
+iB = (In.z * 1023.0f - 64.0f) / 876.0f;
+
+float3 pmtx;
+pmtx.x = 0.963803004454899 * iR - 0.160722202570655 * iG + 0.196919198115756 * iB
++2.03444685639819 * iR*iG - 0.442676931451021 * iG*iB - 0.407983781537509 * iB*iR
+-0.640703323129254 * iR*iR - 0.860242798247848 * iG*iG + 0.317159977967446 * iB*iB
+-4.80567080102966 * iR*iR*iG + 0.27118370397567 * iR*iR*iB + 5.1069005049557 * iR*iG*iG
++0.340895816920585 * iR*iG*iB - 0.486941738507862 * iR*iB*iB - 2.23737935753692 * iG*iG*iB + 1.96647555251297 * iG*iB*iB
++1.30204051766243 * iR*iR*iR - 1.06503117628554 * iG*iG*iG - 0.392473022667378 * iB*iB*iB;
+
+pmtx.y = -0.0421935892309314 * iR +1.04845959175183 * iG - 0.00626600252090315 * iB
+-0.106438896887216 * iR*iG + 0.362908621470781 * iG*iB + 0.118070700472261 * iB*iR
++0.0193542539838734 * iR*iR - 0.156083029543267 * iG*iG - 0.237811649496433 * iB*iB
++1.67916420582198 * iR*iR*iG - 0.632835327167897 * iR*iR*iB - 1.95984471387461 * iR*iG*iG
++0.953221464562814 * iR*iG*iB + 0.0599085176294623 * iR*iB*iB - 1.66452046236246 * iG*iG*iB + 1.14041188349761 * iG*iB*iB
+-0.387552623550308 * iR*iR*iR + 1.14820099685512 * iG*iG*iG - 0.336153941411709 * iB*iB*iB;
+
+pmtx.z = 0.170295033135028 * iR - 0.0682984448537245 * iG + 0.898003411718697 * iB
++1.22106821992399 * iR*iG + 1.60194865922925 * iG*iB + 0.377599191137124 * iB*iR
+-0.825781428487531 * iR*iR - 1.44590868076749 * iG*iG - 0.928925961035344 * iB*iB
+-0.838548997455852 * iR*iR*iG + 0.75809397217116 * iR*iR*iB + 1.32966795243196 * iR*iG*iG
+-1.20021905668355 * iR*iG*iB - 0.254838995845129 * iR*iB*iB + 2.33232411639308 * iG*iG*iB - 1.86381505762773 * iG*iB*iB
++0.111576038956423 * iR*iR*iR - 1.12593315849766 * iG*iG*iG + 0.751693186157287 * iB*iB*iB;
+
+float3 lin;
+lin.x = CanonLog_to_linear( pmtx.x);
+lin.y = CanonLog_to_linear( pmtx.y);
+lin.z = CanonLog_to_linear( pmtx.z);
+
+float3 aces;
+aces.x = 0.566996399f * lin.x + 0.365079418f * lin.y + 0.067924183f * lin.z;
+aces.y = 0.070901044f * lin.x + 0.880331008f * lin.y + 0.048767948f * lin.z;
+aces.z = 0.073013542f * lin.x - 0.066540862f * lin.y + 0.99352732f * lin.z;
+
+return aces;
+}
+
+__device__ inline float3 IDT_Canon_C100mk2_A_D55( float3 In)
+{
+float iR, iG, iB;
+iR = (In.x * 1023.0f - 64.0f) / 876.0f;
+iG = (In.y * 1023.0f - 64.0f) / 876.0f;
+iB = (In.z * 1023.0f - 64.0f) / 876.0f;
+
+float3 pmtx;
+pmtx.x = 1.08190037262167 * iR -0.180298701368782 * iG +0.0983983287471069 * iB
++1.9458545364518 * iR*iG -0.509539936937375 * iG*iB -0.47489567735516 * iB*iR
+-0.778086752197068 * iR*iR -0.7412266070049 * iG*iG +0.557894437042701 * iB*iB
+-3.27787395719078 * iR*iR*iG +0.254878417638717 * iR*iR*iB +3.45581530576474 * iR*iG*iG
++0.335471713974739 * iR*iG*iB -0.43352125478476 * iR*iB*iB -1.65050137344141 * iG*iG*iB +1.46581418175682 * iG*iB*iB
++0.944646566605676 * iR*iR*iR -0.723653099155881 * iG*iG*iG -0.371076501167857 * iB*iB*iB;
+
+pmtx.y = -0.00858997792576314 * iR +1.00673740119621 * iG +0.00185257672955608 * iB
++0.0848736138296452 * iR*iG +0.347626906448902 * iG*iB +0.0020230274463939 * iB*iR
+-0.0790508414091524 * iR*iR -0.179497582958716 * iG*iG -0.175975123357072 * iB*iB
++2.30205579706951 * iR*iR*iG -0.627257613385219 * iR*iR*iB -2.90795250918851 * iR*iG*iG
++1.37002437502321 * iR*iG*iB -0.108668158565563 * iR*iB*iB -2.21150552827555 * iG*iG*iB + 1.53315057595445 * iG*iB*iB
+-0.543188706699505 * iR*iR*iR +1.63793038490376 * iG*iG*iG -0.444588616836587 * iB*iB*iB;
+
+pmtx.z = 0.12696639806511 * iR -0.011891441127869 * iG +0.884925043062759 * iB
++1.34780279822258 * iR*iG +1.03647352257365 * iG*iB +0.459113289955922 * iB*iR
+-0.878157422295268 * iR*iR -1.3066278750436 * iG*iG -0.658604313413283 * iB*iB
+-1.4444077996703 * iR*iR*iG +0.556676588785173 * iR*iR*iB +2.18798497054968 * iR*iG*iG
+-1.43030768398665 * iR*iG*iB -0.0388323570817641 * iR*iB*iB +2.63698573112453 * iG*iG*iB -1.66598882056039 * iG*iB*iB
++0.33450249360103 * iR*iR*iR -1.65856930730901 * iG*iG*iG +0.521956184547685 * iB*iB*iB;
+
+float3 lin;
+lin.x = CanonLog_to_linear( (pmtx.x * 876.0f + 64.0f) / 1023.0f );
+lin.y = CanonLog_to_linear( (pmtx.y * 876.0f + 64.0f) / 1023.0f );
+lin.z = CanonLog_to_linear( (pmtx.z * 876.0f + 64.0f) / 1023.0f );
+float3 aces;
+aces.x = 0.561538969f * lin.x + 0.402060105f * lin.y + 0.036400926f * lin.z;
+aces.y = 0.092739623f * lin.x + 0.924121198f * lin.y - 0.016860821f * lin.z;
+aces.z = 0.084812961f * lin.x + 0.006373835f * lin.y + 0.908813204f * lin.z;
+
+return aces;
+}
+
+__device__ inline float3 IDT_Canon_C100mk2_A_Tng( float3 In)
+{
+float iR, iG, iB;
+iR = (In.x * 1023.0f - 64.0f) / 876.0f;
+iG = (In.y * 1023.0f - 64.0f) / 876.0f;
+iB = (In.z * 1023.0f - 64.0f) / 876.0f;
+
+float3 pmtx;
+pmtx.x = 0.963803004454899 * iR -0.160722202570655 * iG +0.196919198115756 * iB
++2.03444685639819 * iR*iG -0.442676931451021 * iG*iB -0.407983781537509 * iB*iR
+-0.640703323129254 * iR*iR -0.860242798247848 * iG*iG +0.317159977967446 * iB*iB
+-4.80567080102966 * iR*iR*iG +0.27118370397567 * iR*iR*iB +5.1069005049557 * iR*iG*iG
++0.340895816920585 * iR*iG*iB -0.486941738507862 * iR*iB*iB -2.23737935753692 * iG*iG*iB +1.96647555251297 * iG*iB*iB
++1.30204051766243 * iR*iR*iR -1.06503117628554 * iG*iG*iG -0.392473022667378 * iB*iB*iB;
+
+pmtx.y = -0.0421935892309314 * iR +1.04845959175183 * iG -0.00626600252090315 * iB
+-0.106438896887216 * iR*iG +0.362908621470781 * iG*iB +0.118070700472261 * iB*iR
++0.0193542539838734 * iR*iR -0.156083029543267 * iG*iG -0.237811649496433 * iB*iB
++1.67916420582198 * iR*iR*iG -0.632835327167897 * iR*iR*iB -1.95984471387461 * iR*iG*iG
++0.953221464562814 * iR*iG*iB +0.0599085176294623 * iR*iB*iB -1.66452046236246 * iG*iG*iB +1.14041188349761 * iG*iB*iB
+-0.387552623550308 * iR*iR*iR +1.14820099685512 * iG*iG*iG -0.336153941411709 * iB*iB*iB;
+
+pmtx.z = 0.170295033135028 * iR -0.0682984448537245 * iG +0.898003411718697 * iB
++1.22106821992399 * iR*iG +1.60194865922925 * iG*iB +0.377599191137124 * iB*iR
+-0.825781428487531 * iR*iR -1.44590868076749 * iG*iG -0.928925961035344 * iB*iB
+-0.838548997455852 * iR*iR*iG +0.75809397217116 * iR*iR*iB +1.32966795243196 * iR*iG*iG
+-1.20021905668355 * iR*iG*iB -0.254838995845129 * iR*iB*iB +2.33232411639308 * iG*iG*iB -1.86381505762773 * iG*iB*iB
++0.111576038956423 * iR*iR*iR -1.12593315849766 * iG*iG*iG +0.751693186157287 * iB*iB*iB;
+
+float3 lin;
+lin.x = CanonLog_to_linear( (pmtx.x * 876.0f + 64.0f) / 1023.0f );
+lin.y = CanonLog_to_linear( (pmtx.y * 876.0f + 64.0f) / 1023.0f );
+lin.z = CanonLog_to_linear( (pmtx.z * 876.0f + 64.0f) / 1023.0f );
+float3 aces;
+aces.x = 0.566996399 * lin.x + 0.365079418 * lin.y + 0.067924183 * lin.z;
+aces.y = 0.070901044 * lin.x + 0.880331008 * lin.y + 0.048767948 * lin.z;
+aces.z = 0.073013542 * lin.x - 0.066540862 * lin.y + 0.99352732 * lin.z;
+
+return aces;
+}
+
+__device__ inline float3 IDT_Canon_C300_A_D55( float3 In)
+{
+float iR, iG, iB;
+iR = (In.x * 1023.0f - 64.0f) / 876.0f;
+iG = (In.y * 1023.0f - 64.0f) / 876.0f;
+iB = (In.z * 1023.0f - 64.0f) / 876.0f;
+
+float3 pmtx;
+pmtx.x = 1.08190037262167 * iR -0.180298701368782 * iG +0.0983983287471069 * iB
++1.9458545364518 * iR*iG -0.509539936937375 * iG*iB -0.47489567735516 * iB*iR
+-0.778086752197068 * iR*iR -0.7412266070049 * iG*iG +0.557894437042701 * iB*iB
+-3.27787395719078 * iR*iR*iG +0.254878417638717 * iR*iR*iB +3.45581530576474 * iR*iG*iG
++0.335471713974739 * iR*iG*iB -0.43352125478476 * iR*iB*iB -1.65050137344141 * iG*iG*iB +1.46581418175682 * iG*iB*iB
++0.944646566605676 * iR*iR*iR -0.723653099155881 * iG*iG*iG -0.371076501167857 * iB*iB*iB;
+
+pmtx.y = -0.00858997792576314 * iR +1.00673740119621 * iG +0.00185257672955608 * iB
++0.0848736138296452 * iR*iG +0.347626906448902 * iG*iB +0.0020230274463939 * iB*iR
+-0.0790508414091524 * iR*iR -0.179497582958716 * iG*iG -0.175975123357072 * iB*iB
++2.30205579706951 * iR*iR*iG -0.627257613385219 * iR*iR*iB -2.90795250918851 * iR*iG*iG
++1.37002437502321 * iR*iG*iB -0.108668158565563 * iR*iB*iB -2.21150552827555 * iG*iG*iB + 1.53315057595445 * iG*iB*iB
+-0.543188706699505 * iR*iR*iR +1.63793038490376 * iG*iG*iG -0.444588616836587 * iB*iB*iB;
+
+pmtx.z = 0.12696639806511 * iR -0.011891441127869 * iG +0.884925043062759 * iB
++1.34780279822258 * iR*iG +1.03647352257365 * iG*iB +0.459113289955922 * iB*iR
+-0.878157422295268 * iR*iR -1.3066278750436 * iG*iG -0.658604313413283 * iB*iB
+-1.4444077996703 * iR*iR*iG +0.556676588785173 * iR*iR*iB +2.18798497054968 * iR*iG*iG
+-1.43030768398665 * iR*iG*iB -0.0388323570817641 * iR*iB*iB +2.63698573112453 * iG*iG*iB -1.66598882056039 * iG*iB*iB
++0.33450249360103 * iR*iR*iR -1.65856930730901 * iG*iG*iG +0.521956184547685 * iB*iB*iB;
+
+float3 lin;
+lin.x = CanonLog_to_linear( pmtx.x);
+lin.y = CanonLog_to_linear( pmtx.y);
+lin.z = CanonLog_to_linear( pmtx.z);
+
+float3 aces;
+aces.x = 0.561538969f * lin.x + 0.402060105f * lin.y + 0.036400926 * lin.z;
+aces.y = 0.092739623f * lin.x + 0.924121198f * lin.y - 0.016860821 * lin.z;
+aces.z = 0.084812961f * lin.x + 0.006373835f * lin.y + 0.908813204 * lin.z;
+
+return aces;
+}
+
+__device__ inline float3 IDT_Canon_C300_A_Tng( float3 In)
+{
+float iR, iG, iB;
+iR = (In.x * 1023.0f - 64.0f) / 876.0f;
+iG = (In.y * 1023.0f - 64.0f) / 876.0f;
+iB = (In.z * 1023.0f - 64.0f) / 876.0f;
+
+float3 pmtx;
+pmtx.x = 0.963803004454899 * iR -0.160722202570655 * iG +0.196919198115756 * iB
++2.03444685639819 * iR*iG -0.442676931451021 * iG*iB -0.407983781537509 * iB*iR
+-0.640703323129254 * iR*iR -0.860242798247848 * iG*iG +0.317159977967446 * iB*iB
+-4.80567080102966 * iR*iR*iG +0.27118370397567 * iR*iR*iB +5.1069005049557 * iR*iG*iG
++0.340895816920585 * iR*iG*iB -0.486941738507862 * iR*iB*iB -2.23737935753692 * iG*iG*iB +1.96647555251297 * iG*iB*iB
++1.30204051766243 * iR*iR*iR -1.06503117628554 * iG*iG*iG -0.392473022667378 * iB*iB*iB;
+
+pmtx.y = -0.0421935892309314 * iR +1.04845959175183 * iG -0.00626600252090315 * iB
+-0.106438896887216 * iR*iG +0.362908621470781 * iG*iB +0.118070700472261 * iB*iR
++0.0193542539838734 * iR*iR -0.156083029543267 * iG*iG -0.237811649496433 * iB*iB
++1.67916420582198 * iR*iR*iG -0.632835327167897 * iR*iR*iB -1.95984471387461 * iR*iG*iG
++0.953221464562814 * iR*iG*iB +0.0599085176294623 * iR*iB*iB -1.66452046236246 * iG*iG*iB +1.14041188349761 * iG*iB*iB
+-0.387552623550308 * iR*iR*iR +1.14820099685512 * iG*iG*iG -0.336153941411709 * iB*iB*iB;
+
+pmtx.z = 0.170295033135028 * iR -0.0682984448537245 * iG +0.898003411718697 * iB
++1.22106821992399 * iR*iG +1.60194865922925 * iG*iB +0.377599191137124 * iB*iR
+-0.825781428487531 * iR*iR -1.44590868076749 * iG*iG -0.928925961035344 * iB*iB
+-0.838548997455852 * iR*iR*iG +0.75809397217116 * iR*iR*iB +1.32966795243196 * iR*iG*iG
+-1.20021905668355 * iR*iG*iB -0.254838995845129 * iR*iB*iB +2.33232411639308 * iG*iG*iB -1.86381505762773 * iG*iB*iB
++0.111576038956423 * iR*iR*iR -1.12593315849766 * iG*iG*iG +0.751693186157287 * iB*iB*iB;
+
+float3 lin;
+lin.x = CanonLog_to_linear( pmtx.x);
+lin.y = CanonLog_to_linear( pmtx.y);
+lin.z = CanonLog_to_linear( pmtx.z);
+
+float3 aces;
+aces.x = 0.566996399 * lin.x +0.365079418 * lin.y + 0.067924183 * lin.z;
+aces.y = 0.070901044 * lin.x +0.880331008 * lin.y + 0.048767948 * lin.z;
+aces.z = 0.073013542 * lin.x -0.066540862 * lin.y + 0.99352732 * lin.z;
+
+return aces;
+}
+
+__device__ inline float3 IDT_Canon_C500_A_D55( float3 In)
+{
+float3 CLogIRE;
+CLogIRE.x = (In.x * 1023 - 64) / 876;
+CLogIRE.y = (In.y * 1023 - 64) / 876;
+CLogIRE.z = (In.z * 1023 - 64) / 876;
+
+float3 lin;
+lin.x = CanonLog_to_linear( CLogIRE.x);
+lin.y = CanonLog_to_linear( CLogIRE.y);
+lin.z = CanonLog_to_linear( CLogIRE.z);
+
+float3 aces;
+aces.x = 0.561538969f * lin.x +0.402060105f * lin.y + 0.036400926f * lin.z;
+aces.y = 0.092739623f * lin.x +0.924121198f * lin.y - 0.016860821f * lin.z;
+aces.z = 0.084812961f * lin.x +0.006373835f * lin.y + 0.908813204f * lin.z;
+
+return aces;
+}
+
+__device__ inline float3 IDT_Canon_C500_A_Tng( float3 In)
+{
+float3 CLogIRE;
+CLogIRE.x = (In.x * 1023 - 64) / 876;
+CLogIRE.y = (In.y * 1023 - 64) / 876;
+CLogIRE.z = (In.z * 1023 - 64) / 876;
+
+float3 lin;
+lin.x = CanonLog_to_linear( CLogIRE.x);
+lin.y = CanonLog_to_linear( CLogIRE.y);
+lin.z = CanonLog_to_linear( CLogIRE.z);
+
+float3 aces;
+aces.x = 0.566996399 * lin.x +0.365079418 * lin.y + 0.067924183 * lin.z;
+aces.y = 0.070901044 * lin.x +0.880331008 * lin.y + 0.048767948 * lin.z;
+aces.z = 0.073013542 * lin.x -0.066540862 * lin.y + 0.99352732 * lin.z;
+
+return aces;
+}
+
+__device__ inline float3 IDT_Canon_C500_B_D55( float3 In)
+{
+float iR, iG, iB;
+iR = (In.x * 1023.0f - 64.0f) / 876.0f;
+iG = (In.y * 1023.0f - 64.0f) / 876.0f;
+iB = (In.z * 1023.0f - 64.0f) / 876.0f;
+
+float3 pmtx;
+pmtx.x = 1.08190037262167 * iR -0.180298701368782 * iG +0.0983983287471069 * iB
++1.9458545364518 * iR*iG -0.509539936937375 * iG*iB -0.47489567735516 * iB*iR
+-0.778086752197068 * iR*iR -0.7412266070049 * iG*iG +0.557894437042701 * iB*iB
+-3.27787395719078 * iR*iR*iG +0.254878417638717 * iR*iR*iB +3.45581530576474 * iR*iG*iG
++0.335471713974739 * iR*iG*iB -0.43352125478476 * iR*iB*iB -1.65050137344141 * iG*iG*iB + 1.46581418175682 * iG*iB*iB
++0.944646566605676 * iR*iR*iR -0.723653099155881 * iG*iG*iG -0.371076501167857 * iB*iB*iB;
+
+pmtx.y = -0.00858997792576314 * iR +1.00673740119621 * iG +0.00185257672955608 * iB
++0.0848736138296452 * iR*iG +0.347626906448902 * iG*iB +0.0020230274463939 * iB*iR
+-0.0790508414091524 * iR*iR -0.179497582958716 * iG*iG -0.175975123357072 * iB*iB
++2.30205579706951 * iR*iR*iG -0.627257613385219 * iR*iR*iB -2.90795250918851 * iR*iG*iG
++1.37002437502321 * iR*iG*iB -0.108668158565563 * iR*iB*iB -2.21150552827555 * iG*iG*iB + 1.53315057595445 * iG*iB*iB
+-0.543188706699505 * iR*iR*iR +1.63793038490376 * iG*iG*iG -0.444588616836587 * iB*iB*iB;
+
+pmtx.z = 0.12696639806511 * iR -0.011891441127869 * iG +0.884925043062759 * iB
++1.34780279822258 * iR*iG +1.03647352257365 * iG*iB +0.459113289955922 * iB*iR
+-0.878157422295268 * iR*iR -1.3066278750436 * iG*iG -0.658604313413283 * iB*iB
+-1.4444077996703 * iR*iR*iG +0.556676588785173 * iR*iR*iB +2.18798497054968 * iR*iG*iG
+-1.43030768398665 * iR*iG*iB -0.0388323570817641 * iR*iB*iB +2.63698573112453 * iG*iG*iB - 1.66598882056039 * iG*iB*iB
++0.33450249360103 * iR*iR*iR -1.65856930730901 * iG*iG*iG +0.521956184547685 * iB*iB*iB;
+
+float3 lin;
+lin.x = CanonLog_to_linear( pmtx.x);
+lin.y = CanonLog_to_linear( pmtx.y);
+lin.z = CanonLog_to_linear( pmtx.z);
+
+float3 aces;
+aces.x = 0.561538969f * lin.x + 0.402060105f * lin.y + 0.036400926f * lin.z;
+aces.y = 0.092739623f * lin.x + 0.924121198f * lin.y - 0.016860821f * lin.z;
+aces.z = 0.084812961f * lin.x + 0.006373835f * lin.y + 0.908813204f * lin.z;
+
+return aces;
+}
+
+__device__ inline float3 IDT_Canon_C500_B_Tng( float3 In)
+{
+float iR, iG, iB;
+iR = (In.x * 1023.0f - 64.0f) / 876.0f;
+iG = (In.y * 1023.0f - 64.0f) / 876.0f;
+iB = (In.z * 1023.0f - 64.0f) / 876.0f;
+
+float3 pmtx;
+pmtx.x = 0.963803004454899 * iR -0.160722202570655 * iG +0.196919198115756 * iB
++2.03444685639819 * iR*iG -0.442676931451021 * iG*iB -0.407983781537509 * iB*iR
+-0.640703323129254 * iR*iR -0.860242798247848 * iG*iG +0.317159977967446 * iB*iB
+-4.80567080102966 * iR*iR*iG +0.27118370397567 * iR*iR*iB +5.1069005049557 * iR*iG*iG
++0.340895816920585 * iR*iG*iB -0.486941738507862 * iR*iB*iB -2.23737935753692 * iG*iG*iB + 1.96647555251297 * iG*iB*iB
++1.30204051766243 * iR*iR*iR -1.06503117628554 * iG*iG*iG -0.392473022667378 * iB*iB*iB;
+
+pmtx.y = -0.0421935892309314 * iR +1.04845959175183 * iG -0.00626600252090315 * iB
+-0.106438896887216 * iR*iG +0.362908621470781 * iG*iB +0.118070700472261 * iB*iR
++0.0193542539838734 * iR*iR -0.156083029543267 * iG*iG -0.237811649496433 * iB*iB
++1.67916420582198 * iR*iR*iG -0.632835327167897 * iR*iR*iB -1.95984471387461 * iR*iG*iG
++0.953221464562814 * iR*iG*iB +0.0599085176294623 * iR*iB*iB -1.66452046236246 * iG*iG*iB + 1.14041188349761 * iG*iB*iB
+-0.387552623550308 * iR*iR*iR +1.14820099685512 * iG*iG*iG -0.336153941411709 * iB*iB*iB;
+
+pmtx.z = 0.170295033135028 * iR -0.0682984448537245 * iG +0.898003411718697 * iB
++1.22106821992399 * iR*iG +1.60194865922925 * iG*iB +0.377599191137124 * iB*iR
+-0.825781428487531 * iR*iR -1.44590868076749 * iG*iG -0.928925961035344 * iB*iB
+-0.838548997455852 * iR*iR*iG +0.75809397217116 * iR*iR*iB +1.32966795243196 * iR*iG*iG
+-1.20021905668355 * iR*iG*iB -0.254838995845129 * iR*iB*iB +2.33232411639308 * iG*iG*iB - 1.86381505762773 * iG*iB*iB
++0.111576038956423 * iR*iR*iR -1.12593315849766 * iG*iG*iG +0.751693186157287 * iB*iB*iB;
+
+float3 lin;
+lin.x = CanonLog_to_linear( pmtx.x);
+lin.y = CanonLog_to_linear( pmtx.y);
+lin.z = CanonLog_to_linear( pmtx.z);
+
+float3 aces;
+aces.x = 0.566996399 * lin.x +0.365079418 * lin.y + 0.067924183 * lin.z;
+aces.y = 0.070901044 * lin.x +0.880331008 * lin.y + 0.048767948 * lin.z;
+aces.z = 0.073013542 * lin.x -0.066540862 * lin.y + 0.99352732 * lin.z;
+
+return aces;
+}
+
+__device__ inline float3 IDT_Canon_C500_CinemaGamut_A_D55( float3 In)
+{
+float3 CLogIRE;
+CLogIRE.x = (In.x * 1023.0f - 64.0f) / 876.0f;
+CLogIRE.y = (In.y * 1023.0f - 64.0f) / 876.0f;
+CLogIRE.z = (In.z * 1023.0f - 64.0f) / 876.0f;
+
+float3 lin;
+lin.x = 0.9f * CanonLog_to_linear( CLogIRE.x);
+lin.y = 0.9f * CanonLog_to_linear( CLogIRE.y);
+lin.z = 0.9f * CanonLog_to_linear( CLogIRE.z);
+
+float3 aces;
+aces.x = 0.763064455f * lin.x + 0.149021161f * lin.y + 0.087914384f * lin.z;
+aces.y = 0.003657457f * lin.x + 1.10696038f * lin.y - 0.110617837f * lin.z;
+aces.z = -0.009407794f * lin.x - 0.218383305f * lin.y + 1.227791099f * lin.z;
+
+return aces;
+}
+
+__device__ inline float3 IDT_Canon_C500_CinemaGamut_A_Tng( float3 In)
+{
+float3 CLogIRE;
+CLogIRE.x = (In.x * 1023.0f - 64.0f) / 876.0f;
+CLogIRE.y = (In.y * 1023.0f - 64.0f) / 876.0f;
+CLogIRE.z = (In.z * 1023.0f - 64.0f) / 876.0f;
+
+float3 lin;
+lin.x = 0.9f * CanonLog_to_linear( CLogIRE.x);
+lin.y = 0.9f * CanonLog_to_linear( CLogIRE.y);
+lin.z = 0.9f * CanonLog_to_linear( CLogIRE.z);
+
+float3 aces;
+aces.x = 0.817416293f * lin.x + 0.090755698f * lin.y + 0.091828009f * lin.z;
+aces.y = -0.035361374f * lin.x + 1.065690585f * lin.y - 0.030329211f * lin.z;
+aces.z = 0.010390366f * lin.x - 0.299271107f * lin.y + 1.288880741f * lin.z;
+
+return aces;
+}
+
+__device__ inline float3 IDT_Canon_C500_DCI_P3_A_D55( float3 In)
+{
+float3 CLogIRE;
+CLogIRE.x = (In.x * 1023.0f - 64.0f) / 876.0f;
+CLogIRE.y = (In.y * 1023.0f - 64.0f) / 876.0f;
+CLogIRE.z = (In.z * 1023.0f - 64.0f) / 876.0f;
+
+float3 lin;
+lin.x = 0.9f * CanonLog_to_linear( CLogIRE.x);
+lin.y = 0.9f * CanonLog_to_linear( CLogIRE.y);
+lin.z = 0.9f * CanonLog_to_linear( CLogIRE.z);
+
+float3 aces;
+aces.x = 0.607160575f * lin.x + 0.299507286f * lin.y + 0.093332140f * lin.z;
+aces.y = 0.004968120f * lin.x + 1.050982224f * lin.y - 0.055950343f * lin.z;
+aces.z = -0.007839939f * lin.x + 0.000809127f * lin.y + 1.007030813f * lin.z;
+
+return aces;
+}
+
+__device__ inline float3 IDT_Canon_C500_DCI_P3_A_Tng( float3 In)
+{
+float3 CLogIRE;
+CLogIRE.x = (In.x * 1023.0f - 64.0f) / 876.0f;
+CLogIRE.y = (In.y * 1023.0f - 64.0f) / 876.0f;
+CLogIRE.z = (In.z * 1023.0f - 64.0f) / 876.0f;
+
+float3 lin;
+lin.x = 0.9f * CanonLog_to_linear( CLogIRE.x);
+lin.y = 0.9f * CanonLog_to_linear( CLogIRE.y);
+lin.z = 0.9f * CanonLog_to_linear( CLogIRE.z);
+
+float3 aces;
+aces.x = 0.650279125f * lin.x + 0.253880169f * lin.y + 0.095840706f * lin.z;
+aces.y = -0.026137986f * lin.x + 1.017900530f * lin.y + 0.008237456f * lin.z;
+aces.z = 0.007757558f * lin.x - 0.063081669f * lin.y + 1.055324110f * lin.z;
+
+return aces;
+}
+
+__device__ inline float3 IDT_Canon_C300mk2_CanonLog_BT2020_D_D55( float3 In)
+{
+float3 CLogIRE;
+CLogIRE.x = (In.x * 1023.0f - 64.0f) / 876.0f;
+CLogIRE.y = (In.y * 1023.0f - 64.0f) / 876.0f;
+CLogIRE.z = (In.z * 1023.0f - 64.0f) / 876.0f;
+
+float3 lin;
+lin.x = 0.9f * CanonLog_to_linear( CLogIRE.x);
+lin.y = 0.9f * CanonLog_to_linear( CLogIRE.y);
+lin.z = 0.9f * CanonLog_to_linear( CLogIRE.z);
+
+float3 aces;
+aces.x = 0.678891151f * lin.x + 0.158868422f * lin.y + 0.162240427f * lin.z;
+aces.y = 0.045570831f * lin.x + 0.860712772f * lin.y + 0.093716397f * lin.z;
+aces.z = -0.000485710f * lin.x + 0.025060196f * lin.y + 0.975425515f * lin.z;
+
+return aces;
+}
+
+__device__ inline float3 IDT_Canon_C300mk2_CanonLog_BT2020_D_Tng( float3 In)
+{
+float3 CLogIRE;
+CLogIRE.x = (In.x * 1023.0f - 64.0f) / 876.0f;
+CLogIRE.y = (In.y * 1023.0f - 64.0f) / 876.0f;
+CLogIRE.z = (In.z * 1023.0f - 64.0f) / 876.0f;
+
+float3 lin;
+lin.x = 0.9f * CanonLog_to_linear( CLogIRE.x);
+lin.y = 0.9f * CanonLog_to_linear( CLogIRE.y);
+lin.z = 0.9f * CanonLog_to_linear( CLogIRE.z);
+
+float3 aces;
+aces.x = 0.724488568f * lin.x + 0.115140904f * lin.y + 0.160370529f * lin.z;
+aces.y = 0.010659276f * lin.x + 0.839605344f * lin.y + 0.149735380f * lin.z;
+aces.z = 0.014560161f * lin.x - 0.028562057f * lin.y + 1.014001897f * lin.z;
+
+return aces;
+}
+
+__device__ inline float3 IDT_Canon_C300mk2_CanonLog_CinemaGamut_C_D55( float3 In)
+{
+float3 CLogIRE;
+CLogIRE.x = (In.x * 1023.0f - 64.0f) / 876.0f;
+CLogIRE.y = (In.y * 1023.0f - 64.0f) / 876.0f;
+CLogIRE.z = (In.z * 1023.0f - 64.0f) / 876.0f;
+
+float3 lin;
+lin.x = 0.9f * CanonLog_to_linear( CLogIRE.x);
+lin.y = 0.9f * CanonLog_to_linear( CLogIRE.y);
+lin.z = 0.9f * CanonLog_to_linear( CLogIRE.z);
+
+float3 aces;
+aces.x = 0.763064455f * lin.x + 0.149021161f * lin.y + 0.087914384f * lin.z;
+aces.y = 0.003657457f * lin.x + 1.10696038f * lin.y - 0.110617837f * lin.z;
+aces.z = -0.009407794f * lin.x - 0.218383305f * lin.y + 1.227791099f * lin.z;
+
+return aces;
+}
+
+__device__ inline float3 IDT_Canon_C300mk2_CanonLog_CinemaGamut_C_Tng( float3 In)
+{
+float3 CLogIRE;
+CLogIRE.x = (In.x * 1023.0f - 64.0f) / 876.0f;
+CLogIRE.y = (In.y * 1023.0f - 64.0f) / 876.0f;
+CLogIRE.z = (In.z * 1023.0f - 64.0f) / 876.0f;
+
+float3 lin;
+lin.x = 0.9f * CanonLog_to_linear( CLogIRE.x);
+lin.y = 0.9f * CanonLog_to_linear( CLogIRE.y);
+lin.z = 0.9f * CanonLog_to_linear( CLogIRE.z);
+
+float3 aces;
+aces.x = 0.817416293f * lin.x + 0.090755698f * lin.y + 0.091828009f * lin.z;
+aces.y = -0.035361374f * lin.x + 1.065690585f * lin.y - 0.030329211f * lin.z;
+aces.z = 0.010390366f * lin.x - 0.299271107f * lin.y + 1.288880741f * lin.z;
+
+return aces;
+}
+
+__device__ inline float3 IDT_Canon_C300mk2_CanonLog2_BT2020_B_D55( float3 In)
+{
+float3 CLogIRE;
+CLogIRE.x = (In.x * 1023.0f - 64.0f) / 876.0f;
+CLogIRE.y = (In.y * 1023.0f - 64.0f) / 876.0f;
+CLogIRE.z = (In.z * 1023.0f - 64.0f) / 876.0f;
+
+float3 lin;
+lin.x = 0.9f * CanonLog2_to_linear( CLogIRE.x);
+lin.y = 0.9f * CanonLog2_to_linear( CLogIRE.y);
+lin.z = 0.9f * CanonLog2_to_linear( CLogIRE.z);
+
+float3 aces;
+aces.x = 0.678891151f * lin.x + 0.158868422f * lin.y + 0.162240427f * lin.z;
+aces.y = 0.045570831f * lin.x + 0.860712772f * lin.y + 0.093716397f * lin.z;
+aces.z = -0.000485710f * lin.x + 0.025060196f * lin.y + 0.975425515f * lin.z;
+
+return aces;
+}
+
+__device__ inline float3 IDT_Canon_C300mk2_CanonLog2_BT2020_B_Tng( float3 In)
+{
+float3 CLogIRE;
+CLogIRE.x = (In.x * 1023.0f - 64.0f) / 876.0f;
+CLogIRE.y = (In.y * 1023.0f - 64.0f) / 876.0f;
+CLogIRE.z = (In.z * 1023.0f - 64.0f) / 876.0f;
+
+float3 lin;
+lin.x = 0.9f * CanonLog2_to_linear( CLogIRE.x);
+lin.y = 0.9f * CanonLog2_to_linear( CLogIRE.y);
+lin.z = 0.9f * CanonLog2_to_linear( CLogIRE.z);
+
+float3 aces;
+aces.x = 0.724488568f * lin.x + 0.115140904f * lin.y + 0.160370529f * lin.z;
+aces.y = 0.010659276f * lin.x + 0.839605344f * lin.y + 0.149735380f * lin.z;
+aces.z = 0.014560161f * lin.x - 0.028562057f * lin.y + 1.014001897f * lin.z;
+
+return aces;
+}
+
+__device__ inline float3 IDT_Canon_C300mk2_CanonLog2_CinemaGamut_A_D55( float3 In)
+{
+float3 CLogIRE;
+CLogIRE.x = (In.x * 1023.0f - 64.0f) / 876.0f;
+CLogIRE.y = (In.y * 1023.0f - 64.0f) / 876.0f;
+CLogIRE.z = (In.z * 1023.0f - 64.0f) / 876.0f;
+
+float3 lin;
+lin.x = 0.9f * CanonLog2_to_linear( CLogIRE.x);
+lin.y = 0.9f * CanonLog2_to_linear( CLogIRE.y);
+lin.z = 0.9f * CanonLog2_to_linear( CLogIRE.z);
+
+float3 aces;
+aces.x = 0.763064455f * lin.x + 0.149021161f * lin.y + 0.087914384f * lin.z;
+aces.y = 0.003657457f * lin.x + 1.10696038f * lin.y - 0.110617837f * lin.z;
+aces.z = -0.009407794f * lin.x - 0.218383305f * lin.y + 1.227791099f * lin.z;
+
+return aces;
+}
+
+__device__ inline float3 IDT_Canon_C300mk2_CanonLog2_CinemaGamut_A_Tng( float3 In)
+{
+float3 CLogIRE;
+CLogIRE.x = (In.x * 1023.0f - 64.0f) / 876.0f;
+CLogIRE.y = (In.y * 1023.0f - 64.0f) / 876.0f;
+CLogIRE.z = (In.z * 1023.0f - 64.0f) / 876.0f;
+
+float3 lin;
+lin.x = 0.9f * CanonLog2_to_linear( CLogIRE.x);
+lin.y = 0.9f * CanonLog2_to_linear( CLogIRE.y);
+lin.z = 0.9f * CanonLog2_to_linear( CLogIRE.z);
+
+float3 aces;
+aces.x = 0.817416293f * lin.x + 0.090755698f * lin.y + 0.091828009f * lin.z;
+aces.y = -0.035361374f * lin.x + 1.065690585f * lin.y - 0.030329211f * lin.z;
+aces.z = 0.010390366f * lin.x - 0.299271107f * lin.y + 1.288880741f * lin.z;
+
+return aces;
+}
+
+__device__ inline float3 IDT_Canon_C300mk2_CanonLog3_BT2020_F_D55( float3 In)
+{
+float3 CLogIRE;
+CLogIRE.x = (In.x * 1023.0f - 64.0f) / 876.0f;
+CLogIRE.y = (In.y * 1023.0f - 64.0f) / 876.0f;
+CLogIRE.z = (In.z * 1023.0f - 64.0f) / 876.0f;
+
+float3 lin;
+lin.x = 0.9f * CanonLog3_to_linear( CLogIRE.x);
+lin.y = 0.9f * CanonLog3_to_linear( CLogIRE.y);
+lin.z = 0.9f * CanonLog3_to_linear( CLogIRE.z);
+
+float3 aces;
+aces.x = 0.678891151f * lin.x + 0.158868422f * lin.y + 0.162240427f * lin.z;
+aces.y = 0.045570831f * lin.x + 0.860712772f * lin.y + 0.093716397f * lin.z;
+aces.z = -0.000485710f * lin.x + 0.025060196f * lin.y + 0.975425515f * lin.z;
+
+return aces;
+}
+
+__device__ inline float3 IDT_Canon_C300mk2_CanonLog3_BT2020_F_Tng( float3 In)
+{
+float3 CLogIRE;
+CLogIRE.x = (In.x * 1023.0f - 64.0f) / 876.0f;
+CLogIRE.y = (In.y * 1023.0f - 64.0f) / 876.0f;
+CLogIRE.z = (In.z * 1023.0f - 64.0f) / 876.0f;
+
+float3 lin;
+lin.x = 0.9f * CanonLog3_to_linear( CLogIRE.x);
+lin.y = 0.9f * CanonLog3_to_linear( CLogIRE.y);
+lin.z = 0.9f * CanonLog3_to_linear( CLogIRE.z);
+
+float3 aces;
+aces.x = 0.724488568f * lin.x + 0.115140904f * lin.y + 0.160370529f * lin.z;
+aces.y = 0.010659276f * lin.x + 0.839605344f * lin.y + 0.149735380f * lin.z;
+aces.z = 0.014560161f * lin.x - 0.028562057f * lin.y + 1.014001897f * lin.z;
+
+return aces;
+}
+
+__device__ inline float3 IDT_Canon_C300mk2_CanonLog3_CinemaGamut_E_D55( float3 In)
+{
+float3 CLogIRE;
+CLogIRE.x = (In.x * 1023.0f - 64.0f) / 876.0f;
+CLogIRE.y = (In.y * 1023.0f - 64.0f) / 876.0f;
+CLogIRE.z = (In.z * 1023.0f - 64.0f) / 876.0f;
+
+float3 lin;
+lin.x = 0.9f * CanonLog3_to_linear( CLogIRE.x);
+lin.y = 0.9f * CanonLog3_to_linear( CLogIRE.y);
+lin.z = 0.9f * CanonLog3_to_linear( CLogIRE.z);
+
+float3 aces;
+aces.x = 0.763064455f * lin.x + 0.149021161f * lin.y + 0.087914384f * lin.z;
+aces.y = 0.003657457f * lin.x + 1.10696038f * lin.y - 0.110617837f * lin.z;
+aces.z = -0.009407794f * lin.x - 0.218383305f * lin.y + 1.227791099f * lin.z;
+
+return aces;
+}
+
+__device__ inline float3 IDT_Canon_C300mk2_CanonLog3_CinemaGamut_E_Tng( float3 In)
+{
+float3 CLogIRE;
+CLogIRE.x = (In.x * 1023.0f - 64.0f) / 876.0f;
+CLogIRE.y = (In.y * 1023.0f - 64.0f) / 876.0f;
+CLogIRE.z = (In.z * 1023.0f - 64.0f) / 876.0f;
+
+float3 lin;
+lin.x = 0.9f * CanonLog3_to_linear( CLogIRE.x);
+lin.y = 0.9f * CanonLog3_to_linear( CLogIRE.y);
+lin.z = 0.9f * CanonLog3_to_linear( CLogIRE.z);
+
+float3 aces;
+aces.x = 0.817416293f * lin.x + 0.090755698f * lin.y + 0.091828009f * lin.z;
+aces.y = -0.035361374f * lin.x + 1.065690585f * lin.y - 0.030329211f * lin.z;
+aces.z = 0.010390366f * lin.x - 0.299271107f * lin.y + 1.288880741f * lin.z;
+
+return aces;
+}
+
+__device__ inline float3 IDT_Sony_SLog1_SGamut( float3 In)
+{
+mat3 SGAMUT_TO_ACES_MTX = { { 0.754338638f, 0.021198141f, -0.009756991f }, { 0.133697046f, 1.005410934f, 0.004508563f }, { 0.111968437f, -0.026610548f, 1.005253201f } };
+
+float B = 64.0f;
+float AB = 90.0f;
+float W = 940.0f;
+
+float3 SLog;
+SLog.x = In.x * 1023.0f;
+SLog.y = In.y * 1023.0f;
+SLog.z = In.z * 1023.0f;
+
+float3 lin;
+lin.x = SLog1_to_lin( SLog.x, B, AB, W);
+lin.y = SLog1_to_lin( SLog.y, B, AB, W);
+lin.z = SLog1_to_lin( SLog.z, B, AB, W);
+
+float3 aces = mult_f3_f33( lin, SGAMUT_TO_ACES_MTX);
+
+return aces;
+}
+
+__device__ inline float3 IDT_Sony_SLog2_SGamut_Daylight( float3 In)
+{
+mat3 SGAMUT_DAYLIGHT_TO_ACES_MTX = { { 0.8764457030f, 0.0774075345f, 0.0573564351f}, { 0.0145411681f, 0.9529571767f, -0.1151066335f}, { 0.1090131290f, -0.0303647111f, 1.0577501984f} };
+
+float B = 64.0f;
+float AB = 90.0f;
+float W = 940.0f;
+
+float3 SLog;
+SLog.x = In.x * 1023.0f;
+SLog.y = In.y * 1023.0f;
+SLog.z = In.z * 1023.0f;
+
+float3 lin;
+lin.x = SLog2_to_lin( SLog.x, B, AB, W);
+lin.y = SLog2_to_lin( SLog.y, B, AB, W);
+lin.z = SLog2_to_lin( SLog.z, B, AB, W);
+
+float3 aces = mult_f3_f33( lin, SGAMUT_DAYLIGHT_TO_ACES_MTX);
+
+return aces;
+}
+
+__device__ inline float3 IDT_Sony_SLog2_SGamut_Tungsten( float3 In)
+{
+mat3 SGAMUT_TUNG_TO_ACES_MTX = { { 1.0110238740f, 0.1011994504f, 0.0600766530f}, { -0.1362526051f, 0.9562196265f, -0.1010185315f}, { 0.1252287310f, -0.0574190769f, 1.0409418785f} };
+
+float B = 64.0f;
+float AB = 90.0f;
+float W = 940.0f;
+
+float3 SLog;
+SLog.x = In.x * 1023.0f;
+SLog.y = In.y * 1023.0f;
+SLog.z = In.z * 1023.0f;
+
+float3 lin;
+lin.x = SLog2_to_lin( SLog.x, B, AB, W);
+lin.y = SLog2_to_lin( SLog.y, B, AB, W);
+lin.z = SLog2_to_lin( SLog.z, B, AB, W);
+
+float3 aces = mult_f3_f33( lin, SGAMUT_TUNG_TO_ACES_MTX);
+
+return aces;
+}
+
+__device__ inline float3 IDT_Sony_SLog3_SGamut3( float3 SLog3)
+{
+mat3 matrixCoef = { {0.7529825954f, 0.0217076974f, -0.0094160528f}, {0.1433702162f, 1.0153188355f, 0.0033704179f}, {0.1036471884f, -0.0370265329f, 1.0060456349f} };
+
+float3 linear;
+linear.x = SLog3_to_linear( SLog3.x );
+linear.y = SLog3_to_linear( SLog3.y );
+linear.z = SLog3_to_linear( SLog3.z );
+
+float3 aces = mult_f3_f33( linear, matrixCoef );
+
+return aces;
+}
+
+__device__ inline float3 IDT_Sony_SLog3_SGamut3Cine( float3 SLog3)
+{
+mat3 matrixCoef = { {0.6387886672f, -0.0039159060f, -0.0299072021f}, {0.2723514337f, 1.0880732309f, -0.0264325799f}, {0.0888598991f, -0.0841573249f, 1.0563397820f} };
+
+float3 linear;
+linear.x = SLog3_to_linear( SLog3.x );
+linear.y = SLog3_to_linear( SLog3.y );
+linear.z = SLog3_to_linear( SLog3.z );
+
+float3 aces = mult_f3_f33( linear, matrixCoef );
+
+return aces;
+}
+
+__device__ inline float Y_2_linCV( float Y, float Ymax, float Ymin)
+{
+return (Y - Ymin) / (Ymax - Ymin);
+}
+
+__device__ inline float linCV_2_Y( float linCV, float Ymax, float Ymin)
+{
+return linCV * (Ymax - Ymin) + Ymin;
+}
+
+__device__ inline float3 Y_2_linCV_f3( float3 Y, float Ymax, float Ymin)
+{
+float3 linCV;
+linCV.x = Y_2_linCV( Y.x, Ymax, Ymin); linCV.y = Y_2_linCV( Y.y, Ymax, Ymin); linCV.z = Y_2_linCV( Y.z, Ymax, Ymin);
+return linCV;
+}
+
+__device__ inline float3 linCV_2_Y_f3( float3 linCV, float Ymax, float Ymin)
+{
+float3 Y;
+Y.x = linCV_2_Y( linCV.x, Ymax, Ymin); Y.y = linCV_2_Y( linCV.y, Ymax, Ymin); Y.z = linCV_2_Y( linCV.z, Ymax, Ymin);
+return Y;
+}
+
+__device__ inline float3 darkSurround_to_dimSurround( float3 linearCV)
+{
+float3 XYZ = mult_f3_f33( linearCV, AP1_2_XYZ_MAT);
+float3 xyY = XYZ_2_xyY(XYZ);
+xyY.z = fmaxf( xyY.z, 0.0f);
+xyY.z = powf( xyY.z, DIM_SURROUND_GAMMA);
+XYZ = xyY_2_XYZ(xyY);
+return mult_f3_f33( XYZ, XYZ_2_AP1_MAT);
+}
+
+__device__ inline float3 dimSurround_to_darkSurround( float3 linearCV)
+{
+float3 XYZ = mult_f3_f33( linearCV, AP1_2_XYZ_MAT);
+float3 xyY = XYZ_2_xyY(XYZ);
+xyY.z = fmaxf( xyY.z, 0.0f);
+xyY.z = powf( xyY.z, 1.0f / DIM_SURROUND_GAMMA);
+XYZ = xyY_2_XYZ(xyY);
+return mult_f3_f33( XYZ, XYZ_2_AP1_MAT);
+}
+
+__device__ inline float roll_white_fwd( float in, float new_wht, float width)
+{
+const float x0 = -1.0f;
+const float x1 = x0 + width;
+const float y0 = -new_wht;
+const float y1 = x1;
+const float m1 = (x1 - x0);
+const float a = y0 - y1 + m1;
+const float b = 2.0f * ( y1 - y0) - m1;
+const float c = y0;
+const float t = (-in - x0) / (x1 - x0);
+float out = 0.0f;
+if ( t < 0.0f)
+out = -(t * b + c);
+else if ( t > 1.0f)
+out = in;
+else
+out = -(( t * a + b) * t + c);
+return out;
+}
+
+__device__ inline float roll_white_rev( float in, float new_wht, float width)
+{
+const float x0 = -1.0f;
+const float x1 = x0 + width;
+const float y0 = -new_wht;
+const float y1 = x1;
+const float m1 = (x1 - x0);
+const float a = y0 - y1 + m1;
+const float b = 2.0f * ( y1 - y0) - m1;
+float c = y0;
+float out = 0.0f;
+if ( -in < y0)
+out = -x0;
+else if ( -in > y1)
+out = in;
+else {
+c = c + in;
+const float discrim = sqrtf( b * b - 4.0f * a * c);
+const float t = ( 2.0f * c) / ( -discrim - b);
+out = -(( t * ( x1 - x0)) + x0);
+}
+return out;
+}
+
+__device__ inline float lookup_ACESmin( float minLum )
+{
+float2 minTable[2] = { { log10f(MIN_LUM_RRT), MIN_STOP_RRT }, { log10f(MIN_LUM_SDR), MIN_STOP_SDR } };
+return 0.18f * exp2f(interpolate1D( minTable, 2, log10f( minLum)));
+}
+
+__device__ inline float lookup_ACESmax( float maxLum )
+{
+float2 maxTable[2] = { { log10f(MAX_LUM_SDR), MAX_STOP_SDR }, { log10f(MAX_LUM_RRT), MAX_STOP_RRT } };
+return 0.18f * exp2f(interpolate1D( maxTable, 2, log10f( maxLum)));
+}
+
+__device__ inline float5 init_coefsLow( TsPoint TsPointLow, TsPoint TsPointMid)
+{
+float5 coefsLow;
+float knotIncLow = (log10f(TsPointMid.x) - log10f(TsPointLow.x)) / 3.0f;
+coefsLow.x = (TsPointLow.slope * (log10f(TsPointLow.x) - 0.5f * knotIncLow)) + ( log10f(TsPointLow.y) - TsPointLow.slope * log10f(TsPointLow.x));
+coefsLow.y = (TsPointLow.slope * (log10f(TsPointLow.x) + 0.5f * knotIncLow)) + ( log10f(TsPointLow.y) - TsPointLow.slope * log10f(TsPointLow.x));
+coefsLow.w = (TsPointMid.slope * (log10f(TsPointMid.x) - 0.5f * knotIncLow)) + ( log10f(TsPointMid.y) - TsPointMid.slope * log10f(TsPointMid.x));
+coefsLow.m = (TsPointMid.slope * (log10f(TsPointMid.x) + 0.5f * knotIncLow)) + ( log10f(TsPointMid.y) - TsPointMid.slope * log10f(TsPointMid.x));
+float2 bendsLow[2] = { {MIN_STOP_RRT, 0.18f}, {MIN_STOP_SDR, 0.35f} };
+float pctLow = interpolate1D( bendsLow, 2, log2(TsPointLow.x / 0.18f));
+coefsLow.z = log10f(TsPointLow.y) + pctLow*(log10f(TsPointMid.y) - log10f(TsPointLow.y));
+return coefsLow;
+}
+
+__device__ inline float5 init_coefsHigh( TsPoint TsPointMid, TsPoint TsPointMax)
+{
+float5 coefsHigh;
+float knotIncHigh = (log10f(TsPointMax.x) - log10f(TsPointMid.x)) / 3.0f;
+coefsHigh.x = (TsPointMid.slope * (log10f(TsPointMid.x) - 0.5f * knotIncHigh)) + ( log10f(TsPointMid.y) - TsPointMid.slope * log10f(TsPointMid.x));
+coefsHigh.y = (TsPointMid.slope * (log10f(TsPointMid.x) + 0.5f * knotIncHigh)) + ( log10f(TsPointMid.y) - TsPointMid.slope * log10f(TsPointMid.x));
+coefsHigh.w = (TsPointMax.slope * (log10f(TsPointMax.x) - 0.5f * knotIncHigh)) + ( log10f(TsPointMax.y) - TsPointMax.slope * log10f(TsPointMax.x));
+coefsHigh.m = (TsPointMax.slope * (log10f(TsPointMax.x) + 0.5f * knotIncHigh)) + ( log10f(TsPointMax.y) - TsPointMax.slope * log10f(TsPointMax.x));
+float2 bendsHigh[2] = { {MAX_STOP_SDR, 0.89f}, {MAX_STOP_RRT, 0.90f} };
+float pctHigh = interpolate1D( bendsHigh, 2, log2(TsPointMax.x / 0.18f));
+coefsHigh.z = log10f(TsPointMid.y) + pctHigh*(log10f(TsPointMax.y) - log10f(TsPointMid.y));
+return coefsHigh;
+}
+
+__device__ inline float shift( float in, float expShift)
+{
+return exp2f(log2f(in) - expShift);
+}
+
+__device__ inline TsParams init_TsParams( float minLum, float maxLum, float expShift = 0.0f)
+{
+TsPoint MIN_PT = { lookup_ACESmin(minLum), minLum, 0.0f};
+TsPoint MID_PT = { 0.18f, 4.8f, 1.55f};
+TsPoint MAX_PT = { lookup_ACESmax(maxLum), maxLum, 0.0f};
+float5 cLow;
+cLow = init_coefsLow( MIN_PT, MID_PT);
+float5 cHigh;
+cHigh = init_coefsHigh( MID_PT, MAX_PT);
+MIN_PT.x = shift(lookup_ACESmin(minLum),expShift);
+MID_PT.x = shift(0.18f, expShift);
+MAX_PT.x = shift(lookup_ACESmax(maxLum),expShift);
+TsParams P = { {MIN_PT.x, MIN_PT.y, MIN_PT.slope}, {MID_PT.x, MID_PT.y, MID_PT.slope},
+{MAX_PT.x, MAX_PT.y, MAX_PT.slope}, {cLow.x, cLow.y, cLow.z, cLow.w, cLow.m, cLow.m},
+{cHigh.x, cHigh.y, cHigh.z, cHigh.w, cHigh.m, cHigh.m} };
+return P;
+}
+
+__device__ inline float ssts( float x, TsParams C)
+{
+const int N_KNOTS_LOW = 4;
+const int N_KNOTS_HIGH = 4;
+float logx = log10f( fmaxf(x, 1e-10f));
+float logy = 0.0f;
+if ( logx <= log10f(C.Min.x) ) {
+logy = logx * C.Min.slope + ( log10f(C.Min.y) - C.Min.slope * log10f(C.Min.x) );
+} else if (( logx > log10f(C.Min.x) ) && ( logx < log10f(C.Mid.x) )) {
+float knot_coord = (N_KNOTS_LOW - 1) * (logx - log10f(C.Min.x)) / (log10f(C.Mid.x) - log10f(C.Min.x));
+int j = knot_coord;
+float t = knot_coord - j;
+float3 cf = { C.coefsLow[ j], C.coefsLow[ j + 1], C.coefsLow[ j + 2]};
+float3 monomials = { t * t, t, 1.0f };
+logy = dot_f3_f3( monomials, mult_f3_f33( cf, M1));
+} else if (( logx >= log10f(C.Mid.x) ) && ( logx < log10f(C.Max.x) )) {
+float knot_coord = (N_KNOTS_HIGH - 1) * (logx - log10f(C.Mid.x)) / (log10f(C.Max.x) - log10f(C.Mid.x));
+int j = knot_coord;
+float t = knot_coord - j;
+float3 cf = { C.coefsHigh[ j], C.coefsHigh[ j + 1], C.coefsHigh[ j + 2]};
+float3 monomials = { t * t, t, 1.0f };
+logy = dot_f3_f3( monomials, mult_f3_f33( cf, M1));
+} else {
+logy = logx * C.Max.slope + ( log10f(C.Max.y) - C.Max.slope * log10f(C.Max.x) );
+}
+return exp10f(logy);
+}
+
+__device__ inline float inv_ssts( float y, TsParams C)
+{
+const int N_KNOTS_LOW = 4;
+const int N_KNOTS_HIGH = 4;
+const float KNOT_INC_LOW = (log10f(C.Mid.x) - log10f(C.Min.x)) / (N_KNOTS_LOW - 1.0f);
+const float KNOT_INC_HIGH = (log10f(C.Max.x) - log10f(C.Mid.x)) / (N_KNOTS_HIGH - 1.0f);
+float KNOT_Y_LOW[ N_KNOTS_LOW];
+for (int i = 0; i < N_KNOTS_LOW; i = i + 1) {
+KNOT_Y_LOW[ i] = ( C.coefsLow[i] + C.coefsLow[i + 1]) / 2.0f;
+};
+float KNOT_Y_HIGH[ N_KNOTS_HIGH];
+for (int i = 0; i < N_KNOTS_HIGH; i = i + 1) {
+KNOT_Y_HIGH[ i] = ( C.coefsHigh[i] + C.coefsHigh[i + 1]) / 2.0f;
+};
+float logy = log10f( fmaxf(y, 1e-10f));
+float logx;
+if (logy <= log10f(C.Min.y)) {
+logx = log10f(C.Min.x);
+} else if ( (logy > log10f(C.Min.y)) && (logy <= log10f(C.Mid.y)) ) {
+unsigned int j = 0;
+float3 cf = make_float3(0.0f, 0.0f, 0.0f);
+if ( logy > KNOT_Y_LOW[ 0] && logy <= KNOT_Y_LOW[ 1]) {
+cf.x = C.coefsLow[0]; cf.y = C.coefsLow[1]; cf.z = C.coefsLow[2]; j = 0;
+} else if ( logy > KNOT_Y_LOW[ 1] && logy <= KNOT_Y_LOW[ 2]) {
+cf.x = C.coefsLow[1]; cf.y = C.coefsLow[2]; cf.z = C.coefsLow[3]; j = 1;
+} else if ( logy > KNOT_Y_LOW[ 2] && logy <= KNOT_Y_LOW[ 3]) {
+cf.x = C.coefsLow[2]; cf.y = C.coefsLow[3]; cf.z = C.coefsLow[4]; j = 2;
+}
+const float3 tmp = mult_f3_f33( cf, M1);
+float a = tmp.x; float b = tmp.y; float c = tmp.z;
+c = c - logy;
+const float d = sqrtf( b * b - 4.0f * a * c);
+const float t = ( 2.0f * c) / ( -d - b);
+logx = log10f(C.Min.x) + ( t + j) * KNOT_INC_LOW;
+} else if ( (logy > log10f(C.Mid.y)) && (logy < log10f(C.Max.y)) ) {
+unsigned int j = 0;
+float3 cf = make_float3(0.0f, 0.0f, 0.0f);
+if ( logy >= KNOT_Y_HIGH[ 0] && logy <= KNOT_Y_HIGH[ 1]) {
+cf.x = C.coefsHigh[0]; cf.y = C.coefsHigh[1]; cf.z = C.coefsHigh[2]; j = 0;
+} else if ( logy > KNOT_Y_HIGH[ 1] && logy <= KNOT_Y_HIGH[ 2]) {
+cf.x = C.coefsHigh[1]; cf.y = C.coefsHigh[2]; cf.z = C.coefsHigh[3]; j = 1;
+} else if ( logy > KNOT_Y_HIGH[ 2] && logy <= KNOT_Y_HIGH[ 3]) {
+cf.x = C.coefsHigh[2]; cf.y = C.coefsHigh[3]; cf.z = C.coefsHigh[4]; j = 2;
+}
+const float3 tmp = mult_f3_f33( cf, M1);
+float a = tmp.x; float b = tmp.y; float c = tmp.z;
+c = c - logy;
+const float d = sqrtf( b * b - 4.0f * a * c);
+const float t = ( 2.0f * c) / ( -d - b);
+logx = log10f(C.Mid.x) + ( t + j) * KNOT_INC_HIGH;
+} else {
+logx = log10f(C.Max.x);
+}
+return exp10f( logx);
+}
+
+__device__ inline float3 ssts_f3( float3 x, TsParams C)
+{
+float3 out;
+out.x = ssts( x.x, C); out.y = ssts( x.y, C); out.z = ssts( x.z, C);
+return out;
+}
+
+__device__ inline float3 inv_ssts_f3( float3 x, TsParams C)
+{
+float3 out;
+out.x = inv_ssts( x.x, C); out.y = inv_ssts( x.y, C); out.z = inv_ssts( x.z, C);
+return out;
+}
+
+__device__ inline float glow_fwd( float ycIn, float glowGainIn, float glowMid)
+{
+float glowGainOut;
+if (ycIn <= 2.0f/3.0f * glowMid) {
+glowGainOut = glowGainIn;
+} else if ( ycIn >= 2.0f * glowMid) {
+glowGainOut = 0.0f;
+} else {
+glowGainOut = glowGainIn * (glowMid / ycIn - 1.0f/2.0f);
+}
+return glowGainOut;
+}
+
+__device__ inline float glow_inv( float ycOut, float glowGainIn, float glowMid)
+{
+float glowGainOut;
+if (ycOut <= ((1.0f + glowGainIn) * 2.0f/3.0f * glowMid)) {
+glowGainOut = -glowGainIn / (1.0f + glowGainIn);
+} else if ( ycOut >= (2.0f * glowMid)) {
+glowGainOut = 0.0f;
+} else {
+glowGainOut = glowGainIn * (glowMid / ycOut - 1.0f/2.0f) / (glowGainIn / 2.0f - 1.0f);
+}
+return glowGainOut;
+}
+
+__device__ inline float sigmoid_shaper( float x)
+{
+float t = fmaxf( 1.0f - fabs( x / 2.0f), 0.0f);
+float y = 1.0f + _sign(x) * (1.0f - t * t);
+return y / 2.0f;
+}
+
+__device__ inline float cubic_basis_shaper ( float x, float w)
+{
+float M[4][4] = { {-1.0f/6.0f, 3.0f/6.0f,-3.0f/6.0f, 1.0f/6.0f}, {3.0f/6.0f, -6.0f/6.0f, 3.0f/6.0f, 0.0f/6.0f},
+{-3.0f/6.0f, 0.0f/6.0f, 3.0f/6.0f, 0.0f/6.0f}, {1.0f/6.0f, 4.0f/6.0f, 1.0f/6.0f, 0.0f/6.0f} };
+float knots[5] = { -w/2.0f, -w/4.0f, 0.0f, w/4.0f, w/2.0f };
+float y = 0.0f;
+if ((x > knots[0]) && (x < knots[4])) {
+float knot_coord = (x - knots[0]) * 4.0f/w;
+int j = knot_coord;
+float t = knot_coord - j;
+float monomials[4] = { t*t*t, t*t, t, 1.0f };
+if ( j == 3) {
+y = monomials[0] * M[0][0] + monomials[1] * M[1][0] +
+monomials[2] * M[2][0] + monomials[3] * M[3][0];
+} else if ( j == 2) {
+y = monomials[0] * M[0][1] + monomials[1] * M[1][1] +
+monomials[2] * M[2][1] + monomials[3] * M[3][1];
+} else if ( j == 1) {
+y = monomials[0] * M[0][2] + monomials[1] * M[1][2] +
+monomials[2] * M[2][2] + monomials[3] * M[3][2];
+} else if ( j == 0) {
+y = monomials[0] * M[0][3] + monomials[1] * M[1][3] +
+monomials[2] * M[2][3] + monomials[3] * M[3][3];
+} else {
+y = 0.0f;}}
+return y * 3.0f/2.0f;
+}
+
+__device__ inline float center_hue( float hue, float centerH)
+{
+float hueCentered = hue - centerH;
+if (hueCentered < -180.0f) hueCentered = hueCentered + 360.0f;
+else if (hueCentered > 180.0f) hueCentered = hueCentered - 360.0f;
+return hueCentered;
+}
+
+__device__ inline float uncenter_hue( float hueCentered, float centerH)
+{
+float hue = hueCentered + centerH;
+if (hue < 0.0f) hue = hue + 360.0f;
+else if (hue > 360.0f) hue = hue - 360.0f;
+return hue;
+}
+
+__device__ inline float3 rrt_sweeteners( float3 in)
+{
+float3 aces = in;
+float saturation = rgb_2_saturation( aces);
+float ycIn = rgb_2_yc( aces, 1.75f);
+float s = sigmoid_shaper( (saturation - 0.4f) / 0.2f);
+float addedGlow = 1.0f + glow_fwd( ycIn, RRT_GLOW_GAIN * s, RRT_GLOW_MID);
+aces = mult_f_f3( addedGlow, aces);
+float hue = rgb_2_hue( aces);
+float centeredHue = center_hue( hue, RRT_RED_HUE);
+float hueWeight = cubic_basis_shaper( centeredHue, RRT_RED_WIDTH);
+aces.x = aces.x + hueWeight * saturation * (RRT_RED_PIVOT - aces.x) * (1.0f - RRT_RED_SCALE);
+aces = max_f3_f( aces, 0.0f);
+float3 rgbPre = mult_f3_f33( aces, AP0_2_AP1_MAT_B);
+rgbPre = max_f3_f( rgbPre, 0.0f);
+rgbPre = mult_f3_f33( rgbPre, calc_sat_adjust_matrix( RRT_SAT_FACTOR, make_float3(RGBtoXYZ( AP1).c0.y, RGBtoXYZ( AP1).c1.y, RGBtoXYZ( AP1).c2.y)));
+return rgbPre;
+}
+
+__device__ inline float3 inv_rrt_sweeteners( float3 in)
+{
+float3 rgbPost = in;
+rgbPost = mult_f3_f33( rgbPost, invert_f33(calc_sat_adjust_matrix( RRT_SAT_FACTOR, make_float3(RGBtoXYZ( AP1).c0.y, RGBtoXYZ( AP1).c1.y, RGBtoXYZ( AP1).c2.y))));
+rgbPost = max_f3_f( rgbPost, 0.0f);
+float3 aces = mult_f3_f33( rgbPost, AP1_2_AP0_MAT_B);
+aces = max_f3_f( aces, 0.0f);
+float hue = rgb_2_hue( aces);
+float centeredHue = center_hue( hue, RRT_RED_HUE);
+float hueWeight = cubic_basis_shaper( centeredHue, RRT_RED_WIDTH);
+float minChan;
+if (centeredHue < 0.0f) {
+minChan = aces.y;
+} else {
+minChan = aces.z;
+}
+float a = hueWeight * (1.0f - RRT_RED_SCALE) - 1.0f;
+float b = aces.x - hueWeight * (RRT_RED_PIVOT + minChan) * (1.0f - RRT_RED_SCALE);
+float c = hueWeight * RRT_RED_PIVOT * minChan * (1.0f - RRT_RED_SCALE);
+aces.x = ( -b - sqrtf( b * b - 4.0f * a * c)) / ( 2.0f * a);
+float saturation = rgb_2_saturation( aces);
+float ycOut = rgb_2_yc( aces, 1.75f);
+float s = sigmoid_shaper( (saturation - 0.4f) / 0.2f);
+float reducedGlow = 1.0f + glow_inv( ycOut, RRT_GLOW_GAIN * s, RRT_GLOW_MID);
+aces = mult_f_f3( ( reducedGlow), aces);
+return aces;
+}
+
+__device__ inline float3 limit_to_primaries( float3 XYZ, Chromaticities LIMITING_PRI)
+{
+mat3 XYZ_2_LIMITING_PRI_MAT = XYZtoRGB( LIMITING_PRI);
+mat3 LIMITING_PRI_2_XYZ_MAT = RGBtoXYZ( LIMITING_PRI);
+float3 rgb = mult_f3_f33( XYZ, XYZ_2_LIMITING_PRI_MAT);
+float3 limitedRgb = clamp_f3( rgb, 0.0f, 1.0f);
+return mult_f3_f33( limitedRgb, LIMITING_PRI_2_XYZ_MAT);
+}
+
+__device__ inline float3 dark_to_dim( float3 XYZ)
+{
+float3 xyY = XYZ_2_xyY(XYZ);
+xyY.z = fmaxf( xyY.z, 0.0f);
+xyY.z = powf( xyY.z, DIM_SURROUND_GAMMA);
+return xyY_2_XYZ(xyY);
+}
+
+__device__ inline float3 dim_to_dark( float3 XYZ)
+{
+float3 xyY = XYZ_2_xyY(XYZ);
+xyY.z = fmaxf( xyY.z, 0.0f);
+xyY.z = powf( xyY.z, 1.0f / DIM_SURROUND_GAMMA);
+return xyY_2_XYZ(xyY);
+}
+
+__device__ inline float3 outputTransform
+(
+float3 in,
+float Y_MIN,
+float Y_MID,
+float Y_MAX,
+Chromaticities DISPLAY_PRI,
+Chromaticities LIMITING_PRI,
+int EOTF,
+int SURROUND,
+bool STRETCH_BLACK = true,
+bool D60_SIM = false,
+bool LEGAL_RANGE = false
+)
+{
+mat3 XYZ_2_DISPLAY_PRI_MAT = XYZtoRGB( DISPLAY_PRI);
+TsParams PARAMS_DEFAULT = init_TsParams( Y_MIN, Y_MAX);
+float expShift = log2f(inv_ssts(Y_MID, PARAMS_DEFAULT)) - log2f(0.18f);
+TsParams PARAMS = init_TsParams( Y_MIN, Y_MAX, expShift);
+float3 rgbPre = rrt_sweeteners( in);
+float3 rgbPost = ssts_f3( rgbPre, PARAMS);
+float3 linearCV = Y_2_linCV_f3( rgbPost, Y_MAX, Y_MIN);
+float3 XYZ = mult_f3_f33( linearCV, RGBtoXYZ( AP1));
+if (SURROUND == 0) {
+} else if (SURROUND == 1) {
+if ((EOTF == 1) || (EOTF == 2) || (EOTF == 3)) {
+XYZ = dark_to_dim( XYZ);
+}
+} else if (SURROUND == 2) {
+}
+XYZ = limit_to_primaries( XYZ, LIMITING_PRI);
+if (D60_SIM == false) {
+if ((DISPLAY_PRI.white.x != AP0.white.x) && (DISPLAY_PRI.white.y != AP0.white.y)) {
+XYZ = mult_f3_f33( XYZ, calculate_cat_matrix( AP0.white, REC709_PRI.white));
+}
+}
+linearCV = mult_f3_f33( XYZ, XYZ_2_DISPLAY_PRI_MAT);
+if (D60_SIM == true) {
+float SCALE = 1.0f;
+if ((DISPLAY_PRI.white.x == 0.3127f) && (DISPLAY_PRI.white.y == 0.329f)) {
+SCALE = 0.96362f;
+}
+else if ((DISPLAY_PRI.white.x == 0.314f) && (DISPLAY_PRI.white.y == 0.351f)) {
+linearCV.x = roll_white_fwd( linearCV.x, 0.918f, 0.5f);
+linearCV.y = roll_white_fwd( linearCV.y, 0.918f, 0.5f);
+linearCV.z = roll_white_fwd( linearCV.z, 0.918f, 0.5f);
+SCALE = 0.96f;
+}
+linearCV = mult_f_f3( SCALE, linearCV);
+}
+linearCV = max_f3_f( linearCV, 0.0f);
+float3 outputCV;
+if (EOTF == 0) {
+if (STRETCH_BLACK == true) {
+outputCV = Y_2_ST2084_f3( max_f3_f( linCV_2_Y_f3(linearCV, Y_MAX, 0.0f), 0.0f) );
+} else {
+outputCV = Y_2_ST2084_f3( linCV_2_Y_f3(linearCV, Y_MAX, Y_MIN) );
+}
+} else if (EOTF == 1) {
+outputCV = bt1886_r_f3( linearCV, 2.4f, 1.0f, 0.0f);
+} else if (EOTF == 2) {
+outputCV = moncurve_r_f3( linearCV, 2.4f, 0.055f);
+} else if (EOTF == 3) {
+outputCV = pow_f3( linearCV, 1.0f/2.6f);
+} else if (EOTF == 4) {
+outputCV = linCV_2_Y_f3(linearCV, Y_MAX, Y_MIN);
+} else if (EOTF == 5) {
+if (STRETCH_BLACK == true) {
+outputCV = Y_2_ST2084_f3( max_f3_f( linCV_2_Y_f3(linearCV, Y_MAX, 0.0f), 0.0f) );
+}
+else {
+outputCV = Y_2_ST2084_f3( linCV_2_Y_f3(linearCV, Y_MAX, Y_MIN) );
+}
+outputCV = ST2084_2_HLG_1000nits_f3( outputCV);
+}
+if (LEGAL_RANGE == true) {
+outputCV = fullRange_to_smpteRange_f3( outputCV);
+}
+return outputCV;
+}
+
+__device__ inline float3 invOutputTransform
+(
+float3 in,
+float Y_MIN,
+float Y_MID,
+float Y_MAX,
+Chromaticities DISPLAY_PRI,
+Chromaticities LIMITING_PRI,
+int EOTF,
+int SURROUND,
+bool STRETCH_BLACK = true,
+bool D60_SIM = false,
+bool LEGAL_RANGE = false
+)
+{
+mat3 DISPLAY_PRI_2_XYZ_MAT = RGBtoXYZ( DISPLAY_PRI);
+TsParams PARAMS_DEFAULT = init_TsParams( Y_MIN, Y_MAX);
+float expShift = log2f(inv_ssts(Y_MID, PARAMS_DEFAULT)) - log2f(0.18f);
+TsParams PARAMS = init_TsParams( Y_MIN, Y_MAX, expShift);
+float3 outputCV = in;
+if (LEGAL_RANGE == true) {
+outputCV = smpteRange_to_fullRange_f3( outputCV);
+}
+float3 linearCV;
+if (EOTF == 0) {
+if (STRETCH_BLACK == true) {
+linearCV = Y_2_linCV_f3( ST2084_2_Y_f3( outputCV), Y_MAX, 0.0f);
+} else {
+linearCV = Y_2_linCV_f3( ST2084_2_Y_f3( outputCV), Y_MAX, Y_MIN);
+}
+} else if (EOTF == 1) {
+linearCV = bt1886_f_f3( outputCV, 2.4f, 1.0f, 0.0f);
+} else if (EOTF == 2) {
+linearCV = moncurve_f_f3( outputCV, 2.4f, 0.055f);
+} else if (EOTF == 3) {
+linearCV = pow_f3( outputCV, 2.6f);
+} else if (EOTF == 4) {
+linearCV = Y_2_linCV_f3( outputCV, Y_MAX, Y_MIN);
+} else if (EOTF == 5) {
+outputCV = HLG_2_ST2084_1000nits_f3( outputCV);
+if (STRETCH_BLACK == true) {
+linearCV = Y_2_linCV_f3( ST2084_2_Y_f3( outputCV), Y_MAX, 0.0f);
+} else {
+linearCV = Y_2_linCV_f3( ST2084_2_Y_f3( outputCV), Y_MAX, Y_MIN);
+}
+}
+if (D60_SIM == true) {
+float SCALE = 1.0f;
+if ((DISPLAY_PRI.white.x == 0.3127f) && (DISPLAY_PRI.white.y == 0.329f)) {
+SCALE = 0.96362f;
+linearCV = mult_f_f3( 1.0f / SCALE, linearCV);
+}
+else if ((DISPLAY_PRI.white.x == 0.314f) && (DISPLAY_PRI.white.y == 0.351f)) {
+SCALE = 0.96f;
+linearCV.x = roll_white_rev( linearCV.x / SCALE, 0.918f, 0.5f);
+linearCV.y = roll_white_rev( linearCV.y / SCALE, 0.918f, 0.5f);
+linearCV.z = roll_white_rev( linearCV.z / SCALE, 0.918f, 0.5f);
+}
+}
+float3 XYZ = mult_f3_f33( linearCV, DISPLAY_PRI_2_XYZ_MAT);
+if (D60_SIM == false) {
+if ((DISPLAY_PRI.white.x != AP0.white.x) && (DISPLAY_PRI.white.y != AP0.white.y)) {
+XYZ = mult_f3_f33( XYZ, invert_f33(calculate_cat_matrix( AP0.white, REC709_PRI.white)) );
+}
+}
+if (SURROUND == 0) {
+} else if (SURROUND == 1) {
+
+if ((EOTF == 1) || (EOTF == 2) || (EOTF == 3)) {
+XYZ = dim_to_dark( XYZ);
+}
+} else if (SURROUND == 2) {
+}
+linearCV = mult_f3_f33( XYZ, XYZtoRGB( AP1));
+float3 rgbPost = linCV_2_Y_f3( linearCV, Y_MAX, Y_MIN);
+float3 rgbPre = inv_ssts_f3( rgbPost, PARAMS);
+float3 aces = inv_rrt_sweeteners( rgbPre);
+return aces;
+}
+
+__device__ inline float lin_to_ACEScct( float in)
+{
+if (in <= X_BRK)
+return A * in + B;
+else
+return (log2f(in) + 9.72f) / 17.52f;
+}
+
+__device__ inline float ACEScct_to_lin( float in)
+{
+if (in > Y_BRK)
+return exp2f(in * 17.52f - 9.72f);
+else
+return (in - B) / A;
+}
+
+__device__ inline float3 ACES_to_ACEScct( float3 in)
+{
+float3 ap1_lin = mult_f3_f33( in, AP0_2_AP1_MAT_B);
+float3 acescct;
+acescct.x = lin_to_ACEScct( ap1_lin.x); acescct.y = lin_to_ACEScct( ap1_lin.y); acescct.z = lin_to_ACEScct( ap1_lin.z);
+return acescct;
+}
+
+__device__ inline float3 ACEScct_to_ACES( float3 in)
+{
+float3 ap1_lin;
+ap1_lin.x = ACEScct_to_lin( in.x); ap1_lin.y = ACEScct_to_lin( in.y); ap1_lin.z = ACEScct_to_lin( in.z);
+return mult_f3_f33( ap1_lin, AP1_2_AP0_MAT_B);
+}
+
+__device__ inline float3 ASCCDL_inACEScct
+(
+float3 acesIn,
+float3 SLOPE = make_float3(1.0f, 1.0f, 1.0f),
+float3 OFFSET = make_float3(0.0f, 0.0f, 0.0f),
+float3 POWER = make_float3(1.0f, 1.0f, 1.0f),
+float SAT = 1.0f
+)
+{
+float3 acescct = ACES_to_ACEScct( acesIn);
+acescct.x = powf( clamp( (acescct.x * SLOPE.x) + OFFSET.x, 0.0f, 1.0f), 1.0f / POWER.x);
+acescct.y = powf( clamp( (acescct.y * SLOPE.y) + OFFSET.y, 0.0f, 1.0f), 1.0f / POWER.y);
+acescct.z = powf( clamp( (acescct.z * SLOPE.z) + OFFSET.z, 0.0f, 1.0f), 1.0f / POWER.z);
+float luma = 0.2126f * acescct.x + 0.7152f * acescct.y + 0.0722f * acescct.z;
+float satClamp = fmaxf(SAT, 0.0f);
+acescct.x = luma + satClamp * (acescct.x - luma);
+acescct.y = luma + satClamp * (acescct.y - luma);
+acescct.z = luma + satClamp * (acescct.z - luma);
+return ACEScct_to_ACES( acescct);
+}
+
+__device__ inline float3 gamma_adjust_linear( float3 rgbIn, float GAMMA, float PIVOT = 0.18f)
+{
+const float SCALAR = PIVOT / powf( PIVOT, GAMMA);
+float3 rgbOut = rgbIn;
+if (rgbIn.x > 0.0f) rgbOut.x = powf( rgbIn.x, GAMMA) * SCALAR;
+if (rgbIn.y > 0.0f) rgbOut.y = powf( rgbIn.y, GAMMA) * SCALAR;
+if (rgbIn.z > 0.0f) rgbOut.z = powf( rgbIn.z, GAMMA) * SCALAR;
+return rgbOut;
+}
+
+__device__ inline float3 sat_adjust( float3 rgbIn, float SAT_FACTOR, float3 RGB2Y = make_float3(RGBtoXYZ( REC709_PRI).c0.y, RGBtoXYZ( REC709_PRI).c1.y, RGBtoXYZ( REC709_PRI).c2.y))
+{
+const mat3 SAT_MAT = calc_sat_adjust_matrix( SAT_FACTOR, RGB2Y);
+return mult_f3_f33( rgbIn, SAT_MAT);
+}
+
+__device__ inline float3 rgb_2_yab( float3 rgb)
+{
+float3 yab = mult_f3_f33( rgb, make_mat3(make_float3(1.0f/3.0f, 1.0f/2.0f, 0.0f), make_float3(1.0f/3.0f, -1.0f/4.0f, sqrt3over4), make_float3(1.0f/3.0f, -1.0f/4.0f, -sqrt3over4)));
+return yab;
+}
+
+__device__ inline float3 yab_2_rgb( float3 yab)
+{
+float3 rgb = mult_f3_f33( yab, invert_f33(make_mat3(make_float3(1.0f/3.0f, 1.0f/2.0f, 0.0f), make_float3(1.0f/3.0f, -1.0f/4.0f, sqrt3over4), make_float3(1.0f/3.0f, -1.0f/4.0f, -sqrt3over4))));
+return rgb;
+}
+
+__device__ inline float3 yab_2_ych(float3 yab)
+{
+float3 ych = yab;
+float yo = yab.y * yab.y + yab.z * yab.z;
+ych.y = sqrtf(yo);
+ych.z = atan2f(yab.z, yab.y) * (180.0f / 3.141592653589793f);
+if (ych.z < 0.0f) ych.z += 360.0f;
+return ych;
+}
+
+__device__ inline float3 ych_2_yab( float3 ych )
+{
+float3 yab;
+yab.x = ych.x;
+float h = ych.z * (3.141592653589793f / 180.0f);
+yab.y = ych.y * cosf(h);
+yab.z = ych.y * sinf(h);
+return yab;
+}
+
+__device__ inline float3 rgb_2_ych( float3 rgb)
+{
+return yab_2_ych( rgb_2_yab( rgb));
+}
+
+__device__ inline float3 ych_2_rgb( float3 ych)
+{
+return yab_2_rgb( ych_2_yab( ych));
+}
+
+__device__ inline float3 scale_C_at_H( float3 rgb, float centerH, float widthH, float percentC)
+{
+float3 new_rgb = rgb;
+float3 ych = rgb_2_ych( rgb);
+if (ych.y > 0.0f) {
+float centeredHue = center_hue( ych.z, centerH);
+float f_H = cubic_basis_shaper( centeredHue, widthH);
+if (f_H > 0.0f) {
+float3 new_ych = ych;
+new_ych.y = ych.y * (f_H * (percentC - 1.0f) + 1.0f);
+new_rgb = ych_2_rgb( new_ych);
+} else {
+new_rgb = rgb;
+}}
+return new_rgb;
+}
+
+__device__ inline float3 rotate_H_in_H( float3 rgb, float centerH, float widthH, float degreesShift)
+{
+float3 ych = rgb_2_ych( rgb);
+float3 new_ych = ych;
+float centeredHue = center_hue( ych.z, centerH);
+float f_H = cubic_basis_shaper( centeredHue, widthH);
+float old_hue = centeredHue;
+float new_hue = centeredHue + degreesShift;
+float2 table[2] = { {0.0f, old_hue}, {1.0f, new_hue} };
+float blended_hue = interpolate1D( table, 2, f_H);
+if (f_H > 0.0f) new_ych.z = uncenter_hue(blended_hue, centerH);
+return ych_2_rgb( new_ych);
+}
+
+__device__ inline float3 scale_C( float3 rgb, float percentC)
+{
+float3 ych = rgb_2_ych( rgb);
+ych.y = ych.y * percentC;
+return ych_2_rgb( ych);
+}
+
+__device__ inline float3 overlay_f3( float3 a, float3 b)
+{
+const float LUMA_CUT = lin_to_ACEScct( 0.5f);
+float luma = 0.2126f * a.x + 0.7152f * a.y + 0.0722f * a.z;
+float3 out;
+if (luma < LUMA_CUT) {
+out.x = 2.0f * a.x * b.x;
+out.y = 2.0f * a.y * b.y;
+out.z = 2.0f * a.z * b.z;
+} else {
+out.x = 1.0f - (2.0f * (1.0f - a.x) * (1.0f - b.x));
+out.y = 1.0f - (2.0f * (1.0f - a.y) * (1.0f - b.y));
+out.z = 1.0f - (2.0f * (1.0f - a.z) * (1.0f - b.z));
+}
+return out;
+}
+
+__device__ inline float3 LMT_PFE( float3 aces)
+{
+aces = scale_C( aces, 0.7f);
+float3 SLOPE = make_float3(1.0f, 1.0f, 0.94f);
+float3 OFFSET = make_float3(0.0f, 0.0f, 0.02f);
+float3 POWER = make_float3(1.0f, 1.0f, 1.0f);
+aces = ASCCDL_inACEScct( aces, SLOPE, OFFSET, POWER);
+aces = gamma_adjust_linear( aces, 1.5f, 0.18f);
+aces = rotate_H_in_H( aces, 0.0f, 30.0f, 5.0f);
+aces = rotate_H_in_H( aces, 80.0f, 60.0f, -15.0f);
+aces = rotate_H_in_H( aces, 52.0f, 50.0f, -14.0f);
+aces = scale_C_at_H( aces, 45.0f, 40.0f, 1.4f);
+aces = rotate_H_in_H( aces, 190.0f, 40.0f, 30.0f);
+aces = scale_C_at_H( aces, 240.0f, 120.0f, 1.4f);
+
+return aces;
+}
+
+__device__ inline float3 LMT_Bleach( float3 aces)
+{
+float3 a, b, blend;
+a = sat_adjust( aces, 0.9f);
+a = mult_f_f3( 2.0f, a);
+b = sat_adjust( aces, 0.0f);
+b = gamma_adjust_linear( b, 1.2f);
+a = ACES_to_ACEScct( a);
+b = ACES_to_ACEScct( b);
+blend = overlay_f3( a, b);
+aces = ACEScct_to_ACES( blend);
+
+return aces;
+}
+
+__device__ inline float3 LMT_BlueLightArtifactFix( float3 aces)
+{
+mat3 correctionMatrix =
+{ {0.9404372683f, 0.0083786969f, 0.0005471261f },
+{-0.0183068787f, 0.8286599939f, -0.0008833746f },
+{ 0.0778696104f, 0.1629613092f, 1.0003362486f } };
+
+float3 acesMod = mult_f3_f33( aces, correctionMatrix);
+
+return acesMod;
+}
+
+__device__ inline float3 RRT( float3 aces)
+{
+float saturation = rgb_2_saturation( aces);
+float ycIn = rgb_2_yc( aces, 1.75f);
+float s = sigmoid_shaper( (saturation - 0.4f) / 0.2f);
+float addedGlow = 1.0f + glow_fwd( ycIn, RRT_GLOW_GAIN * s, RRT_GLOW_MID);
+aces = mult_f_f3( addedGlow, aces);
+float hue = rgb_2_hue( aces);
+float centeredHue = center_hue( hue, RRT_RED_HUE);
+float hueWeight = cubic_basis_shaper( centeredHue, RRT_RED_WIDTH);
+aces.x = aces.x + hueWeight * saturation * (RRT_RED_PIVOT - aces.x) * (1.0f - RRT_RED_SCALE);
+aces = max_f3_f( aces, 0.0f);
+float3 rgbPre = mult_f3_f33( aces, AP0_2_AP1_MAT_B);
+rgbPre = max_f3_f( rgbPre, 0.0f);
+rgbPre = mult_f3_f33( rgbPre, calc_sat_adjust_matrix( RRT_SAT_FACTOR, make_float3(RGBtoXYZ( AP1).c0.y, RGBtoXYZ( AP1).c1.y, RGBtoXYZ( AP1).c2.y)));
+
+float3 rgbPost;
+rgbPost.x = segmented_spline_c5_fwd( rgbPre.x);
+rgbPost.y = segmented_spline_c5_fwd( rgbPre.y);
+rgbPost.z = segmented_spline_c5_fwd( rgbPre.z);
+float3 rgbOces = mult_f3_f33( rgbPost, AP1_2_AP0_MAT_B);
+
+return rgbOces;
+}
+
+__device__ inline float3 InvRRT( float3 oces)
+{
+float3 rgbPre = mult_f3_f33( oces, AP0_2_AP1_MAT_B);
+float3 rgbPost;
+rgbPost.x = segmented_spline_c5_rev( rgbPre.x);
+rgbPost.y = segmented_spline_c5_rev( rgbPre.y);
+rgbPost.z = segmented_spline_c5_rev( rgbPre.z);
+rgbPost = mult_f3_f33( rgbPost, invert_f33(calc_sat_adjust_matrix( RRT_SAT_FACTOR, make_float3(RGBtoXYZ( AP1).c0.y, RGBtoXYZ( AP1).c1.y, RGBtoXYZ( AP1).c2.y))));
+rgbPost = max_f3_f( rgbPost, 0.0f);
+float3 aces = mult_f3_f33( rgbPost, AP1_2_AP0_MAT_B);
+aces = max_f3_f( aces, 0.0f);
+float hue = rgb_2_hue( aces);
+float centeredHue = center_hue( hue, RRT_RED_HUE);
+float hueWeight = cubic_basis_shaper( centeredHue, RRT_RED_WIDTH);
+float minChan;
+if (centeredHue < 0.0f) {
+minChan = aces.y;
+} else {
+minChan = aces.z;
+}
+float a = hueWeight * (1.0f - RRT_RED_SCALE) - 1.0f;
+float b = aces.x - hueWeight * (RRT_RED_PIVOT + minChan) * (1.0f - RRT_RED_SCALE);
+float c = hueWeight * RRT_RED_PIVOT * minChan * (1.0f - RRT_RED_SCALE);
+aces.x = ( -b - sqrt( b * b - 4.0f * a * c)) / ( 2.0f * a);
+float saturation = rgb_2_saturation( aces);
+float ycOut = rgb_2_yc( aces, 1.75f);
+float s = sigmoid_shaper( (saturation - 0.4f) / 0.2f);
+float reducedGlow = 1.0f + glow_inv( ycOut, RRT_GLOW_GAIN * s, RRT_GLOW_MID);
+aces = mult_f_f3( ( reducedGlow), aces);
+
+return aces;
+}
+
+__device__ inline float3 ODT_Rec709_100nits_dim( float3 oces)
+{
+Chromaticities DISPLAY_PRI = REC709_PRI;
+mat3 XYZ_2_DISPLAY_PRI_MAT = XYZtoRGB(DISPLAY_PRI);
+float DISPGAMMA = 2.4f;
+float L_W = 1.0f;
+float L_B = 0.0f;
+bool legalRange = false;
+
+float3 rgbPre = mult_f3_f33( oces, AP0_2_AP1_MAT_B);
+float3 rgbPost;
+rgbPost.x = segmented_spline_c9_fwd( rgbPre.x, ODT_48nits());
+rgbPost.y = segmented_spline_c9_fwd( rgbPre.y, ODT_48nits());
+rgbPost.z = segmented_spline_c9_fwd( rgbPre.z, ODT_48nits());
+
+float3 linearCV;
+linearCV.x = Y_2_linCV( rgbPost.x, 48.0f, exp10f(log10f(0.02f)));
+linearCV.y = Y_2_linCV( rgbPost.y, 48.0f, exp10f(log10f(0.02f)));
+linearCV.z = Y_2_linCV( rgbPost.z, 48.0f, exp10f(log10f(0.02f)));
+
+linearCV = darkSurround_to_dimSurround( linearCV);
+linearCV = mult_f3_f33( linearCV, calc_sat_adjust_matrix( ODT_SAT_FACTOR, make_float3(AP1_2_XYZ_MAT.c0.y, AP1_2_XYZ_MAT.c1.y, AP1_2_XYZ_MAT.c2.y)));
+float3 XYZ = mult_f3_f33( linearCV, AP1_2_XYZ_MAT);
+
+XYZ = mult_f3_f33( XYZ, D60_2_D65_CAT);
+
+linearCV = mult_f3_f33( XYZ, XYZ_2_DISPLAY_PRI_MAT);
+linearCV = clamp_f3( linearCV, 0.0f, 1.0f);
+
+float3 outputCV;
+outputCV.x = bt1886_r( linearCV.x, DISPGAMMA, L_W, L_B);
+outputCV.y = bt1886_r( linearCV.y, DISPGAMMA, L_W, L_B);
+outputCV.z = bt1886_r( linearCV.z, DISPGAMMA, L_W, L_B);
+
+if(legalRange) outputCV = fullRange_to_smpteRange_f3( outputCV);
+
+return outputCV;
+}
+
+__device__ inline float3 ODT_Rec709_D60sim_100nits_dim( float3 oces)
+{
+const Chromaticities DISPLAY_PRI = REC709_PRI;
+const mat3 XYZ_2_DISPLAY_PRI_MAT = XYZtoRGB( DISPLAY_PRI);
+const float DISPGAMMA = 2.4f;
+const float L_W = 1.0f;
+const float L_B = 0.0f;
+const float SCALE = 0.955f;
+bool legalRange = false;
+
+float3 rgbPre = mult_f3_f33( oces, AP0_2_AP1_MAT_B);
+float3 rgbPost;
+rgbPost.x = segmented_spline_c9_fwd( rgbPre.x, ODT_48nits());
+rgbPost.y = segmented_spline_c9_fwd( rgbPre.y, ODT_48nits());
+rgbPost.z = segmented_spline_c9_fwd( rgbPre.z, ODT_48nits());
+
+float3 linearCV;
+linearCV.x = Y_2_linCV( rgbPost.x, 48.0f, exp10f(log10f(0.02f)));
+linearCV.y = Y_2_linCV( rgbPost.y, 48.0f, exp10f(log10f(0.02f)));
+linearCV.z = Y_2_linCV( rgbPost.z, 48.0f, exp10f(log10f(0.02f)));
+
+linearCV.x = fminf( linearCV.x, 1.0f) * SCALE;
+linearCV.y = fminf( linearCV.y, 1.0f) * SCALE;
+linearCV.z = fminf( linearCV.z, 1.0f) * SCALE;
+linearCV = darkSurround_to_dimSurround( linearCV);
+linearCV = mult_f3_f33( linearCV, calc_sat_adjust_matrix( ODT_SAT_FACTOR, make_float3(AP1_2_XYZ_MAT.c0.y, AP1_2_XYZ_MAT.c1.y, AP1_2_XYZ_MAT.c2.y)));
+
+float3 XYZ = mult_f3_f33( linearCV, AP1_2_XYZ_MAT);
+linearCV = mult_f3_f33( XYZ, XYZ_2_DISPLAY_PRI_MAT);
+linearCV = clamp_f3( linearCV, 0.0f, 1.0f);
+
+float3 outputCV;
+outputCV.x = bt1886_r( linearCV.x, DISPGAMMA, L_W, L_B);
+outputCV.y = bt1886_r( linearCV.y, DISPGAMMA, L_W, L_B);
+outputCV.z = bt1886_r( linearCV.z, DISPGAMMA, L_W, L_B);
+
+if (legalRange) {
+outputCV = fullRange_to_smpteRange_f3( outputCV);
+}
+
+return outputCV;
+}
+
+__device__ inline float3 ODT_Rec2020_100nits_dim( float3 oces)
+{
+Chromaticities DISPLAY_PRI = REC2020_PRI;
+mat3 XYZ_2_DISPLAY_PRI_MAT = XYZtoRGB(DISPLAY_PRI);
+float DISPGAMMA = 2.4f;
+float L_W = 1.0f;
+float L_B = 0.0f;
+bool legalRange = false;
+
+float3 rgbPre = mult_f3_f33( oces, AP0_2_AP1_MAT_B);
+float3 rgbPost;
+rgbPost.x = segmented_spline_c9_fwd( rgbPre.x, ODT_48nits());
+rgbPost.y = segmented_spline_c9_fwd( rgbPre.y, ODT_48nits());
+rgbPost.z = segmented_spline_c9_fwd( rgbPre.z, ODT_48nits());
+
+float3 linearCV;
+linearCV.x = Y_2_linCV( rgbPost.x, 48.0f, exp10f(log10f(0.02f)));
+linearCV.y = Y_2_linCV( rgbPost.y, 48.0f, exp10f(log10f(0.02f)));
+linearCV.z = Y_2_linCV( rgbPost.z, 48.0f, exp10f(log10f(0.02f)));
+linearCV = darkSurround_to_dimSurround( linearCV);
+linearCV = mult_f3_f33( linearCV, calc_sat_adjust_matrix( ODT_SAT_FACTOR, make_float3(RGBtoXYZ( AP1).c0.y, RGBtoXYZ( AP1).c1.y, RGBtoXYZ( AP1).c2.y)));
+
+float3 XYZ = mult_f3_f33( linearCV, AP1_2_XYZ_MAT);
+XYZ = mult_f3_f33( XYZ, D60_2_D65_CAT);
+linearCV = mult_f3_f33( XYZ, XYZ_2_DISPLAY_PRI_MAT);
+linearCV = clamp_f3( linearCV, 0.0f, 1.0f);
+
+float3 outputCV;
+outputCV.x = bt1886_r( linearCV.x, DISPGAMMA, L_W, L_B);
+outputCV.y = bt1886_r( linearCV.y, DISPGAMMA, L_W, L_B);
+outputCV.z = bt1886_r( linearCV.z, DISPGAMMA, L_W, L_B);
+
+if (legalRange) {
+outputCV = fullRange_to_smpteRange_f3( outputCV);
+}
+
+return outputCV;
+}
+
+__device__ inline float3 ODT_Rec2020_ST2084_1000nits( float3 oces)
+{
+Chromaticities DISPLAY_PRI = REC2020_PRI;
+mat3 XYZ_2_DISPLAY_PRI_MAT = XYZtoRGB(DISPLAY_PRI);
+
+float3 rgbPre = mult_f3_f33( oces, AP0_2_AP1_MAT_B);
+float3 rgbPost;
+rgbPost.x = segmented_spline_c9_fwd( rgbPre.x, ODT_1000nits());
+rgbPost.y = segmented_spline_c9_fwd( rgbPre.y, ODT_1000nits());
+rgbPost.z = segmented_spline_c9_fwd( rgbPre.z, ODT_1000nits());
+rgbPost = add_f_f3( -exp10f(-4.4550166483f), rgbPost);
+
+float3 XYZ = mult_f3_f33( rgbPost, RGBtoXYZ( AP1));
+XYZ = mult_f3_f33( XYZ, calculate_cat_matrix( AP0.white, REC709_PRI.white));
+float3 rgb = mult_f3_f33( XYZ, XYZ_2_DISPLAY_PRI_MAT);
+rgb = max_f3_f( rgb, 0.0f);
+float3 outputCV = Y_2_ST2084_f3( rgb);
+
+return outputCV;
+}
+
+__device__ inline float3 ODT_Rec2020_Rec709limited_100nits_dim( float3 oces)
+{
+const Chromaticities DISPLAY_PRI = REC2020_PRI;
+const mat3 XYZ_2_DISPLAY_PRI_MAT = XYZtoRGB(DISPLAY_PRI);
+const Chromaticities LIMITING_PRI = REC709_PRI;
+const float DISPGAMMA = 2.4f;
+const float L_W = 1.0f;
+const float L_B = 0.0f;
+bool legalRange = false;
+
+float3 rgbPre = mult_f3_f33( oces, AP0_2_AP1_MAT_B);
+float3 rgbPost;
+rgbPost.x = segmented_spline_c9_fwd( rgbPre.x, ODT_48nits());
+rgbPost.y = segmented_spline_c9_fwd( rgbPre.y, ODT_48nits());
+rgbPost.z = segmented_spline_c9_fwd( rgbPre.z, ODT_48nits());
+
+float3 linearCV;
+linearCV.x = Y_2_linCV( rgbPost.x, 48.0f, exp10f(log10f(0.02f)));
+linearCV.y = Y_2_linCV( rgbPost.y, 48.0f, exp10f(log10f(0.02f)));
+linearCV.z = Y_2_linCV( rgbPost.z, 48.0f, exp10f(log10f(0.02f)));
+linearCV = darkSurround_to_dimSurround( linearCV);
+linearCV = mult_f3_f33( linearCV, calc_sat_adjust_matrix( ODT_SAT_FACTOR, make_float3(AP1_2_XYZ_MAT.c0.y, AP1_2_XYZ_MAT.c1.y, AP1_2_XYZ_MAT.c2.y)));
+
+float3 XYZ = mult_f3_f33( linearCV, AP1_2_XYZ_MAT);
+XYZ = mult_f3_f33( XYZ, D60_2_D65_CAT);
+XYZ = limit_to_primaries( XYZ, LIMITING_PRI);
+linearCV = mult_f3_f33( XYZ, XYZ_2_DISPLAY_PRI_MAT);
+linearCV = clamp_f3( linearCV, 0.0f, 1.0f);
+
+float3 outputCV;
+outputCV.x = bt1886_r( linearCV.x, DISPGAMMA, L_W, L_B);
+outputCV.y = bt1886_r( linearCV.y, DISPGAMMA, L_W, L_B);
+outputCV.z = bt1886_r( linearCV.z, DISPGAMMA, L_W, L_B);
+
+if (legalRange) {
+outputCV = fullRange_to_smpteRange_f3( outputCV);
+}
+
+return outputCV;
+}
+
+__device__ inline float3 ODT_Rec2020_P3D65limited_100nits_dim( float3 oces)
+{
+const Chromaticities DISPLAY_PRI = REC2020_PRI;
+const mat3 XYZ_2_DISPLAY_PRI_MAT = XYZtoRGB(DISPLAY_PRI);
+const Chromaticities LIMITING_PRI = P3D65_PRI;
+const float DISPGAMMA = 2.4f;
+const float L_W = 1.0f;
+const float L_B = 0.0f;
+bool legalRange = false;
+
+float3 rgbPre = mult_f3_f33( oces, AP0_2_AP1_MAT_B);
+float3 rgbPost;
+rgbPost.x = segmented_spline_c9_fwd( rgbPre.x, ODT_48nits());
+rgbPost.y = segmented_spline_c9_fwd( rgbPre.y, ODT_48nits());
+rgbPost.z = segmented_spline_c9_fwd( rgbPre.z, ODT_48nits());
+
+float3 linearCV;
+linearCV.x = Y_2_linCV( rgbPost.x, 48.0f, exp10f(log10f(0.02f)));
+linearCV.y = Y_2_linCV( rgbPost.y, 48.0f, exp10f(log10f(0.02f)));
+linearCV.z = Y_2_linCV( rgbPost.z, 48.0f, exp10f(log10f(0.02f)));
+linearCV = darkSurround_to_dimSurround( linearCV);
+linearCV = mult_f3_f33( linearCV, calc_sat_adjust_matrix( ODT_SAT_FACTOR, make_float3(RGBtoXYZ( AP1).c0.y, RGBtoXYZ( AP1).c1.y, RGBtoXYZ( AP1).c2.y)));
+
+float3 XYZ = mult_f3_f33( linearCV, AP1_2_XYZ_MAT);
+XYZ = mult_f3_f33( XYZ, D60_2_D65_CAT);
+XYZ = limit_to_primaries( XYZ, LIMITING_PRI);
+linearCV = mult_f3_f33( XYZ, XYZ_2_DISPLAY_PRI_MAT);
+linearCV = clamp_f3( linearCV, 0.0f, 1.0f);
+
+float3 outputCV;
+outputCV.x = bt1886_r( linearCV.x, DISPGAMMA, L_W, L_B);
+outputCV.y = bt1886_r( linearCV.y, DISPGAMMA, L_W, L_B);
+outputCV.z = bt1886_r( linearCV.z, DISPGAMMA, L_W, L_B);
+
+if (legalRange) {
+outputCV = fullRange_to_smpteRange_f3( outputCV);
+}
+
+return outputCV;
+}
+
+__device__ inline float3 ODT_sRGB_D60sim_100nits_dim( float3 oces)
+{
+const Chromaticities DISPLAY_PRI = REC709_PRI;
+const mat3 XYZ_2_DISPLAY_PRI_MAT = XYZtoRGB(DISPLAY_PRI);
+const float DISPGAMMA = 2.4f;
+const float OFFSET = 0.055f;
+const float SCALE = 0.955f;
+
+float3 rgbPre = mult_f3_f33( oces, AP0_2_AP1_MAT_B);
+float3 rgbPost;
+rgbPost.x = segmented_spline_c9_fwd( rgbPre.x, ODT_48nits());
+rgbPost.y = segmented_spline_c9_fwd( rgbPre.y, ODT_48nits());
+rgbPost.z = segmented_spline_c9_fwd( rgbPre.z, ODT_48nits());
+
+float3 linearCV;
+linearCV.x = Y_2_linCV( rgbPost.x, 48.0f, exp10f(log10f(0.02f)));
+linearCV.y = Y_2_linCV( rgbPost.y, 48.0f, exp10f(log10f(0.02f)));
+linearCV.z = Y_2_linCV( rgbPost.z, 48.0f, exp10f(log10f(0.02f)));
+
+linearCV.x = fminf( linearCV.x, 1.0f) * SCALE;
+linearCV.y = fminf( linearCV.y, 1.0f) * SCALE;
+linearCV.z = fminf( linearCV.z, 1.0f) * SCALE;
+linearCV = darkSurround_to_dimSurround( linearCV);
+linearCV = mult_f3_f33( linearCV, calc_sat_adjust_matrix( ODT_SAT_FACTOR, make_float3(RGBtoXYZ( AP1).c0.y, RGBtoXYZ( AP1).c1.y, RGBtoXYZ( AP1).c2.y)));
+
+float3 XYZ = mult_f3_f33( linearCV, AP1_2_XYZ_MAT);
+linearCV = mult_f3_f33( XYZ, XYZ_2_DISPLAY_PRI_MAT);
+linearCV = clamp_f3( linearCV, 0.0f, 1.0f);
+
+float3 outputCV;
+outputCV.x = moncurve_r( linearCV.x, DISPGAMMA, OFFSET);
+outputCV.y = moncurve_r( linearCV.y, DISPGAMMA, OFFSET);
+outputCV.z = moncurve_r( linearCV.z, DISPGAMMA, OFFSET);
+
+return outputCV;
+}
+
+__device__ inline float3 ODT_sRGB_100nits_dim( float3 oces)
+{
+const Chromaticities DISPLAY_PRI = REC709_PRI;
+const mat3 XYZ_2_DISPLAY_PRI_MAT = XYZtoRGB(DISPLAY_PRI);
+const float DISPGAMMA = 2.4f;
+const float OFFSET = 0.055f;
+
+float3 rgbPre = mult_f3_f33( oces, AP0_2_AP1_MAT_B);
+
+float3 rgbPost;
+rgbPost.x = segmented_spline_c9_fwd( rgbPre.x, ODT_48nits());
+rgbPost.y = segmented_spline_c9_fwd( rgbPre.y, ODT_48nits());
+rgbPost.z = segmented_spline_c9_fwd( rgbPre.z, ODT_48nits());
+
+float3 linearCV;
+linearCV.x = Y_2_linCV( rgbPost.x, 48.0f, exp10f(log10f(0.02f)));
+linearCV.y = Y_2_linCV( rgbPost.y, 48.0f, exp10f(log10f(0.02f)));
+linearCV.z = Y_2_linCV( rgbPost.z, 48.0f, exp10f(log10f(0.02f)));
+
+linearCV = darkSurround_to_dimSurround( linearCV);
+
+linearCV = mult_f3_f33( linearCV, calc_sat_adjust_matrix( ODT_SAT_FACTOR, make_float3(RGBtoXYZ( AP1).c0.y, RGBtoXYZ( AP1).c1.y, RGBtoXYZ( AP1).c2.y)));
+float3 XYZ = mult_f3_f33( linearCV, RGBtoXYZ( AP1));
+XYZ = mult_f3_f33( XYZ, calculate_cat_matrix( AP0.white, REC709_PRI.white));
+
+linearCV = mult_f3_f33( XYZ, XYZ_2_DISPLAY_PRI_MAT);
+
+linearCV = clamp_f3( linearCV, 0.0f, 1.0f);
+
+float3 outputCV;
+outputCV.x = moncurve_r( linearCV.x, DISPGAMMA, OFFSET);
+outputCV.y = moncurve_r( linearCV.y, DISPGAMMA, OFFSET);
+outputCV.z = moncurve_r( linearCV.z, DISPGAMMA, OFFSET);
+
+return outputCV;
+}
+
+__device__ inline float3 ODT_P3DCI_48nits( float3 oces)
+{
+const Chromaticities DISPLAY_PRI = P3DCI_PRI;
+const mat3 XYZ_2_DISPLAY_PRI_MAT = XYZtoRGB( DISPLAY_PRI);
+const float DISPGAMMA = 2.6f;
+const float NEW_WHT = 0.918f;
+const float ROLL_WIDTH = 0.5f;
+const float SCALE = 0.96f;
+
+float3 rgbPre = mult_f3_f33( oces, AP0_2_AP1_MAT_B);
+float3 rgbPost;
+rgbPost.x = segmented_spline_c9_fwd( rgbPre.x, ODT_48nits());
+rgbPost.y = segmented_spline_c9_fwd( rgbPre.y, ODT_48nits());
+rgbPost.z = segmented_spline_c9_fwd( rgbPre.z, ODT_48nits());
+
+float3 linearCV;
+linearCV.x = Y_2_linCV( rgbPost.x, 48.0f, exp10f(log10f(0.02f)));
+linearCV.y = Y_2_linCV( rgbPost.y, 48.0f, exp10f(log10f(0.02f)));
+linearCV.z = Y_2_linCV( rgbPost.z, 48.0f, exp10f(log10f(0.02f)));
+
+linearCV.x = roll_white_fwd( linearCV.x, NEW_WHT, ROLL_WIDTH);
+linearCV.y = roll_white_fwd( linearCV.y, NEW_WHT, ROLL_WIDTH);
+linearCV.z = roll_white_fwd( linearCV.z, NEW_WHT, ROLL_WIDTH);
+
+linearCV.x = fminf( linearCV.x, NEW_WHT) * SCALE;
+linearCV.y = fminf( linearCV.y, NEW_WHT) * SCALE;
+linearCV.z = fminf( linearCV.z, NEW_WHT) * SCALE;
+
+float3 XYZ = mult_f3_f33( linearCV, AP1_2_XYZ_MAT);
+linearCV = mult_f3_f33( XYZ, XYZ_2_DISPLAY_PRI_MAT);
+linearCV = clamp_f3( linearCV, 0.0f, 1.0f);
+float3 outputCV = pow_f3( linearCV, 1.0f / DISPGAMMA);
+
+return outputCV;
+}
+
+__device__ inline float3 ODT_P3DCI_D60sim_48nits( float3 oces)
+{
+const Chromaticities DISPLAY_PRI = P3DCI_PRI;
+const mat3 XYZ_2_DISPLAY_PRI_MAT = XYZtoRGB( DISPLAY_PRI);
+const float DISPGAMMA = 2.6f;
+const float NEW_WHT = 0.918;
+const float ROLL_WIDTH = 0.5;
+const float SCALE = 0.96;
+
+float3 rgbPre = mult_f3_f33( oces, AP0_2_AP1_MAT_B);
+float3 rgbPost;
+rgbPost.x = segmented_spline_c9_fwd( rgbPre.x, ODT_48nits());
+rgbPost.y = segmented_spline_c9_fwd( rgbPre.y, ODT_48nits());
+rgbPost.z = segmented_spline_c9_fwd( rgbPre.z, ODT_48nits());
+
+float3 linearCV;
+linearCV.x = Y_2_linCV( rgbPost.x, 48.0f, exp10f(log10f(0.02f)));
+linearCV.y = Y_2_linCV( rgbPost.y, 48.0f, exp10f(log10f(0.02f)));
+linearCV.z = Y_2_linCV( rgbPost.z, 48.0f, exp10f(log10f(0.02f)));
+
+linearCV.x = roll_white_fwd( linearCV.x, NEW_WHT, ROLL_WIDTH);
+linearCV.y = roll_white_fwd( linearCV.y, NEW_WHT, ROLL_WIDTH);
+linearCV.z = roll_white_fwd( linearCV.z, NEW_WHT, ROLL_WIDTH);
+
+linearCV.x = fminf( linearCV.x, NEW_WHT) * SCALE;
+linearCV.y = fminf( linearCV.y, NEW_WHT) * SCALE;
+linearCV.z = fminf( linearCV.z, NEW_WHT) * SCALE;
+
+float3 XYZ = mult_f3_f33( linearCV, AP1_2_XYZ_MAT);
+XYZ = mult_f3_f33( XYZ, D60_2_D65_CAT);
+linearCV = mult_f3_f33( XYZ, XYZ_2_DISPLAY_PRI_MAT);
+linearCV = clamp_f3( linearCV, 0.0f, 1.0f);
+float3 outputCV = pow_f3( linearCV, 1.0f / DISPGAMMA);
+
+return outputCV;
+}
+
+__device__ inline float3 ODT_P3DCI_D65sim_48nits( float3 oces)
+{
+const Chromaticities DISPLAY_PRI = P3DCI_PRI;
+const mat3 XYZ_2_DISPLAY_PRI_MAT = XYZtoRGB( DISPLAY_PRI);
+const float DISPGAMMA = 2.6f;
+const float NEW_WHT = 0.908f;
+const float ROLL_WIDTH = 0.5f;
+const float SCALE = 0.9575f;
+
+float3 rgbPre = mult_f3_f33( oces, AP0_2_AP1_MAT_B);
+float3 rgbPost;
+rgbPost.x = segmented_spline_c9_fwd( rgbPre.x, ODT_48nits());
+rgbPost.y = segmented_spline_c9_fwd( rgbPre.y, ODT_48nits());
+rgbPost.z = segmented_spline_c9_fwd( rgbPre.z, ODT_48nits());
+
+float3 linearCV;
+linearCV.x = Y_2_linCV( rgbPost.x, 48.0f, exp10f(log10f(0.02f)));
+linearCV.y = Y_2_linCV( rgbPost.y, 48.0f, exp10f(log10f(0.02f)));
+linearCV.z = Y_2_linCV( rgbPost.z, 48.0f, exp10f(log10f(0.02f)));
+
+linearCV.x = roll_white_fwd( linearCV.x, NEW_WHT, ROLL_WIDTH);
+linearCV.y = roll_white_fwd( linearCV.y, NEW_WHT, ROLL_WIDTH);
+linearCV.z = roll_white_fwd( linearCV.z, NEW_WHT, ROLL_WIDTH);
+
+linearCV.x = fminf( linearCV.x, NEW_WHT) * SCALE;
+linearCV.y = fminf( linearCV.y, NEW_WHT) * SCALE;
+linearCV.z = fminf( linearCV.z, NEW_WHT) * SCALE;
+
+float3 XYZ = mult_f3_f33( linearCV, AP1_2_XYZ_MAT);
+XYZ = mult_f3_f33( XYZ, D60_2_D65_CAT);
+linearCV = mult_f3_f33( XYZ, XYZ_2_DISPLAY_PRI_MAT);
+linearCV = clamp_f3( linearCV, 0.0f, 1.0f);
+float3 outputCV = pow_f3( linearCV, 1.0f / DISPGAMMA);
+
+return outputCV;
+}
+
+__device__ inline float3 ODT_P3D60_48nits( float3 oces)
+{
+const Chromaticities DISPLAY_PRI = P3D60_PRI;
+const mat3 XYZ_2_DISPLAY_PRI_MAT = XYZtoRGB( DISPLAY_PRI);
+const float DISPGAMMA = 2.6f;
+
+float3 rgbPre = mult_f3_f33( oces, AP0_2_AP1_MAT_B);
+float3 rgbPost;
+rgbPost.x = segmented_spline_c9_fwd( rgbPre.x, ODT_48nits());
+rgbPost.y = segmented_spline_c9_fwd( rgbPre.y, ODT_48nits());
+rgbPost.z = segmented_spline_c9_fwd( rgbPre.z, ODT_48nits());
+
+float3 linearCV;
+linearCV.x = Y_2_linCV( rgbPost.x, 48.0f, exp10f(log10f(0.02f)));
+linearCV.y = Y_2_linCV( rgbPost.y, 48.0f, exp10f(log10f(0.02f)));
+linearCV.z = Y_2_linCV( rgbPost.z, 48.0f, exp10f(log10f(0.02f)));
+
+float3 XYZ = mult_f3_f33( linearCV, AP1_2_XYZ_MAT);
+linearCV = mult_f3_f33( XYZ, XYZ_2_DISPLAY_PRI_MAT);
+linearCV = clamp_f3( linearCV, 0.0f, 1.0f);
+float3 outputCV = pow_f3( linearCV, 1.0f / DISPGAMMA);
+
+return outputCV;
+}
+
+__device__ inline float3 ODT_P3D65_48nits( float3 oces)
+{
+const Chromaticities DISPLAY_PRI = P3D65_PRI;
+const mat3 XYZ_2_DISPLAY_PRI_MAT = XYZtoRGB( DISPLAY_PRI);
+const float DISPGAMMA = 2.6f;
+
+float3 rgbPre = mult_f3_f33( oces, AP0_2_AP1_MAT_B);
+float3 rgbPost;
+rgbPost.x = segmented_spline_c9_fwd( rgbPre.x, ODT_48nits());
+rgbPost.y = segmented_spline_c9_fwd( rgbPre.y, ODT_48nits());
+rgbPost.z = segmented_spline_c9_fwd( rgbPre.z, ODT_48nits());
+
+float3 linearCV;
+linearCV.x = Y_2_linCV( rgbPost.x, 48.0f, exp10f(log10f(0.02f)));
+linearCV.y = Y_2_linCV( rgbPost.y, 48.0f, exp10f(log10f(0.02f)));
+linearCV.z = Y_2_linCV( rgbPost.z, 48.0f, exp10f(log10f(0.02f)));
+
+float3 XYZ = mult_f3_f33( linearCV, AP1_2_XYZ_MAT);
+linearCV = mult_f3_f33( XYZ, XYZ_2_DISPLAY_PRI_MAT);
+linearCV = clamp_f3( linearCV, 0.0f, 1.0f);
+float3 outputCV = pow_f3( linearCV, 1.0f / DISPGAMMA);
+
+return outputCV;
+}
+
+__device__ inline float3 ODT_P3D65_D60sim_48nits( float3 oces)
+{
+const Chromaticities DISPLAY_PRI = P3D65_PRI;
+const mat3 XYZ_2_DISPLAY_PRI_MAT = XYZtoRGB(DISPLAY_PRI);
+const float DISPGAMMA = 2.6f;
+const float SCALE = 0.964f;
+
+float3 rgbPre = mult_f3_f33( oces, AP0_2_AP1_MAT_B);
+float3 rgbPost;
+rgbPost.x = segmented_spline_c9_fwd( rgbPre.x, ODT_48nits());
+rgbPost.y = segmented_spline_c9_fwd( rgbPre.y, ODT_48nits());
+rgbPost.z = segmented_spline_c9_fwd( rgbPre.z, ODT_48nits());
+
+float3 linearCV;
+linearCV.x = Y_2_linCV( rgbPost.x, 48.0f, exp10f(log10f(0.02f)));
+linearCV.y = Y_2_linCV( rgbPost.y, 48.0f, exp10f(log10f(0.02f)));
+linearCV.z = Y_2_linCV( rgbPost.z, 48.0f, exp10f(log10f(0.02f)));
+
+linearCV.x = fminf( linearCV.x, 1.0f) * SCALE;
+linearCV.y = fminf( linearCV.y, 1.0f) * SCALE;
+linearCV.z = fminf( linearCV.z, 1.0f) * SCALE;
+
+float3 XYZ = mult_f3_f33( linearCV, AP1_2_XYZ_MAT);
+linearCV = mult_f3_f33( XYZ, XYZ_2_DISPLAY_PRI_MAT);
+linearCV = clamp_f3( linearCV, 0.0f, 1.0f);
+float3 outputCV = pow_f3( linearCV, 1.0f / DISPGAMMA);
+
+return outputCV;
+}
+
+__device__ inline float3 ODT_P3D65_Rec709limited_48nits( float3 oces)
+{
+const Chromaticities DISPLAY_PRI = P3D65_PRI;
+const mat3 XYZ_2_DISPLAY_PRI_MAT = XYZtoRGB(DISPLAY_PRI);
+const Chromaticities LIMITING_PRI = REC709_PRI;
+const float DISPGAMMA = 2.6f;
+
+float3 rgbPre = mult_f3_f33( oces, AP0_2_AP1_MAT_B);
+float3 rgbPost;
+rgbPost.x = segmented_spline_c9_fwd( rgbPre.x, ODT_48nits());
+rgbPost.y = segmented_spline_c9_fwd( rgbPre.y, ODT_48nits());
+rgbPost.z = segmented_spline_c9_fwd( rgbPre.z, ODT_48nits());
+
+float3 linearCV;
+linearCV.x = Y_2_linCV( rgbPost.x, 48.0f, exp10f(log10f(0.02f)));
+linearCV.y = Y_2_linCV( rgbPost.y, 48.0f, exp10f(log10f(0.02f)));
+linearCV.z = Y_2_linCV( rgbPost.z, 48.0f, exp10f(log10f(0.02f)));
+
+float3 XYZ = mult_f3_f33( linearCV, AP1_2_XYZ_MAT);
+XYZ = mult_f3_f33( XYZ, D60_2_D65_CAT);
+XYZ = limit_to_primaries( XYZ, LIMITING_PRI);
+linearCV = mult_f3_f33( XYZ, XYZ_2_DISPLAY_PRI_MAT);
+linearCV = clamp_f3( linearCV, 0.0f, 1.0f);
+float3 outputCV = pow_f3( linearCV, 1.0f / DISPGAMMA);
+
+return outputCV;
+}
+
+__device__ inline float3 ODT_DCDM( float3 oces)
+{
+float3 rgbPre = mult_f3_f33( oces, AP0_2_AP1_MAT_B);
+
+float3 rgbPost;
+rgbPost.x = segmented_spline_c9_fwd( rgbPre.x, ODT_48nits());
+rgbPost.y = segmented_spline_c9_fwd( rgbPre.y, ODT_48nits());
+rgbPost.z = segmented_spline_c9_fwd( rgbPre.z, ODT_48nits());
+
+float3 linearCV;
+linearCV.x = Y_2_linCV( rgbPost.x, 48.0f, exp10f(log10f(0.02f)));
+linearCV.y = Y_2_linCV( rgbPost.y, 48.0f, exp10f(log10f(0.02f)));
+linearCV.z = Y_2_linCV( rgbPost.z, 48.0f, exp10f(log10f(0.02f)));
+
+float3 XYZ = mult_f3_f33( linearCV, AP1_2_XYZ_MAT);
+
+XYZ = max_f3_f( XYZ, 0.0f);
+float3 outputCV = dcdm_encode( XYZ);
+
+return outputCV;
+}
+
+__device__ inline float3 ODT_DCDM_P3D60limited( float3 oces)
+{
+const Chromaticities LIMITING_PRI = P3D60_PRI;
+
+float3 rgbPre = mult_f3_f33( oces, AP0_2_AP1_MAT_B);
+float3 rgbPost;
+rgbPost.x = segmented_spline_c9_fwd( rgbPre.x, ODT_48nits());
+rgbPost.y = segmented_spline_c9_fwd( rgbPre.y, ODT_48nits());
+rgbPost.z = segmented_spline_c9_fwd( rgbPre.z, ODT_48nits());
+
+float3 linearCV;
+linearCV.x = Y_2_linCV( rgbPost.x, 48.0f, exp10f(log10f(0.02f)));
+linearCV.y = Y_2_linCV( rgbPost.y, 48.0f, exp10f(log10f(0.02f)));
+linearCV.z = Y_2_linCV( rgbPost.z, 48.0f, exp10f(log10f(0.02f)));
+
+float3 XYZ = mult_f3_f33( linearCV, AP1_2_XYZ_MAT);
+XYZ = limit_to_primaries( XYZ, LIMITING_PRI);
+float3 outputCV = dcdm_encode( XYZ);
+
+return outputCV;
+}
+
+__device__ inline float3 ODT_DCDM_P3D65limited( float3 oces)
+{
+const Chromaticities LIMITING_PRI = P3D65_PRI;
+
+float3 rgbPre = mult_f3_f33( oces, AP0_2_AP1_MAT_B);
+float3 rgbPost;
+rgbPost.x = segmented_spline_c9_fwd( rgbPre.x, ODT_48nits());
+rgbPost.y = segmented_spline_c9_fwd( rgbPre.y, ODT_48nits());
+rgbPost.z = segmented_spline_c9_fwd( rgbPre.z, ODT_48nits());
+
+float3 linearCV;
+linearCV.x = Y_2_linCV( rgbPost.x, 48.0f, exp10f(log10f(0.02f)));
+linearCV.y = Y_2_linCV( rgbPost.y, 48.0f, exp10f(log10f(0.02f)));
+linearCV.z = Y_2_linCV( rgbPost.z, 48.0f, exp10f(log10f(0.02f)));
+
+float3 XYZ = mult_f3_f33( linearCV, AP1_2_XYZ_MAT);
+XYZ = limit_to_primaries( XYZ, LIMITING_PRI);
+float3 outputCV = dcdm_encode( XYZ);
+
+return outputCV;
+}
+
+__device__ inline float3 ODT_RGBmonitor_100nits_dim( float3 oces)
+{
+Chromaticities DISPLAY_PRI = REC709_PRI;
+mat3 XYZ_2_DISPLAY_PRI_MAT = XYZtoRGB(DISPLAY_PRI);
+float DISPGAMMA = 2.4f;
+float OFFSET = 0.055f;
+
+float3 rgbPre = mult_f3_f33( oces, AP0_2_AP1_MAT_B);
+float3 rgbPost;
+rgbPost.x = segmented_spline_c9_fwd( rgbPre.x, ODT_48nits());
+rgbPost.y = segmented_spline_c9_fwd( rgbPre.y, ODT_48nits());
+rgbPost.z = segmented_spline_c9_fwd( rgbPre.z, ODT_48nits());
+
+float3 linearCV;
+linearCV.x = Y_2_linCV( rgbPost.x, 48.0f, exp10f(log10f(0.02f)));
+linearCV.y = Y_2_linCV( rgbPost.y, 48.0f, exp10f(log10f(0.02f)));
+linearCV.z = Y_2_linCV( rgbPost.z, 48.0f, exp10f(log10f(0.02f)));
+
+linearCV = darkSurround_to_dimSurround( linearCV);
+linearCV = mult_f3_f33( linearCV, calc_sat_adjust_matrix( ODT_SAT_FACTOR, make_float3(RGBtoXYZ( AP1).c0.y, RGBtoXYZ( AP1).c1.y, RGBtoXYZ( AP1).c2.y)));
+
+float3 XYZ = mult_f3_f33( linearCV, AP1_2_XYZ_MAT);
+XYZ = mult_f3_f33( XYZ, D60_2_D65_CAT);
+linearCV = mult_f3_f33( XYZ, XYZ_2_DISPLAY_PRI_MAT);
+linearCV = clamp_f3( linearCV, 0.0f, 1.0f);
+
+float3 outputCV;
+outputCV.x = moncurve_r( linearCV.x, DISPGAMMA, OFFSET);
+outputCV.y = moncurve_r( linearCV.y, DISPGAMMA, OFFSET);
+outputCV.z = moncurve_r( linearCV.z, DISPGAMMA, OFFSET);
+
+return outputCV;
+}
+
+__device__ inline float3 ODT_RGBmonitor_D60sim_100nits_dim( float3 oces)
+{
+Chromaticities DISPLAY_PRI = REC709_PRI;
+mat3 XYZ_2_DISPLAY_PRI_MAT = XYZtoRGB(DISPLAY_PRI);
+float DISPGAMMA = 2.4f;
+float OFFSET = 0.055f;
+float SCALE = 0.955f;
+
+float3 rgbPre = mult_f3_f33( oces, AP0_2_AP1_MAT_B);
+float3 rgbPost;
+rgbPost.x = segmented_spline_c9_fwd( rgbPre.x, ODT_48nits());
+rgbPost.y = segmented_spline_c9_fwd( rgbPre.y, ODT_48nits());
+rgbPost.z = segmented_spline_c9_fwd( rgbPre.z, ODT_48nits());
+
+float3 linearCV;
+linearCV.x = Y_2_linCV( rgbPost.x, 48.0f, exp10f(log10f(0.02f)));
+linearCV.y = Y_2_linCV( rgbPost.y, 48.0f, exp10f(log10f(0.02f)));
+linearCV.z = Y_2_linCV( rgbPost.z, 48.0f, exp10f(log10f(0.02f)));
+
+linearCV.x = fminf( linearCV.x, 1.0f) * SCALE;
+linearCV.y = fminf( linearCV.y, 1.0f) * SCALE;
+linearCV.z = fminf( linearCV.z, 1.0f) * SCALE;
+
+linearCV = darkSurround_to_dimSurround( linearCV);
+linearCV = mult_f3_f33( linearCV, calc_sat_adjust_matrix( ODT_SAT_FACTOR, make_float3(AP1_2_XYZ_MAT.c0.y, AP1_2_XYZ_MAT.c1.y, AP1_2_XYZ_MAT.c2.y)));
+float3 XYZ = mult_f3_f33( linearCV, AP1_2_XYZ_MAT);
+linearCV = mult_f3_f33( XYZ, XYZ_2_DISPLAY_PRI_MAT);
+linearCV = clamp_f3( linearCV, 0.0f, 1.0f);
+
+float3 outputCV;
+outputCV.x = moncurve_r( linearCV.x, DISPGAMMA, OFFSET);
+outputCV.y = moncurve_r( linearCV.y, DISPGAMMA, OFFSET);
+outputCV.z = moncurve_r( linearCV.z, DISPGAMMA, OFFSET);
+
+return outputCV;
+}
+
+__device__ inline float3 InvODT_Rec709_100nits_dim( float3 outputCV)
+{
+Chromaticities DISPLAY_PRI = REC709_PRI;
+mat3 DISPLAY_PRI_2_XYZ_MAT = RGBtoXYZ(DISPLAY_PRI);
+float DISPGAMMA = 2.4f;
+float L_W = 1.0f;
+float L_B = 0.0f;
+bool legalRange = false;
+
+if (legalRange) {
+outputCV = smpteRange_to_fullRange_f3( outputCV);
+}
+
+float3 linearCV;
+linearCV.x = bt1886_f( outputCV.x, DISPGAMMA, L_W, L_B);
+linearCV.y = bt1886_f( outputCV.y, DISPGAMMA, L_W, L_B);
+linearCV.z = bt1886_f( outputCV.z, DISPGAMMA, L_W, L_B);
+
+float3 XYZ = mult_f3_f33( linearCV, DISPLAY_PRI_2_XYZ_MAT);
+XYZ = mult_f3_f33( XYZ, invert_f33( D60_2_D65_CAT));
+linearCV = mult_f3_f33( XYZ, XYZ_2_AP1_MAT);
+linearCV = mult_f3_f33( linearCV, invert_f33( calc_sat_adjust_matrix( ODT_SAT_FACTOR, make_float3(AP1_2_XYZ_MAT.c0.y, AP1_2_XYZ_MAT.c1.y, AP1_2_XYZ_MAT.c2.y))));
+linearCV = dimSurround_to_darkSurround( linearCV);
+
+float3 rgbPre;
+rgbPre.x = linCV_2_Y( linearCV.x, 48.0f, exp10f(log10f(0.02f)));
+rgbPre.y = linCV_2_Y( linearCV.y, 48.0f, exp10f(log10f(0.02f)));
+rgbPre.z = linCV_2_Y( linearCV.z, 48.0f, exp10f(log10f(0.02f)));
+
+float3 rgbPost;
+rgbPost.x = segmented_spline_c9_rev( rgbPre.x, ODT_48nits());
+rgbPost.y = segmented_spline_c9_rev( rgbPre.y, ODT_48nits());
+rgbPost.z = segmented_spline_c9_rev( rgbPre.z, ODT_48nits());
+
+float3 oces = mult_f3_f33( rgbPost, AP1_2_AP0_MAT_B);
+
+return oces;
+}
+
+__device__ inline float3 InvODT_Rec709_D60sim_100nits_dim( float3 outputCV)
+{
+const Chromaticities DISPLAY_PRI = REC709_PRI;
+const mat3 DISPLAY_PRI_2_XYZ_MAT = RGBtoXYZ(DISPLAY_PRI);
+const float DISPGAMMA = 2.4f;
+const float L_W = 1.0f;
+const float L_B = 0.0f;
+const float SCALE = 0.955f;
+bool legalRange = false;
+
+if (legalRange) {
+outputCV = smpteRange_to_fullRange_f3( outputCV);
+}
+
+float3 linearCV;
+linearCV.x = bt1886_f( outputCV.x, DISPGAMMA, L_W, L_B);
+linearCV.y = bt1886_f( outputCV.y, DISPGAMMA, L_W, L_B);
+linearCV.z = bt1886_f( outputCV.z, DISPGAMMA, L_W, L_B);
+
+float3 XYZ = mult_f3_f33( linearCV, DISPLAY_PRI_2_XYZ_MAT);
+linearCV = mult_f3_f33( XYZ, XYZ_2_AP1_MAT);
+linearCV = mult_f3_f33( linearCV, invert_f33( calc_sat_adjust_matrix( ODT_SAT_FACTOR, make_float3(AP1_2_XYZ_MAT.c0.y, AP1_2_XYZ_MAT.c1.y, AP1_2_XYZ_MAT.c2.y))));
+linearCV = dimSurround_to_darkSurround( linearCV);
+linearCV.x = linearCV.x / SCALE;
+linearCV.y = linearCV.y / SCALE;
+linearCV.z = linearCV.z / SCALE;
+
+float3 rgbPre;
+rgbPre.x = linCV_2_Y( linearCV.x, 48.0f, exp10f(log10f(0.02f)));
+rgbPre.y = linCV_2_Y( linearCV.y, 48.0f, exp10f(log10f(0.02f)));
+rgbPre.z = linCV_2_Y( linearCV.z, 48.0f, exp10f(log10f(0.02f)));
+
+float3 rgbPost;
+rgbPost.x = segmented_spline_c9_rev( rgbPre.x, ODT_48nits());
+rgbPost.y = segmented_spline_c9_rev( rgbPre.y, ODT_48nits());
+rgbPost.z = segmented_spline_c9_rev( rgbPre.z, ODT_48nits());
+
+float3 oces = mult_f3_f33( rgbPost, AP1_2_AP0_MAT_B);
+
+return oces;
+}
+
+__device__ inline float3 InvODT_Rec2020_100nits_dim( float3 outputCV)
+{
+Chromaticities DISPLAY_PRI = REC2020_PRI;
+mat3 DISPLAY_PRI_2_XYZ_MAT = RGBtoXYZ(DISPLAY_PRI);
+float DISPGAMMA = 2.4f;
+float L_W = 1.0f;
+float L_B = 0.0f;
+bool legalRange = false;
+
+if (legalRange) {
+outputCV = smpteRange_to_fullRange_f3( outputCV);
+}
+
+float3 linearCV;
+linearCV.x = bt1886_f( outputCV.x, DISPGAMMA, L_W, L_B);
+linearCV.y = bt1886_f( outputCV.y, DISPGAMMA, L_W, L_B);
+linearCV.z = bt1886_f( outputCV.z, DISPGAMMA, L_W, L_B);
+
+float3 XYZ = mult_f3_f33( linearCV, DISPLAY_PRI_2_XYZ_MAT);
+XYZ = mult_f3_f33( XYZ, invert_f33( D60_2_D65_CAT));
+linearCV = mult_f3_f33( XYZ, XYZ_2_AP1_MAT);
+linearCV = mult_f3_f33( linearCV, invert_f33( calc_sat_adjust_matrix( ODT_SAT_FACTOR, make_float3(AP1_2_XYZ_MAT.c0.y, AP1_2_XYZ_MAT.c1.y, AP1_2_XYZ_MAT.c2.y))));
+linearCV = dimSurround_to_darkSurround( linearCV);
+
+float3 rgbPre;
+rgbPre.x = linCV_2_Y( linearCV.x, 48.0f, exp10f(log10f(0.02f)));
+rgbPre.y = linCV_2_Y( linearCV.y, 48.0f, exp10f(log10f(0.02f)));
+rgbPre.z = linCV_2_Y( linearCV.z, 48.0f, exp10f(log10f(0.02f)));
+
+float3 rgbPost;
+rgbPost.x = segmented_spline_c9_rev( rgbPre.x, ODT_48nits());
+rgbPost.y = segmented_spline_c9_rev( rgbPre.y, ODT_48nits());
+rgbPost.z = segmented_spline_c9_rev( rgbPre.z, ODT_48nits());
+
+float3 oces = mult_f3_f33( rgbPost, AP1_2_AP0_MAT_B);
+
+return oces;
+}
+
+__device__ inline float3 InvODT_Rec2020_ST2084_1000nits( float3 outputCV)
+{
+Chromaticities DISPLAY_PRI = REC2020_PRI;
+mat3 DISPLAY_PRI_2_XYZ_MAT = RGBtoXYZ(DISPLAY_PRI);
+
+float3 rgb = ST2084_2_Y_f3( outputCV);
+float3 XYZ = mult_f3_f33( rgb, DISPLAY_PRI_2_XYZ_MAT);
+XYZ = mult_f3_f33( XYZ, invert_f33( D60_2_D65_CAT));
+
+float3 rgbPre = mult_f3_f33( XYZ, XYZ_2_AP1_MAT);
+rgbPre = add_f_f3( exp10f(-4.4550166483f), rgbPre);
+
+float3 rgbPost;
+rgbPost.x = segmented_spline_c9_rev( rgbPre.x, ODT_1000nits());
+rgbPost.y = segmented_spline_c9_rev( rgbPre.y, ODT_1000nits());
+rgbPost.z = segmented_spline_c9_rev( rgbPre.z, ODT_1000nits());
+
+float3 oces = mult_f3_f33( rgbPost, AP1_2_AP0_MAT_B);
+
+return oces;
+}
+
+__device__ inline float3 InvODT_sRGB_D60sim_100nits_dim( float3 outputCV)
+{
+const Chromaticities DISPLAY_PRI = REC709_PRI;
+const mat3 DISPLAY_PRI_2_XYZ_MAT = RGBtoXYZ(DISPLAY_PRI);
+const float DISPGAMMA = 2.4f;
+const float OFFSET = 0.055f;
+const float SCALE = 0.955f;
+
+float3 linearCV;
+linearCV.x = moncurve_f( outputCV.x, DISPGAMMA, OFFSET);
+linearCV.y = moncurve_f( outputCV.y, DISPGAMMA, OFFSET);
+linearCV.z = moncurve_f( outputCV.z, DISPGAMMA, OFFSET);
+
+float3 XYZ = mult_f3_f33( linearCV, DISPLAY_PRI_2_XYZ_MAT);
+linearCV = mult_f3_f33( XYZ, XYZ_2_AP1_MAT);
+linearCV = mult_f3_f33( linearCV, invert_f33( calc_sat_adjust_matrix( ODT_SAT_FACTOR, make_float3(AP1_2_XYZ_MAT.c0.y, AP1_2_XYZ_MAT.c1.y, AP1_2_XYZ_MAT.c2.y))));
+linearCV = dimSurround_to_darkSurround( linearCV);
+linearCV.x = linearCV.x / SCALE;
+linearCV.y = linearCV.y / SCALE;
+linearCV.z = linearCV.z / SCALE;
+
+float3 rgbPre;
+rgbPre.x = linCV_2_Y( linearCV.x, 48.0f, exp10f(log10f(0.02f)));
+rgbPre.y = linCV_2_Y( linearCV.y, 48.0f, exp10f(log10f(0.02f)));
+rgbPre.z = linCV_2_Y( linearCV.z, 48.0f, exp10f(log10f(0.02f)));
+
+float3 rgbPost;
+rgbPost.x = segmented_spline_c9_rev( rgbPre.x, ODT_48nits());
+rgbPost.y = segmented_spline_c9_rev( rgbPre.y, ODT_48nits());
+rgbPost.z = segmented_spline_c9_rev( rgbPre.z, ODT_48nits());
+
+float3 oces = mult_f3_f33( rgbPost, AP1_2_AP0_MAT_B);
+
+return oces;
+}
+
+__device__ inline float3 InvODT_sRGB_100nits_dim( float3 outputCV)
+{
+const Chromaticities DISPLAY_PRI = REC709_PRI;
+const mat3 DISPLAY_PRI_2_XYZ_MAT = RGBtoXYZ(DISPLAY_PRI);
+const float DISPGAMMA = 2.4f;
+const float OFFSET = 0.055f;
+
+float3 linearCV;
+linearCV.x = moncurve_f( outputCV.x, DISPGAMMA, OFFSET);
+linearCV.y = moncurve_f( outputCV.y, DISPGAMMA, OFFSET);
+linearCV.z = moncurve_f( outputCV.z, DISPGAMMA, OFFSET);
+
+float3 XYZ = mult_f3_f33( linearCV, DISPLAY_PRI_2_XYZ_MAT);
+XYZ = mult_f3_f33( XYZ, invert_f33( D60_2_D65_CAT));
+linearCV = mult_f3_f33( XYZ, XYZ_2_AP1_MAT);
+linearCV = mult_f3_f33( linearCV, invert_f33( calc_sat_adjust_matrix( ODT_SAT_FACTOR, make_float3(AP1_2_XYZ_MAT.c0.y, AP1_2_XYZ_MAT.c1.y, AP1_2_XYZ_MAT.c2.y))));
+linearCV = dimSurround_to_darkSurround( linearCV);
+
+float3 rgbPre;
+rgbPre.x = linCV_2_Y( linearCV.x, 48.0f, exp10f(log10f(0.02f)));
+rgbPre.y = linCV_2_Y( linearCV.y, 48.0f, exp10f(log10f(0.02f)));
+rgbPre.z = linCV_2_Y( linearCV.z, 48.0f, exp10f(log10f(0.02f)));
+
+float3 rgbPost;
+rgbPost.x = segmented_spline_c9_rev( rgbPre.x, ODT_48nits());
+rgbPost.y = segmented_spline_c9_rev( rgbPre.y, ODT_48nits());
+rgbPost.z = segmented_spline_c9_rev( rgbPre.z, ODT_48nits());
+
+float3 oces = mult_f3_f33( rgbPost, AP1_2_AP0_MAT_B);
+
+return oces;
+}
+
+__device__ inline float3 InvODT_P3DCI_48nits( float3 outputCV)
+{
+const Chromaticities DISPLAY_PRI = P3DCI_PRI;
+const mat3 DISPLAY_PRI_2_XYZ_MAT = RGBtoXYZ(DISPLAY_PRI);
+const float DISPGAMMA = 2.6f;
+const float NEW_WHT = 0.918f;
+const float ROLL_WIDTH = 0.5f;
+const float SCALE = 0.96f;
+
+float3 linearCV = pow_f3( outputCV, DISPGAMMA);
+float3 XYZ = mult_f3_f33( linearCV, DISPLAY_PRI_2_XYZ_MAT);
+
+linearCV = mult_f3_f33( XYZ, XYZ_2_AP1_MAT);
+linearCV.x = roll_white_rev( linearCV.x / SCALE, NEW_WHT, ROLL_WIDTH);
+linearCV.y = roll_white_rev( linearCV.y / SCALE, NEW_WHT, ROLL_WIDTH);
+linearCV.z = roll_white_rev( linearCV.z / SCALE, NEW_WHT, ROLL_WIDTH);
+
+float3 rgbPre;
+rgbPre.x = linCV_2_Y( linearCV.x, 48.0f, exp10f(log10f(0.02f)));
+rgbPre.y = linCV_2_Y( linearCV.y, 48.0f, exp10f(log10f(0.02f)));
+rgbPre.z = linCV_2_Y( linearCV.z, 48.0f, exp10f(log10f(0.02f)));
+
+float3 rgbPost;
+rgbPost.x = segmented_spline_c9_rev( rgbPre.x, ODT_48nits());
+rgbPost.y = segmented_spline_c9_rev( rgbPre.y, ODT_48nits());
+rgbPost.z = segmented_spline_c9_rev( rgbPre.z, ODT_48nits());
+
+float3 oces = mult_f3_f33( rgbPost, AP1_2_AP0_MAT_B);
+
+return oces;
+}
+
+__device__ inline float3 InvODT_P3DCI_D60sim_48nits( float3 outputCV)
+{
+const Chromaticities DISPLAY_PRI = P3DCI_PRI;
+const mat3 DISPLAY_PRI_2_XYZ_MAT = RGBtoXYZ(DISPLAY_PRI);
+const float DISPGAMMA = 2.6f;
+const float NEW_WHT = 0.918f;
+const float ROLL_WIDTH = 0.5f;
+const float SCALE = 0.96f;
+
+float3 linearCV = pow_f3( outputCV, DISPGAMMA);
+float3 XYZ = mult_f3_f33( linearCV, DISPLAY_PRI_2_XYZ_MAT);
+
+linearCV = mult_f3_f33( XYZ, XYZ_2_AP1_MAT);
+linearCV.x = roll_white_rev( linearCV.x / SCALE, NEW_WHT, ROLL_WIDTH);
+linearCV.y = roll_white_rev( linearCV.y / SCALE, NEW_WHT, ROLL_WIDTH);
+linearCV.z = roll_white_rev( linearCV.z / SCALE, NEW_WHT, ROLL_WIDTH);
+
+float3 rgbPre;
+rgbPre.x = linCV_2_Y( linearCV.x, 48.0f, exp10f(log10f(0.02f)));
+rgbPre.y = linCV_2_Y( linearCV.y, 48.0f, exp10f(log10f(0.02f)));
+rgbPre.z = linCV_2_Y( linearCV.z, 48.0f, exp10f(log10f(0.02f)));
+
+float3 rgbPost;
+rgbPost.x = segmented_spline_c9_rev( rgbPre.x, ODT_48nits());
+rgbPost.y = segmented_spline_c9_rev( rgbPre.y, ODT_48nits());
+rgbPost.z = segmented_spline_c9_rev( rgbPre.z, ODT_48nits());
+
+float3 oces = mult_f3_f33( rgbPost, AP1_2_AP0_MAT_B);
+
+return oces;
+}
+
+__device__ inline float3 InvODT_P3DCI_D65sim_48nits( float3 outputCV)
+{
+const Chromaticities DISPLAY_PRI = P3DCI_PRI;
+const mat3 DISPLAY_PRI_2_XYZ_MAT = RGBtoXYZ(DISPLAY_PRI);
+const float DISPGAMMA = 2.6f;
+const float NEW_WHT = 0.908f;
+const float ROLL_WIDTH = 0.5f;
+const float SCALE = 0.9575f;
+
+float3 linearCV = pow_f3( outputCV, DISPGAMMA);
+float3 XYZ = mult_f3_f33( linearCV, DISPLAY_PRI_2_XYZ_MAT);
+
+linearCV = mult_f3_f33( XYZ, XYZ_2_AP1_MAT);
+linearCV.x = roll_white_rev( linearCV.x / SCALE, NEW_WHT, ROLL_WIDTH);
+linearCV.y = roll_white_rev( linearCV.y / SCALE, NEW_WHT, ROLL_WIDTH);
+linearCV.z = roll_white_rev( linearCV.z / SCALE, NEW_WHT, ROLL_WIDTH);
+
+float3 rgbPre;
+rgbPre.x = linCV_2_Y( linearCV.x, 48.0f, exp10f(log10f(0.02f)));
+rgbPre.y = linCV_2_Y( linearCV.y, 48.0f, exp10f(log10f(0.02f)));
+rgbPre.z = linCV_2_Y( linearCV.z, 48.0f, exp10f(log10f(0.02f)));
+
+float3 rgbPost;
+rgbPost.x = segmented_spline_c9_rev( rgbPre.x, ODT_48nits());
+rgbPost.y = segmented_spline_c9_rev( rgbPre.y, ODT_48nits());
+rgbPost.z = segmented_spline_c9_rev( rgbPre.z, ODT_48nits());
+
+float3 oces = mult_f3_f33( rgbPost, AP1_2_AP0_MAT_B);
+
+return oces;
+}
+
+__device__ inline float3 InvODT_P3D60_48nits( float3 outputCV)
+{
+const Chromaticities DISPLAY_PRI = P3D60_PRI;
+const mat3 DISPLAY_PRI_2_XYZ_MAT = RGBtoXYZ( DISPLAY_PRI);
+const float DISPGAMMA = 2.6f;
+
+float3 linearCV = pow_f3( outputCV, DISPGAMMA);
+float3 XYZ = mult_f3_f33( linearCV, DISPLAY_PRI_2_XYZ_MAT);
+linearCV = mult_f3_f33( XYZ, XYZ_2_AP1_MAT);
+
+float3 rgbPre;
+rgbPre.x = linCV_2_Y( linearCV.x, 48.0f, exp10f(log10f(0.02f)));
+rgbPre.y = linCV_2_Y( linearCV.y, 48.0f, exp10f(log10f(0.02f)));
+rgbPre.z = linCV_2_Y( linearCV.z, 48.0f, exp10f(log10f(0.02f)));
+
+float3 rgbPost;
+rgbPost.x = segmented_spline_c9_rev( rgbPre.x, ODT_48nits());
+rgbPost.y = segmented_spline_c9_rev( rgbPre.y, ODT_48nits());
+rgbPost.z = segmented_spline_c9_rev( rgbPre.z, ODT_48nits());
+
+float3 oces = mult_f3_f33( rgbPost, AP1_2_AP0_MAT_B);
+
+return oces;
+}
+
+__device__ inline float3 InvODT_P3D65_48nits( float3 outputCV)
+{
+const Chromaticities DISPLAY_PRI = P3D65_PRI;
+const mat3 DISPLAY_PRI_2_XYZ_MAT = RGBtoXYZ( DISPLAY_PRI);
+const float DISPGAMMA = 2.6f;
+
+float3 linearCV = pow_f3( outputCV, DISPGAMMA);
+float3 XYZ = mult_f3_f33( linearCV, DISPLAY_PRI_2_XYZ_MAT);
+linearCV = mult_f3_f33( XYZ, XYZ_2_AP1_MAT);
+
+float3 rgbPre;
+rgbPre.x = linCV_2_Y( linearCV.x, 48.0f, exp10f(log10f(0.02f)));
+rgbPre.y = linCV_2_Y( linearCV.y, 48.0f, exp10f(log10f(0.02f)));
+rgbPre.z = linCV_2_Y( linearCV.z, 48.0f, exp10f(log10f(0.02f)));
+
+float3 rgbPost;
+rgbPost.x = segmented_spline_c9_rev( rgbPre.x, ODT_48nits());
+rgbPost.y = segmented_spline_c9_rev( rgbPre.y, ODT_48nits());
+rgbPost.z = segmented_spline_c9_rev( rgbPre.z, ODT_48nits());
+
+float3 oces = mult_f3_f33( rgbPost, AP1_2_AP0_MAT_B);
+
+return oces;
+}
+
+__device__ inline float3 InvODT_P3D65_D60sim_48nits( float3 outputCV)
+{
+const Chromaticities DISPLAY_PRI = P3D65_PRI;
+const mat3 DISPLAY_PRI_2_XYZ_MAT = RGBtoXYZ( DISPLAY_PRI);
+const float DISPGAMMA = 2.6f;
+const float SCALE = 0.964f;
+
+float3 linearCV = pow_f3( outputCV, DISPGAMMA);
+
+float3 XYZ = mult_f3_f33( linearCV, DISPLAY_PRI_2_XYZ_MAT);
+
+linearCV = mult_f3_f33( XYZ, XYZ_2_AP1_MAT);
+linearCV.x = linearCV.x / SCALE;
+linearCV.y = linearCV.y / SCALE;
+linearCV.z = linearCV.z / SCALE;
+
+float3 rgbPre;
+rgbPre.x = linCV_2_Y( linearCV.x, 48.0f, exp10f(log10f(0.02f)));
+rgbPre.y = linCV_2_Y( linearCV.y, 48.0f, exp10f(log10f(0.02f)));
+rgbPre.z = linCV_2_Y( linearCV.z, 48.0f, exp10f(log10f(0.02f)));
+
+float3 rgbPost;
+rgbPost.x = segmented_spline_c9_rev( rgbPre.x, ODT_48nits());
+rgbPost.y = segmented_spline_c9_rev( rgbPre.y, ODT_48nits());
+rgbPost.z = segmented_spline_c9_rev( rgbPre.z, ODT_48nits());
+
+float3 oces = mult_f3_f33( rgbPost, AP1_2_AP0_MAT_B);
+
+return oces;
+}
+
+__device__ inline float3 InvODT_DCDM( float3 outputCV)
+{
+float3 XYZ = dcdm_decode( outputCV);
+float3 linearCV = mult_f3_f33( XYZ, XYZ_2_AP1_MAT);
+
+float3 rgbPre;
+rgbPre.x = linCV_2_Y( linearCV.x, 48.0f, exp10f(log10f(0.02f)));
+rgbPre.y = linCV_2_Y( linearCV.y, 48.0f, exp10f(log10f(0.02f)));
+rgbPre.z = linCV_2_Y( linearCV.z, 48.0f, exp10f(log10f(0.02f)));
+
+float3 rgbPost;
+rgbPost.x = segmented_spline_c9_rev( rgbPre.x, ODT_48nits());
+rgbPost.y = segmented_spline_c9_rev( rgbPre.y, ODT_48nits());
+rgbPost.z = segmented_spline_c9_rev( rgbPre.z, ODT_48nits());
+
+float3 oces = mult_f3_f33( rgbPost, AP1_2_AP0_MAT_B);
+
+return oces;
+}
+
+__device__ inline float3 InvODT_DCDM_P3D65limited( float3 outputCV)
+{
+float3 XYZ = dcdm_decode( outputCV);
+XYZ = mult_f3_f33( XYZ, invert_f33(D60_2_D65_CAT));
+float3 linearCV = mult_f3_f33( XYZ, XYZ_2_AP1_MAT);
+
+float3 rgbPre;
+rgbPre.x = linCV_2_Y( linearCV.x, 48.0f, exp10f(log10f(0.02f)));
+rgbPre.y = linCV_2_Y( linearCV.y, 48.0f, exp10f(log10f(0.02f)));
+rgbPre.z = linCV_2_Y( linearCV.z, 48.0f, exp10f(log10f(0.02f)));
+
+float3 rgbPost;
+rgbPost.x = segmented_spline_c9_rev( rgbPre.x, ODT_48nits());
+rgbPost.y = segmented_spline_c9_rev( rgbPre.y, ODT_48nits());
+rgbPost.z = segmented_spline_c9_rev( rgbPre.z, ODT_48nits());
+
+float3 oces = mult_f3_f33( rgbPost, AP1_2_AP0_MAT_B);
+
+return oces;
+}
+
+__device__ inline float3 InvODT_RGBmonitor_100nits_dim( float3 outputCV)
+{
+Chromaticities DISPLAY_PRI = REC709_PRI;
+mat3 DISPLAY_PRI_2_XYZ_MAT = RGBtoXYZ(DISPLAY_PRI);
+float DISPGAMMA = 2.4f;
+float OFFSET = 0.055f;
+
+float3 linearCV;
+linearCV.x = moncurve_f( outputCV.x, DISPGAMMA, OFFSET);
+linearCV.y = moncurve_f( outputCV.y, DISPGAMMA, OFFSET);
+linearCV.z = moncurve_f( outputCV.z, DISPGAMMA, OFFSET);
+
+float3 XYZ = mult_f3_f33( linearCV, DISPLAY_PRI_2_XYZ_MAT);
+XYZ = mult_f3_f33( XYZ, invert_f33( D60_2_D65_CAT));
+linearCV = mult_f3_f33( XYZ, XYZ_2_AP1_MAT);
+linearCV = mult_f3_f33( linearCV, invert_f33( calc_sat_adjust_matrix( ODT_SAT_FACTOR, make_float3(AP1_2_XYZ_MAT.c0.y, AP1_2_XYZ_MAT.c1.y, AP1_2_XYZ_MAT.c2.y))));
+linearCV = dimSurround_to_darkSurround( linearCV);
+
+float3 rgbPre;
+rgbPre.x = linCV_2_Y( linearCV.x, 48.0f, exp10f(log10f(0.02f)));
+rgbPre.y = linCV_2_Y( linearCV.y, 48.0f, exp10f(log10f(0.02f)));
+rgbPre.z = linCV_2_Y( linearCV.z, 48.0f, exp10f(log10f(0.02f)));
+
+float3 rgbPost;
+rgbPost.x = segmented_spline_c9_rev( rgbPre.x, ODT_48nits());
+rgbPost.y = segmented_spline_c9_rev( rgbPre.y, ODT_48nits());
+rgbPost.z = segmented_spline_c9_rev( rgbPre.z, ODT_48nits());
+
+float3 oces = mult_f3_f33( rgbPost, AP1_2_AP0_MAT_B);
+
+return oces;
+}
+
+__device__ inline float3 InvODT_RGBmonitor_D60sim_100nits_dim( float3 outputCV)
+{
+Chromaticities DISPLAY_PRI = REC709_PRI;
+mat3 DISPLAY_PRI_2_XYZ_MAT = RGBtoXYZ(DISPLAY_PRI);
+float DISPGAMMA = 2.4f;
+float OFFSET = 0.055f;
+float SCALE = 0.955f;
+
+float3 linearCV;
+linearCV.x = moncurve_f( outputCV.x, DISPGAMMA, OFFSET);
+linearCV.y = moncurve_f( outputCV.y, DISPGAMMA, OFFSET);
+linearCV.z = moncurve_f( outputCV.z, DISPGAMMA, OFFSET);
+
+float3 XYZ = mult_f3_f33( linearCV, DISPLAY_PRI_2_XYZ_MAT);
+linearCV = mult_f3_f33( XYZ, XYZ_2_AP1_MAT);
+linearCV = mult_f3_f33( linearCV, invert_f33( calc_sat_adjust_matrix( ODT_SAT_FACTOR, make_float3(RGBtoXYZ( AP1).c0.y, RGBtoXYZ( AP1).c1.y, RGBtoXYZ( AP1).c2.y))));
+linearCV = dimSurround_to_darkSurround( linearCV);
+linearCV.x = linearCV.x / SCALE;
+linearCV.y = linearCV.y / SCALE;
+linearCV.z = linearCV.z / SCALE;
+
+float3 rgbPre;
+rgbPre.x = linCV_2_Y( linearCV.x, 48.0f, exp10f(log10f(0.02f)));
+rgbPre.y = linCV_2_Y( linearCV.y, 48.0f, exp10f(log10f(0.02f)));
+rgbPre.z = linCV_2_Y( linearCV.z, 48.0f, exp10f(log10f(0.02f)));
+
+float3 rgbPost;
+rgbPost.x = segmented_spline_c9_rev( rgbPre.x, ODT_48nits());
+rgbPost.y = segmented_spline_c9_rev( rgbPre.y, ODT_48nits());
+rgbPost.z = segmented_spline_c9_rev( rgbPre.z, ODT_48nits());
+
+float3 oces = mult_f3_f33( rgbPost, AP1_2_AP0_MAT_B);
+
+return oces;
+}
+
+__device__ inline float3 RRTODT_P3D65_108nits_7_2nits_ST2084( float3 aces)
+{
+float Y_MIN = 0.0001f;
+float Y_MID = 7.2f;
+float Y_MAX = 108.0f;
+Chromaticities DISPLAY_PRI = P3D65_PRI;
+Chromaticities LIMITING_PRI = P3D65_PRI;
+int EOTF = 0;
+int SURROUND = 0;
+bool STRETCH_BLACK = true;
+bool D60_SIM = false;
+bool LEGAL_RANGE = false;
+
+float3 cv = outputTransform( aces, Y_MIN, Y_MID, Y_MAX, DISPLAY_PRI,
+LIMITING_PRI, EOTF, SURROUND, STRETCH_BLACK, D60_SIM, LEGAL_RANGE );
+
+return cv;
+}
+
+__device__ inline float3 RRTODT_Rec2020_1000nits_15nits_HLG( float3 aces)
+{
+float Y_MIN = 0.0001f;
+float Y_MID = 15.0f;
+float Y_MAX = 1000.0f;
+Chromaticities DISPLAY_PRI = REC2020_PRI;
+Chromaticities LIMITING_PRI = REC2020_PRI;
+int EOTF = 5;
+int SURROUND = 0;
+bool STRETCH_BLACK = true;
+bool D60_SIM = false;
+bool LEGAL_RANGE = false;
+
+float3 cv = outputTransform( aces, Y_MIN, Y_MID, Y_MAX, DISPLAY_PRI,
+LIMITING_PRI, EOTF, SURROUND, STRETCH_BLACK, D60_SIM, LEGAL_RANGE );
+
+return cv;
+}
+
+__device__ inline float3 RRTODT_Rec2020_1000nits_15nits_ST2084( float3 aces)
+{
+float Y_MIN = 0.0001f;
+float Y_MID = 15.0f;
+float Y_MAX = 1000.0f;
+Chromaticities DISPLAY_PRI = REC2020_PRI;
+Chromaticities LIMITING_PRI = REC2020_PRI;
+int EOTF = 0;
+int SURROUND = 0;
+bool STRETCH_BLACK = true;
+bool D60_SIM = false;
+bool LEGAL_RANGE = false;
+
+float3 cv = outputTransform( aces, Y_MIN, Y_MID, Y_MAX, DISPLAY_PRI,
+LIMITING_PRI, EOTF, SURROUND, STRETCH_BLACK, D60_SIM, LEGAL_RANGE );
+
+return cv;
+}
+
+__device__ inline float3 RRTODT_Rec2020_2000nits_15nits_ST2084( float3 aces)
+{
+float Y_MIN = 0.0001f;
+float Y_MID = 15.0f;
+float Y_MAX = 2000.0f;
+Chromaticities DISPLAY_PRI = REC2020_PRI;
+Chromaticities LIMITING_PRI = REC2020_PRI;
+int EOTF = 0;
+int SURROUND = 0;
+bool STRETCH_BLACK = true;
+bool D60_SIM = false;
+bool LEGAL_RANGE = false;
+
+float3 cv = outputTransform( aces, Y_MIN, Y_MID, Y_MAX, DISPLAY_PRI,
+LIMITING_PRI, EOTF, SURROUND, STRETCH_BLACK, D60_SIM, LEGAL_RANGE );
+
+return cv;
+}
+
+__device__ inline float3 RRTODT_Rec2020_4000nits_15nits_ST2084( float3 aces)
+{
+float Y_MIN = 0.0001f;
+float Y_MID = 15.0f;
+float Y_MAX = 4000.0f;
+Chromaticities DISPLAY_PRI = REC2020_PRI;
+Chromaticities LIMITING_PRI = REC2020_PRI;
+int EOTF = 0;
+int SURROUND = 0;
+bool STRETCH_BLACK = true;
+bool D60_SIM = false;
+bool LEGAL_RANGE = false;
+
+float3 cv = outputTransform( aces, Y_MIN, Y_MID, Y_MAX, DISPLAY_PRI,
+LIMITING_PRI, EOTF, SURROUND, STRETCH_BLACK, D60_SIM, LEGAL_RANGE );
+
+return cv;
+}
+
+__device__ inline float3 RRTODT_Rec709_100nits_10nits_BT1886( float3 aces)
+{
+float Y_MIN = 0.0001f;
+float Y_MID = 10.0f;
+float Y_MAX = 100.0f;
+Chromaticities DISPLAY_PRI = REC709_PRI;
+Chromaticities LIMITING_PRI = REC709_PRI;
+int EOTF = 1;
+int SURROUND = 1;
+bool STRETCH_BLACK = false;
+bool D60_SIM = false;
+bool LEGAL_RANGE = false;
+
+float3 cv = outputTransform( aces, Y_MIN, Y_MID, Y_MAX, DISPLAY_PRI,
+LIMITING_PRI, EOTF, SURROUND, STRETCH_BLACK, D60_SIM, LEGAL_RANGE );
+
+return cv;
+}
+
+__device__ inline float3 RRTODT_Rec709_100nits_10nits_sRGB( float3 aces)
+{
+float Y_MIN = 0.0001f;
+float Y_MID = 10.0f;
+float Y_MAX = 100.0f;
+Chromaticities DISPLAY_PRI = REC709_PRI;
+Chromaticities LIMITING_PRI = REC709_PRI;
+int EOTF = 2;
+int SURROUND = 1;
+bool STRETCH_BLACK = false;
+bool D60_SIM = false;
+bool LEGAL_RANGE = false;
+
+float3 cv = outputTransform( aces, Y_MIN, Y_MID, Y_MAX, DISPLAY_PRI,
+LIMITING_PRI, EOTF, SURROUND, STRETCH_BLACK, D60_SIM, LEGAL_RANGE );
+
+return cv;
+}
+
+__device__ inline float3 InvRRTODT_P3D65_108nits_7_2nits_ST2084( float3 aces)
+{
+float Y_MIN = 0.0001f;
+float Y_MID = 7.2f;
+float Y_MAX = 108.0f;
+Chromaticities DISPLAY_PRI = P3D65_PRI;
+Chromaticities LIMITING_PRI = P3D65_PRI;
+int EOTF = 0;
+int SURROUND = 0;
+bool STRETCH_BLACK = true;
+bool D60_SIM = false;
+bool LEGAL_RANGE = false;
+
+float3 cv = invOutputTransform( aces, Y_MIN, Y_MID, Y_MAX, DISPLAY_PRI,
+LIMITING_PRI, EOTF, SURROUND, STRETCH_BLACK, D60_SIM, LEGAL_RANGE );
+
+return cv;
+}
+
+__device__ inline float3 InvRRTODT_Rec2020_1000nits_15nits_HLG( float3 cv)
+{
+float Y_MIN = 0.0001f;
+float Y_MID = 15.0f;
+float Y_MAX = 1000.0f;
+Chromaticities DISPLAY_PRI = REC2020_PRI;
+Chromaticities LIMITING_PRI = REC2020_PRI;
+int EOTF = 5;
+int SURROUND = 0;
+bool STRETCH_BLACK = true;
+bool D60_SIM = false;
+bool LEGAL_RANGE = false;
+
+float3 aces = invOutputTransform( cv, Y_MIN, Y_MID, Y_MAX, DISPLAY_PRI,
+LIMITING_PRI, EOTF, SURROUND, STRETCH_BLACK, D60_SIM, LEGAL_RANGE );
+
+return aces;
+}
+
+__device__ inline float3 InvRRTODT_Rec2020_1000nits_15nits_ST2084( float3 cv)
+{
+float Y_MIN = 0.0001f;
+float Y_MID = 15.0f;
+float Y_MAX = 1000.0f;
+Chromaticities DISPLAY_PRI = REC2020_PRI;
+Chromaticities LIMITING_PRI = REC2020_PRI;
+int EOTF = 0;
+int SURROUND = 0;
+bool STRETCH_BLACK = true;
+bool D60_SIM = false;
+bool LEGAL_RANGE = false;
+
+float3 aces = invOutputTransform( cv, Y_MIN, Y_MID, Y_MAX, DISPLAY_PRI,
+LIMITING_PRI, EOTF, SURROUND, STRETCH_BLACK, D60_SIM, LEGAL_RANGE );
+
+return aces;
+}
+
+__device__ inline float3 InvRRTODT_Rec2020_2000nits_15nits_ST2084( float3 cv)
+{
+float Y_MIN = 0.0001f;
+float Y_MID = 15.0f;
+float Y_MAX = 2000.0f;
+Chromaticities DISPLAY_PRI = REC2020_PRI;
+Chromaticities LIMITING_PRI = REC2020_PRI;
+int EOTF = 0;
+int SURROUND = 0;
+bool STRETCH_BLACK = true;
+bool D60_SIM = false;
+bool LEGAL_RANGE = false;
+
+float3 aces = invOutputTransform( cv, Y_MIN, Y_MID, Y_MAX, DISPLAY_PRI,
+LIMITING_PRI, EOTF, SURROUND, STRETCH_BLACK, D60_SIM, LEGAL_RANGE );
+
+return aces;
+}
+
+__device__ inline float3 InvRRTODT_Rec2020_4000nits_15nits_ST2084( float3 cv)
+{
+float Y_MIN = 0.0001f;
+float Y_MID = 15.0f;
+float Y_MAX = 4000.0f;
+Chromaticities DISPLAY_PRI = REC2020_PRI;
+Chromaticities LIMITING_PRI = REC2020_PRI;
+int EOTF = 0;
+int SURROUND = 0;
+bool STRETCH_BLACK = true;
+bool D60_SIM = false;
+bool LEGAL_RANGE = false;
+
+float3 aces = invOutputTransform( cv, Y_MIN, Y_MID, Y_MAX, DISPLAY_PRI,
+LIMITING_PRI, EOTF, SURROUND, STRETCH_BLACK, D60_SIM, LEGAL_RANGE );
+
+return aces;
+}
+
+__device__ inline float3 InvRRTODT_Rec709_100nits_10nits_BT1886( float3 aces)
+{
+float Y_MIN = 0.0001f;
+float Y_MID = 10.0f;
+float Y_MAX = 100.0f;
+Chromaticities DISPLAY_PRI = REC709_PRI;
+Chromaticities LIMITING_PRI = REC709_PRI;
+int EOTF = 1;
+int SURROUND = 1;
+bool STRETCH_BLACK = false;
+bool D60_SIM = false;
+bool LEGAL_RANGE = false;
+
+float3 cv = invOutputTransform( aces, Y_MIN, Y_MID, Y_MAX, DISPLAY_PRI,
+LIMITING_PRI, EOTF, SURROUND, STRETCH_BLACK, D60_SIM, LEGAL_RANGE );
+
+return cv;
+}
+
+__device__ inline float3 InvRRTODT_Rec709_100nits_10nits_sRGB( float3 aces)
+{
+float Y_MIN = 0.0001f;
+float Y_MID = 10.0f;
+float Y_MAX = 100.0f;
+Chromaticities DISPLAY_PRI = REC709_PRI;
+Chromaticities LIMITING_PRI = REC709_PRI;
+int EOTF = 2;
+int SURROUND = 1;
+bool STRETCH_BLACK = false;
+bool D60_SIM = false;
+bool LEGAL_RANGE = false;
+
+float3 cv = invOutputTransform( aces, Y_MIN, Y_MID, Y_MAX, DISPLAY_PRI,
+LIMITING_PRI, EOTF, SURROUND, STRETCH_BLACK, D60_SIM, LEGAL_RANGE );
+
+return cv;
+}
+
+__device__ inline float3 IDT_sRGB( float3 rgb) {
+float3 aces;
+aces = InvODT_sRGB_100nits_dim(rgb);
+aces = segmented_spline_c5_rev_f3( aces);
+aces = max_f3_f(aces, 0.0f);
+return aces;
+}
+
+__device__ inline float3 IDT_Rec709( float3 rgb) {
+float3 aces;
+aces = InvODT_Rec709_100nits_dim(rgb);
+aces = segmented_spline_c5_rev_f3( aces);
+aces = max_f3_f(aces, 0.0f);
+return aces;
+}
+
+#endif // ifndef __ACES_FUNCTIONS_CUDA_H_INCLUDED__
