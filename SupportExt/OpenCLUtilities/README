@@ -1,8 +1,0 @@
-See http://www.eriksmistad.no/opencl-utilities/ for information on usage
-
-Tip
---------------------
-This small is utility library is perfect to as a git submodule. 
-For instance: git submodule add git@github.com:smistad/OpenCLUtilities.git
-
-See http://help.github.com/submodules/ for more information on submodules
