@@ -114,7 +114,6 @@ id<MTLComputePipelineState>     _FilmGradeKernelC;
 id<MTLComputePipelineState>     _FilmGradeKernelD;
 
 NSError* err;
-
 std::unique_lock<std::mutex> lock(s_PipelineQueueMutex);
 
 const auto it = s_PipelineQueueMap.find(queue);
@@ -161,10 +160,8 @@ id<MTLBuffer> dstDeviceBuf = reinterpret_cast<id<MTLBuffer> >(p_Output);
 
 id<MTLCommandBuffer> commandBuffer = [queue commandBuffer];
 commandBuffer.label = [NSString stringWithFormat:@"RunMetalKernel"];
-
 id<MTLComputeCommandEncoder> computeEncoder = [commandBuffer computeCommandEncoder];
 [computeEncoder setComputePipelineState:_Prepare];
-
 int exeWidth = [_Prepare threadExecutionWidth];
 
 MTLSize threadGroupCount 		= MTLSizeMake(exeWidth, 1, 1);

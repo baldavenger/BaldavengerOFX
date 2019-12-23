@@ -482,8 +482,7 @@ const char* kernelSource =  \
 "*p_Output = *p_Output + yc; \n" \
 "p_Input -= p_Width * 4; \n" \
 "p_Output -= p_Width; \n" \
-"} \n" \
-"} \n" \
+"}} \n" \
 "\n";
 
 std::mutex s_PipelineQueueMutex;
@@ -509,9 +508,9 @@ const char* finalStageKernel	= "k_finalStageKernel";
 
 id<MTLCommandQueue>				queue = static_cast<id<MTLCommandQueue> >(p_CmdQ);
 id<MTLDevice>					device = queue.device;
-id<MTLLibrary>					metalLibrary;      //Metal library
-id<MTLFunction>					kernelFunction;    //Compute kernel
-id<MTLComputePipelineState>		pipelineState;     //Metal pipeline
+id<MTLLibrary>					metalLibrary;
+id<MTLFunction>					kernelFunction;
+id<MTLComputePipelineState>		pipelineState;
 id<MTLBuffer>					tempBuffer;
 id<MTLComputePipelineState>    _logStageKernel;
 id<MTLComputePipelineState>    _hueMedian;
@@ -522,16 +521,12 @@ id<MTLComputePipelineState>    _hueStageKernel;
 id<MTLComputePipelineState>    _finalStageKernel;
 
 NSError* err;
-
 std::unique_lock<std::mutex> lock(s_PipelineQueueMutex);
 
 const auto it = s_PipelineQueueMap.find(queue);
-if (it == s_PipelineQueueMap.end())
-{
+if (it == s_PipelineQueueMap.end()) {
 s_PipelineQueueMap[queue] = pipelineState;
-}
-else
-{
+} else {
 pipelineState = it->second;
 }   
 
@@ -578,11 +573,8 @@ id<MTLBuffer> dstDeviceBuf = reinterpret_cast<id<MTLBuffer> >(p_Output);
 
 id<MTLCommandBuffer> commandBuffer = [queue commandBuffer];
 commandBuffer.label = [NSString stringWithFormat:@"RunMetalKernel"];
-
 id<MTLComputeCommandEncoder> computeEncoder = [commandBuffer computeCommandEncoder];
-
 [computeEncoder setComputePipelineState:_logStageKernel];
-
 int exeWidth = [_logStageKernel threadExecutionWidth];
 
 MTLSize threadGroupCount 		= MTLSizeMake(exeWidth, 1, 1);
@@ -740,4 +732,5 @@ if (p_Blur[3] > 0.0f) {
 
 [computeEncoder endEncoding];
 [commandBuffer commit];
+[tempBuffer release];
 }

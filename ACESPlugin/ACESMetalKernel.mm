@@ -4388,13 +4388,9 @@ id<MTLBuffer> srcDeviceBuf = reinterpret_cast<id<MTLBuffer> >(const_cast<float *
 id<MTLBuffer> dstDeviceBuf = reinterpret_cast<id<MTLBuffer> >(p_Output);
 
 id<MTLCommandBuffer> commandBuffer = [queue commandBuffer];
-
 commandBuffer.label = [NSString stringWithFormat:@"RunMetalKernel"];
-
 id<MTLComputeCommandEncoder> computeEncoder = [commandBuffer computeCommandEncoder];
-
 [computeEncoder setComputePipelineState:_Simple];
-
 int exeWidth = [_Simple threadExecutionWidth];
 
 MTLSize threadGroupCount = MTLSizeMake(exeWidth, 1, 1);
@@ -4470,8 +4466,7 @@ if (p_InvODT != 0) {
 if (p_InvRRT == 1 && (p_InvODT != 1 && p_InvODT < 18)) {
 [computeEncoder setComputePipelineState:_InvRRT];
 [computeEncoder dispatchThreadgroups:threadGroups threadsPerThreadgroup: threadGroupCount];
-}
-}
+}}
 
 [computeEncoder endEncoding];
 [commandBuffer commit];

@@ -154,7 +154,6 @@ id<MTLComputePipelineState>    	_gaussian;
 id<MTLComputePipelineState>    	_transpose;
 
 NSError* err;
-
 std::unique_lock<std::mutex> lock(s_PipelineQueueMutex);
 
 const auto it = s_PipelineQueueMap.find(queue);
@@ -248,11 +247,8 @@ id<MTLBuffer> dstDeviceBuf = reinterpret_cast<id<MTLBuffer> >(p_Output);
 
 id<MTLCommandBuffer> commandBuffer = [queue commandBuffer];
 commandBuffer.label = [NSString stringWithFormat:@"RunMetalKernel"];
-
 id<MTLComputeCommandEncoder> computeEncoder = [commandBuffer computeCommandEncoder];
-
 [computeEncoder setComputePipelineState:_AlphaKernel];
-
 int exeWidth = [_AlphaKernel threadExecutionWidth];
 
 MTLSize threadGroupCount 		= MTLSizeMake(exeWidth, 1, 1);
@@ -313,4 +309,5 @@ if (p_DisplayXY[0] == 1 || p_DisplayXY[1] == 1) {
 
 [computeEncoder endEncoding];
 [commandBuffer commit];
+[tempBuffer release];
 }

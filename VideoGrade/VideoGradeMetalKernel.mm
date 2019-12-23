@@ -219,8 +219,8 @@ std::mutex s_PipelineQueueMutex;
 typedef std::unordered_map<id<MTLCommandQueue>, id<MTLComputePipelineState>> PipelineQueueMap;
 PipelineQueueMap s_PipelineQueueMap;
 
-void RunMetalKernel(void* p_CmdQ, const float* p_Input, float* p_Output, 
-int p_Width, int p_Height, int p_LumaMath, int* p_Switch, int p_Display, float* p_Scales)
+void RunMetalKernel(void* p_CmdQ, const float* p_Input, float* p_Output, int p_Width, 
+int p_Height, int p_LumaMath, int* p_Switch, int p_Display, float* p_Scales)
 {
 const char* VideoGradeKernel	= "k_videoGradeKernel";
 
@@ -271,10 +271,8 @@ id<MTLBuffer> dstDeviceBuf = reinterpret_cast<id<MTLBuffer> >(p_Output);
 
 id<MTLCommandBuffer> commandBuffer = [queue commandBuffer];
 commandBuffer.label = [NSString stringWithFormat:@"RunMetalKernel"];
-
 id<MTLComputeCommandEncoder> computeEncoder = [commandBuffer computeCommandEncoder];
 [computeEncoder setComputePipelineState:_VideoGradeKernel];
-
 int exeWidth = [_VideoGradeKernel threadExecutionWidth];
 
 MTLSize threadGroupCount 		= MTLSizeMake(exeWidth, 1, 1);

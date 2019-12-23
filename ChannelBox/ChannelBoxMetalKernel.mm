@@ -234,24 +234,19 @@ id<MTLComputePipelineState>    	_gaussian;
 id<MTLComputePipelineState>    	_transpose;
 
 NSError* err;
-
 std::unique_lock<std::mutex> lock(s_PipelineQueueMutex);
 
 const auto it = s_PipelineQueueMap.find(queue);
-if (it == s_PipelineQueueMap.end())
-{
+if (it == s_PipelineQueueMap.end()) {
 s_PipelineQueueMap[queue] = pipelineState;
-}
-else
-{
+} else {
 pipelineState = it->second;
 }   
 
 MTLCompileOptions* options	=	[MTLCompileOptions new];
 options.fastMathEnabled	=		YES;
 
-if (!(metalLibrary    = [device newLibraryWithSource:@(kernelSource) options:options error:&err]))
-{
+if (!(metalLibrary    = [device newLibraryWithSource:@(kernelSource) options:options error:&err])) {
 fprintf(stderr, "Failed to load metal library, %s\n", err.localizedDescription.UTF8String);
 return;
 }
@@ -295,11 +290,8 @@ id<MTLBuffer> dstDeviceBuf = reinterpret_cast<id<MTLBuffer> >(p_Output);
 
 id<MTLCommandBuffer> commandBuffer = [queue commandBuffer];
 commandBuffer.label = [NSString stringWithFormat:@"RunMetalKernel"];
-
 id<MTLComputeCommandEncoder> computeEncoder = [commandBuffer computeCommandEncoder];
-
 [computeEncoder setComputePipelineState:_channelBoxKernelA1];
-
 int exeWidth = [_channelBoxKernelA1 threadExecutionWidth];
 
 MTLSize threadGroupCount 		= MTLSizeMake(exeWidth, 1, 1);
@@ -372,4 +364,5 @@ if (p_Mask[2] > 0.0f || p_Mask[3] > 0.0f) {
 
 [computeEncoder endEncoding];
 [commandBuffer commit];
+[tempBuffer release];
 }

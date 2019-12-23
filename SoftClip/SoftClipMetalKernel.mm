@@ -95,7 +95,6 @@ id<MTLComputePipelineState>		pipelineState;
 id<MTLComputePipelineState>     _SoftClipKernel;
 
 NSError* err;
-
 std::unique_lock<std::mutex> lock(s_PipelineQueueMutex);
 
 const auto it = s_PipelineQueueMap.find(queue);
@@ -135,11 +134,8 @@ id<MTLBuffer> dstDeviceBuf = reinterpret_cast<id<MTLBuffer> >(p_Output);
 
 id<MTLCommandBuffer> commandBuffer = [queue commandBuffer];
 commandBuffer.label = [NSString stringWithFormat:@"RunMetalKernel"];
-
 id<MTLComputeCommandEncoder> computeEncoder = [commandBuffer computeCommandEncoder];
-
 [computeEncoder setComputePipelineState:_SoftClipKernel];
-
 int exeWidth = [_SoftClipKernel threadExecutionWidth];
 
 MTLSize threadGroupCount 		= MTLSizeMake(exeWidth, 1, 1);
@@ -154,7 +150,6 @@ MTLSize threadGroups     		= MTLSizeMake((p_Width + exeWidth - 1)/exeWidth, p_He
 [computeEncoder setBytes:&p_Source length:sizeof(int) atIndex: 6];
 
 [computeEncoder dispatchThreadgroups:threadGroups threadsPerThreadgroup: threadGroupCount];
-
 
 [computeEncoder endEncoding];
 [commandBuffer commit];

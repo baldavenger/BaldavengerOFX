@@ -79,6 +79,7 @@ id<MTLComputePipelineState>     _Matrix;
 
 NSError* err;
 std::unique_lock<std::mutex> lock(s_PipelineQueueMutex);
+
 const auto it = s_PipelineQueueMap.find(queue);
 if (it == s_PipelineQueueMap.end()) {
 s_PipelineQueueMap[queue] = pipelineState;
@@ -104,10 +105,10 @@ _Matrix						=	[device newComputePipelineStateWithFunction:kernelFunction error:
 
 id<MTLBuffer> srcDeviceBuf = reinterpret_cast<id<MTLBuffer> >(const_cast<float *>(p_Input));
 id<MTLBuffer> dstDeviceBuf = reinterpret_cast<id<MTLBuffer> >(p_Output);
+
 id<MTLCommandBuffer> commandBuffer = [queue commandBuffer];
 commandBuffer.label = [NSString stringWithFormat:@"k_matrix"];
 id<MTLComputeCommandEncoder> computeEncoder = [commandBuffer computeCommandEncoder];
-
 [computeEncoder setComputePipelineState:_Matrix];
 int exeWidth = [_Matrix threadExecutionWidth];
 

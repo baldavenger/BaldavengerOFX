@@ -448,9 +448,9 @@ const char* freqAdd				= "k_freqAdd";
 
 id<MTLCommandQueue>				queue = static_cast<id<MTLCommandQueue> >(p_CmdQ);
 id<MTLDevice>					device = queue.device;
-id<MTLLibrary>					metalLibrary;      //Metal library
-id<MTLFunction>					kernelFunction;    //Compute kernel
-id<MTLComputePipelineState>		pipelineState;     //Metal pipeline
+id<MTLLibrary>					metalLibrary;
+id<MTLFunction>					kernelFunction;
+id<MTLComputePipelineState>		pipelineState;
 id<MTLBuffer>					tempBuffer;
 id<MTLComputePipelineState>    _simple;
 id<MTLComputePipelineState>    _gaussian;
@@ -468,16 +468,12 @@ id<MTLComputePipelineState>    _lowFreqContLuma;
 id<MTLComputePipelineState>    _freqAdd;
 
 NSError* err;
-
 std::unique_lock<std::mutex> lock(s_PipelineQueueMutex);
 
 const auto it = s_PipelineQueueMap.find(queue);
-if (it == s_PipelineQueueMap.end())
-{
+if (it == s_PipelineQueueMap.end()) {
 s_PipelineQueueMap[queue] = pipelineState;
-}
-else
-{
+} else {
 pipelineState = it->second;
 }   
 
@@ -552,11 +548,8 @@ id<MTLBuffer> dstDeviceBuf = reinterpret_cast<id<MTLBuffer> >(p_Output);
 
 id<MTLCommandBuffer> commandBuffer = [queue commandBuffer];
 commandBuffer.label = [NSString stringWithFormat:@"RunMetalKernel"];
-
 id<MTLComputeCommandEncoder> computeEncoder = [commandBuffer computeCommandEncoder];
-
 [computeEncoder setComputePipelineState:_simple];
-
 int exeWidth = [_simple threadExecutionWidth];
 
 MTLSize threadGroupCount 		= MTLSizeMake(exeWidth, 1, 1);
@@ -812,6 +805,8 @@ if(p_Space == 3){
 [computeEncoder dispatchThreadgroups:threadGroups threadsPerThreadgroup: threadGroupCount];
 }
 }}}
+
 [computeEncoder endEncoding];
 [commandBuffer commit];
+[tempBuffer release];
 }
