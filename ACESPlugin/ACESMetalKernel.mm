@@ -6,57 +6,40 @@
 const char* kernelSource =  \
 "#include <metal_stdlib> \n" \
 "using namespace metal; \n" \
-"typedef struct \n" \
-"{ \n" \
+"typedef struct { \n" \
 "float x, y, z, w, m; \n" \
 "} Floater5; \n" \
-"typedef struct \n" \
-"{ \n" \
+"typedef struct { \n" \
 "float2 c0, c1; \n" \
 "} mat2; \n" \
-"typedef struct \n" \
-"{ \n" \
+"typedef struct { \n" \
 "float3 c0, c1, c2; \n" \
 "} mat3; \n" \
-"typedef struct \n" \
-"{ \n" \
+"typedef struct { \n" \
 "float2 red; float2 green; float2 blue; float2 white; \n" \
 "} Chromaticities; \n" \
-"typedef struct \n" \
-"{ \n" \
+"typedef struct { \n" \
 "float x; float y; \n" \
 "} SplineMapPoint; \n" \
-"typedef struct \n" \
-"{ \n" \
+"typedef struct { \n" \
 "float coefsLow[6]; float coefsHigh[6]; \n" \
 "SplineMapPoint minPoint; SplineMapPoint midPoint; SplineMapPoint maxPoint; \n" \
 "float slopeLow; float slopeHigh; \n" \
 "} SegmentedSplineParams_c5; \n" \
-"typedef struct \n" \
-"{ \n" \
+"typedef struct { \n" \
 "float coefsLow[10]; float coefsHigh[10]; \n" \
 "SplineMapPoint minPoint; SplineMapPoint midPoint; SplineMapPoint maxPoint; \n" \
 "float slopeLow; float slopeHigh; \n" \
 "} SegmentedSplineParams_c9; \n" \
-"typedef struct \n" \
-"{ \n" \
+"typedef struct { \n" \
 "float x; float y; float slope; \n" \
 "} TsPoint; \n" \
-"typedef struct \n" \
-"{ \n" \
+"typedef struct { \n" \
 "TsPoint Min; TsPoint Mid; TsPoint Max; \n" \
 "float coefsLow[6]; float coefsHigh[6]; \n" \
 "} TsParams; \n" \
-"#define REF_PT				((7120.0f - 1520.0f) / 8000.0f * (100.0f / 55.0f) - log10(0.18f)) * 1.0f \n" \
-"#define AP0_2_XYZ_MAT		RGBtoXYZ( AP0) \n" \
-"#define XYZ_2_AP0_MAT		XYZtoRGB( AP0) \n" \
-"#define AP1_2_XYZ_MAT		RGBtoXYZ( AP1) \n" \
-"#define XYZ_2_AP1_MAT		XYZtoRGB( AP1) \n" \
-"//#define AP0_2_AP1_MAT		mult_f33_f33( AP0_2_XYZ_MAT, XYZ_2_AP1_MAT) \n" \
-"//#define AP1_2_AP0_MAT		mult_f33_f33( AP1_2_XYZ_MAT, XYZ_2_AP0_MAT) \n" \
-"#define AP1_RGB2Y			make_float3(AP1_2_XYZ_MAT.c0.y, AP1_2_XYZ_MAT.c1.y, AP1_2_XYZ_MAT.c2.y) \n" \
+"#define REF_PT		((7120.0f - 1520.0f) / 8000.0f * (100.0f / 55.0f) - log10(0.18f)) * 1.0f \n" \
 "__constant mat3 MM = { {0.5f, -1.0f, 0.5f}, {-1.0f, 1.0f, 0.5f}, {0.5f, 0.0f, 0.0f} }; \n" \
-"__constant mat3 M1 = { {0.5f, -1.0f, 0.5f}, {-1.0f, 1.0f, 0.5f}, {0.5f, 0.0f, 0.0f} }; \n" \
 "__constant float TINY = 1e-10f; \n" \
 "__constant float DIM_SURROUND_GAMMA = 0.9811f; \n" \
 "__constant float ODT_SAT_FACTOR = 0.93f; \n" \
@@ -108,185 +91,178 @@ const char* kernelSource =  \
 "{ {0.708f, 0.292f}, {0.17f, 0.797f}, {0.131f, 0.046f}, {0.3127f, 0.329f} }; \n" \
 "__constant Chromaticities RIMMROMM_PRI = \n" \
 "{ {0.7347f, 0.2653f}, {0.1596f, 0.8404f}, {0.0366f, 0.0001f}, {0.3457f, 0.3585f} }; \n" \
-"__constant mat3 CONE_RESP_MAT_BRADFORD = \n" \
+"__constant mat3 CONE_RESP_MATRADFORD = \n" \
 "{ {0.8951f, -0.7502f, 0.0389f}, {0.2664f, 1.7135f, -0.0685f}, {-0.1614f, 0.0367f, 1.0296f} }; \n" \
 "__constant mat3 CONE_RESP_MAT_CAT02 = \n" \
 "{ {0.7328f, -0.7036f, 0.003f}, {0.4296f, 1.6975f, 0.0136f}, {-0.1624f, 0.0061f, 0.9834f} }; \n" \
-"__constant mat3 AP0_2_XYZ_MAT_B =  \n" \
+"__constant mat3 AP0_2_XYZ_MAT =  \n" \
 "{ {0.9525523959f, 0.3439664498f, 0.0f}, {0.0f, 0.7281660966f, 0.0f}, {0.0000936786f, -0.0721325464f, 1.0088251844f} }; \n" \
-"__constant mat3 XYZ_2_AP0_MAT_B =  \n" \
+"__constant mat3 XYZ_2_AP0_MAT =  \n" \
 "{ {1.0498110175f, -0.4959030231f, 0.0f}, {0.0f, 1.3733130458f, 0.0f}, {-0.0000974845f, 0.0982400361f, 0.9912520182f} }; \n" \
-"__constant mat3 AP1_2_XYZ_MAT_B =  \n" \
+"__constant mat3 AP1_2_XYZ_MAT =  \n" \
 "{ {0.6624541811f, 0.2722287168f, -0.0055746495f}, {0.1340042065f, 0.6740817658f, 0.0040607335f}, {0.156187687f, 0.0536895174f, 1.0103391003f} }; \n" \
-"__constant mat3 XYZ_2_AP1_MAT_B =  \n" \
+"__constant mat3 XYZ_2_AP1_MAT =  \n" \
 "{ {1.6410233797f, -0.6636628587f, 0.0117218943f}, {-0.3248032942f, 1.6153315917f, -0.008284442f}, {-0.2364246952f, 0.0167563477f, 0.9883948585f} }; \n" \
-"__constant mat3 AP0_2_AP1_MAT_B =  \n" \
+"__constant mat3 AP0_2_AP1_MAT =  \n" \
 "{ {1.4514393161f, -0.0765537734f, 0.0083161484f}, {-0.2365107469f, 1.1762296998f, -0.0060324498f}, {-0.2149285693f, -0.0996759264f, 0.9977163014f} }; \n" \
-"__constant mat3 AP1_2_AP0_MAT_B =  \n" \
+"__constant mat3 AP1_2_AP0_MAT =  \n" \
 "{ {0.6954522414f, 0.0447945634f, -0.0055258826f}, {0.1406786965f, 0.8596711185f, 0.0040252103f}, {0.1638690622f, 0.0955343182f, 1.0015006723f} }; \n" \
-"__constant mat3 D60_2_D65_CAT_B =  \n" \
+"__constant mat3 D60_2_D65_CAT =  \n" \
 "{ {0.987224f, -0.00759836f, 0.00307257f}, {-0.00611327f, 1.00186f, -0.00509595f}, {0.0159533f, 0.00533002f, 1.08168f} }; \n" \
+"__constant mat3 LMS_2_AP0_MAT =  \n" \
+"{ { 2.2034860017f, -0.5267000086f, -0.0465914122f}, {-1.4028871323f,  1.5838401289f, -0.0457828327f}, { 0.1994183978f, -0.0571107433f, 1.0924829098f} }; \n" \
+"__constant mat3 ICtCp_2_LMSp_MAT =  \n" \
+"{ { 1.0f, 1.0f, 1.0f}, { 0.0086064753f, -0.0086064753f, 0.5600463058f}, { 0.1110335306f, -0.1110335306f, -0.3206319566f} }; \n" \
+"__constant mat3 AP0_2_LMS_MAT =  \n" \
+"{ { 0.5729360781f, 0.1916984459f, 0.0324676922f}, { 0.5052187675f, 0.8013733145f, 0.0551294631f}, {-0.0781710859f, 0.0069006377f, 0.9123015294f} }; \n" \
+"__constant mat3 LMSp_2_ICtCp_MAT =  \n" \
+"{ { 0.5f, 1.6137000085f, 4.378062447f}, { 0.5f, -3.3233961429f, -4.2455397991f}, { 0.0f, 1.7096961344f, -0.1325226479f} }; \n" \
+"__constant mat3 SG3_2_AP0_MAT =  \n" \
+"{ { 0.7529825954f, 0.0217076974f, -0.0094160528f}, { 0.1433702162f, 1.0153188355f, 0.0033704179f}, { 0.1036471884f, -0.0370265329f, 1.0060456349f} }; \n" \
+"__constant mat3 AP0_2_SG3_MAT =  \n" \
+"{ { 1.3316572111f, -0.0280131244f, 0.0125574528f}, {-0.1875611006f, 0.9887375645f, -0.0050679052f}, {-0.1440961106f, 0.0392755599f, 0.9925104526f} }; \n" \
+"__constant mat3 SG3C_2_AP0_MAT =  \n" \
+"{ { 0.6387886672f, -0.0039159061f, -0.0299072021f}, { 0.2723514337f, 1.0880732308f, -0.0264325799f}, { 0.0888598992f, -0.0841573249f, 1.056339782f} }; \n" \
+"__constant mat3 AP0_2_SG3C_MAT =  \n" \
+"{ { 1.5554591070f,  0.0090216145f, 0.0442640666f}, {-0.3932807985f, 0.9185569566f, 0.0118502607f}, {-0.1621783087f, 0.0724214290f, 0.9438856727f} }; \n" \
+"__constant mat3 AWG_2_AP0_MAT =  \n" \
+"{ { 0.6802059161f, 0.0854150695f, 0.0020562648f}, { 0.2361367500f, 1.0174707720f, -0.0625622837f}, { 0.0836574074f, -0.1028858550f, 1.0605062481f} }; \n" \
+"__constant mat3 AP0_2_AWG_MAT =  \n" \
+"{ { 1.5159863829f, -0.1283275799f, -0.0105107561f}, {-0.3613418588f, 1.0193145873f, 0.0608329325f}, {-0.1546444592f, 0.1090123949f, 0.9496764954f} }; \n" \
+"__constant mat3 RWG_2_AP0_MAT =  \n" \
+"{ { 0.7850585442f, 0.0231738066f, -0.0737605663f}, { 0.0838583156f, 1.0878975877f, -0.3145898729f}, { 0.1310821505f, -0.1110709153f, 1.3883506702f} }; \n" \
+"__constant mat3 AP0_2_RWG_MAT =  \n" \
+"{ { 1.2655392805f, -0.0205691227f, 0.0625750095f}, {-0.1352322515f,  0.9431709627f,  0.2065308369f}, {-0.1303056816f, 0.0773976700f, 0.7308939479f} }; \n" \
+"__constant float3 AP1_RGB2Y = {0.2722287168f, 0.6740817658f, 0.0536895174f}; \n" \
 "__constant float3 AP1_RGB2Y_B = {0.2722287168f, 0.6740817658f, 0.0536895174f}; \n" \
-"int size( float array[]) \n" \
-"{ \n" \
-"int Size = sizeof(array)/sizeof(array[0]); \n" \
-"return Size + 1; \n" \
-"} \n" \
-"int size_f2( float2 array[]) \n" \
-"{ \n" \
-"int Size = sizeof(array)/sizeof(array[0]); \n" \
-"return Size + 1; \n" \
-"} \n" \
-"Chromaticities make_chromaticities( float2 A, float2 B, float2 C, float2 D) \n" \
-"{ \n" \
+"inline Chromaticities make_chromaticities( float2 A, float2 B, float2 C, float2 D) { \n" \
 "Chromaticities E; \n" \
 "E.red = A; E.green = B; E.blue = C; E.white = D; \n" \
 "return E; \n" \
 "} \n" \
-"float2 make_float2( float A, float B) { \n" \
+"inline float2 make_float2( float A, float B) { \n" \
 "float2 out; \n" \
 "out.x = A; out.y = B; \n" \
 "return out; \n" \
 "} \n" \
-"float3 make_float3( float A, float B, float C) { \n" \
+"inline float3 make_float3( float A, float B, float C) { \n" \
 "float3 out; \n" \
 "out.x = A; out.y = B; out.z = C; \n" \
 "return out; \n" \
 "} \n" \
-"mat2 make_mat2( float2 A, float2 B) \n" \
-"{ \n" \
+"inline mat2 make_mat2( float2 A, float2 B) { \n" \
 "mat2 C; \n" \
 "C.c0 = A; C.c1 = B; \n" \
 "return C; \n" \
 "} \n" \
-"mat3 make_mat3( float3 A, float3 B, float3 C) \n" \
-"{ \n" \
+"inline mat3 make_mat3( float3 A, float3 B, float3 C) { \n" \
 "mat3 D; \n" \
 "D.c0 = A; D.c1 = B; D.c2 = C; \n" \
 "return D; \n" \
 "} \n" \
-"float min_f3( float3 a) \n" \
-"{ \n" \
+"inline float min_f3( float3 a) { \n" \
 "return fmin( a.x, fmin( a.y, a.z)); \n" \
 "} \n" \
-"float max_f3( float3 a) \n" \
-"{ \n" \
+"inline float max_f3( float3 a) { \n" \
 "return fmax( a.x, fmax( a.y, a.z)); \n" \
 "} \n" \
-"float3 max_f3_f( float3 a, float b) \n" \
-"{ \n" \
+"inline float3 max_f3_f( float3 a, float b) { \n" \
 "float3 out; \n" \
 "out.x = fmax(a.x, b); out.y = fmax(a.y, b); out.z = fmax(a.z, b); \n" \
 "return out; \n" \
 "} \n" \
-"float clip( float v) \n" \
-"{ \n" \
+"inline float clip( float v) { \n" \
 "return fmin(v, 1.0f); \n" \
 "} \n" \
-"float3 clip_f3( float3 in) \n" \
-"{ \n" \
+"inline float3 clip_f3( float3 in) { \n" \
 "float3 out; \n" \
 "out.x = clip( in.x); out.y = clip( in.y); out.z = clip( in.z); \n" \
 "return out; \n" \
 "} \n" \
-"float3 add_f_f3( float a, float3 b) \n" \
-"{ \n" \
+"inline float3 add_f_f3( float a, float3 b) { \n" \
 "float3 out; \n" \
 "out.x = a + b.x; out.y = a + b.y; out.z = a + b.z; \n" \
 "return out; \n" \
 "} \n" \
-"float3 pow_f3( float3 a, float b) \n" \
-"{ \n" \
+"inline float3 pow_f3( float3 a, float b) { \n" \
 "float3 out; \n" \
 "out.x = pow(a.x, b); out.y = pow(a.y, b); out.z = pow(a.z, b); \n" \
 "return out; \n" \
 "} \n" \
-"float3 exp10_f3( float3 a) \n" \
-"{ \n" \
+"inline float3 exp10_f3( float3 a) { \n" \
 "float3 out; \n" \
 "out.x = exp10(a.x); out.y = exp10(a.y); out.z = exp10(a.z); \n" \
 "return out; \n" \
 "} \n" \
-"float3 log10_f3( float3 a) \n" \
-"{ \n" \
+"inline float3 log10_f3( float3 a) { \n" \
 "float3 out; \n" \
 "out.x = log10(a.x); out.y = log10(a.y); out.z = log10(a.z); \n" \
 "return out; \n" \
 "} \n" \
-"float _sign( float x) \n" \
-"{ \n" \
+"inline float _sign( float x) { \n" \
 "float y; \n" \
 "if (x < 0.0f) y = -1.0f; \n" \
 "else if (x > 0.0f) y = 1.0f; \n" \
 "else y = 0.0f; \n" \
 "return y; \n" \
 "} \n" \
-"float3 mult_f_f3( float f, float3 x) \n" \
-"{ \n" \
+"inline float3 mult_f_f3( float f, float3 x) { \n" \
 "float3 r; \n" \
 "r.x = f * x.x; r.y = f * x.y; r.z = f * x.z; \n" \
 "return r; \n" \
 "} \n" \
-"float3 add_f3_f3( float3 x, float3 y) \n" \
-"{ \n" \
+"inline float3 add_f3_f3( float3 x, float3 y) { \n" \
 "float3 r; \n" \
 "r.x = x.x + y.x; r.y = x.y + y.y; r.z = x.z + y.z; \n" \
 "return r; \n" \
 "} \n" \
-"float3 sub_f3_f3( float3 x, float3 y) \n" \
-"{ \n" \
+"inline float3 sub_f3_f3( float3 x, float3 y) { \n" \
 "float3 r; \n" \
 "r.x = x.x - y.x; r.y = x.y - y.y; r.z = x.z - y.z; \n" \
 "return r; \n" \
 "} \n" \
-"float3 cross_f3_f3( float3 x, float3 y) \n" \
-"{ \n" \
+"inline float3 cross_f3_f3( float3 x, float3 y) { \n" \
 "float3 r; \n" \
 "r.z = x.x * y.y - x.y * y.x; r.x = x.y * y.z - x.z * y.y; r.y = x.z * y.x - x.x * y.z; \n" \
 "return r; \n" \
 "} \n" \
-"float3 clamp_f3( float3 A, float mn, float mx) \n" \
-"{ \n" \
+"inline float3 clamp_f3( float3 A, float mn, float mx) { \n" \
 "float3 out; \n" \
 "out.x = clamp( A.x, mn, mx); out.y = clamp( A.y, mn, mx); out.z = clamp( A.z, mn, mx); \n" \
 "return out; \n" \
 "} \n" \
-"float dot_f3_f3( float3 x, float3 y) \n" \
-"{ \n" \
+"inline float dot_f3_f3( float3 x, float3 y) { \n" \
 "return x.x * y.x + x.y * y.y + x.z * y.z; \n" \
 "} \n" \
-"float length_f3( float3 x) \n" \
-"{ \n" \
+"inline float length_f3( float3 x) { \n" \
 "return sqrt( x.x * x.x + x.y * x.y + x.z * x.z ); \n" \
 "} \n" \
-"mat2 transpose_f22( mat2 A) \n" \
-"{ \n" \
+"inline mat2 transpose_f22( mat2 A) { \n" \
 "mat2 B; \n" \
 "B.c0 = make_float2(A.c0.x, A.c1.x); B.c1 = make_float2(A.c0.y, A.c1.y); \n" \
 "return B; \n" \
 "} \n" \
-"mat3 transpose_f33( mat3 A) \n" \
-"{ \n" \
+"inline mat3 transpose_f33( mat3 A) { \n" \
 "float r[3][3]; \n" \
 "float a[3][3] = {{A.c0.x, A.c0.y, A.c0.z}, {A.c1.x, A.c1.y, A.c1.z}, {A.c2.x, A.c2.y, A.c2.z}}; \n" \
 "for( int i = 0; i < 3; ++i){ \n" \
 "for( int j = 0; j < 3; ++j){ \n" \
 "r[i][j] = a[j][i];}} \n" \
-"mat3 R = make_mat3(make_float3(r[0][0], r[0][1], r[0][2]), make_float3(r[1][0], r[1][1], r[1][2]), make_float3(r[2][0], r[2][1], r[2][2])); \n" \
+"mat3 R = make_mat3(make_float3(r[0][0], r[0][1], r[0][2]),  \n" \
+"make_float3(r[1][0], r[1][1], r[1][2]), make_float3(r[2][0], r[2][1], r[2][2])); \n" \
 "return R; \n" \
 "} \n" \
-"mat3 mult_f_f33( float f, mat3 A) \n" \
-"{ \n" \
+"inline mat3 mult_f_f33( float f, mat3 A) { \n" \
 "float r[3][3]; \n" \
 "float a[3][3] = {{A.c0.x, A.c0.y, A.c0.z}, {A.c1.x, A.c1.y, A.c1.z}, {A.c2.x, A.c2.y, A.c2.z}}; \n" \
 "for( int i = 0; i < 3; ++i ){ \n" \
 "for( int j = 0; j < 3; ++j ){ \n" \
 "r[i][j] = f * a[i][j];}} \n" \
-"mat3 R = make_mat3(make_float3(r[0][0], r[0][1], r[0][2]), make_float3(r[1][0], r[1][1], r[1][2]), make_float3(r[2][0], r[2][1], r[2][2])); \n" \
+"mat3 R = make_mat3(make_float3(r[0][0], r[0][1], r[0][2]),  \n" \
+"make_float3(r[1][0], r[1][1], r[1][2]), make_float3(r[2][0], r[2][1], r[2][2])); \n" \
 "return R; \n" \
 "} \n" \
-"float3 mult_f3_f33( float3 X, mat3 A) \n" \
-"{ \n" \
+"inline float3 mult_f3_f33( float3 X, mat3 A) { \n" \
 "float r[3]; \n" \
 "float x[3] = {X.x, X.y, X.z}; \n" \
 "float a[3][3] = {{A.c0.x, A.c0.y, A.c0.z}, {A.c1.x, A.c1.y, A.c1.z}, {A.c2.x, A.c2.y, A.c2.z}}; \n" \
@@ -296,8 +272,7 @@ const char* kernelSource =  \
 "r[i] = r[i] + x[j] * a[j][i];}} \n" \
 "return make_float3(r[0], r[1], r[2]); \n" \
 "} \n" \
-"mat3 mult_f33_f33( mat3 A, mat3 B) \n" \
-"{ \n" \
+"inline mat3 mult_f33_f33( mat3 A, mat3 B) { \n" \
 "float r[3][3]; \n" \
 "float a[3][3] = {{A.c0.x, A.c0.y, A.c0.z}, \n" \
 "{A.c1.x, A.c1.y, A.c1.z}, \n" \
@@ -311,22 +286,22 @@ const char* kernelSource =  \
 "for( int k = 0; k < 3; ++k){ \n" \
 "r[i][j] = r[i][j] + a[i][k] * b[k][j]; \n" \
 "}}} \n" \
-"mat3 R = make_mat3(make_float3(r[0][0], r[0][1], r[0][2]), make_float3(r[1][0], r[1][1], r[1][2]), make_float3(r[2][0], r[2][1], r[2][2])); \n" \
+"mat3 R = make_mat3(make_float3(r[0][0], r[0][1], r[0][2]),  \n" \
+"make_float3(r[1][0], r[1][1], r[1][2]), make_float3(r[2][0], r[2][1], r[2][2])); \n" \
 "return R; \n" \
 "} \n" \
-"mat3 add_f33_f33( mat3 A, mat3 B) \n" \
-"{ \n" \
+"inline mat3 add_f33_f33( mat3 A, mat3 B) { \n" \
 "float r[3][3]; \n" \
 "float a[3][3] = {{A.c0.x, A.c0.y, A.c0.z}, {A.c1.x, A.c1.y, A.c1.z}, {A.c2.x, A.c2.y, A.c2.z}}; \n" \
 "float b[3][3] = {{B.c0.x, B.c0.y, B.c0.z}, {B.c1.x, B.c1.y, B.c1.z}, {B.c2.x, B.c2.y, B.c2.z}}; \n" \
 "for( int i = 0; i < 3; ++i ){ \n" \
 "for( int j = 0; j < 3; ++j ){ \n" \
 "r[i][j] = a[i][j] + b[i][j];}} \n" \
-"mat3 R = make_mat3(make_float3(r[0][0], r[0][1], r[0][2]), make_float3(r[1][0], r[1][1], r[1][2]), make_float3(r[2][0], r[2][1], r[2][2])); \n" \
+"mat3 R = make_mat3(make_float3(r[0][0], r[0][1], r[0][2]),  \n" \
+"make_float3(r[1][0], r[1][1], r[1][2]), make_float3(r[2][0], r[2][1], r[2][2])); \n" \
 "return R; \n" \
 "} \n" \
-"mat3 invert_f33( mat3 A) \n" \
-"{ \n" \
+"inline mat3 invert_f33( mat3 A) { \n" \
 "mat3 R; \n" \
 "float result[3][3]; \n" \
 "float a[3][3] = {{A.c0.x, A.c0.y, A.c0.z}, {A.c1.x, A.c1.y, A.c1.z}, {A.c2.x, A.c2.y, A.c2.z}}; \n" \
@@ -346,42 +321,7 @@ const char* kernelSource =  \
 "R = make_mat3(make_float3(1.0f, 0.0f, 0.0f), make_float3(0.0f, 1.0f, 0.0f), make_float3(0.0f, 0.0f, 1.0f)); \n" \
 "return R; \n" \
 "} \n" \
-"float lookup1D( float table[], float pMin, float pMax, float p) \n" \
-"{ \n" \
-"int Size = size(table); \n" \
-"if( p < pMin ) return table[ 0 ]; \n" \
-"if( p > pMax ) return table[ Size - 1 ]; \n" \
-"float t = (p - pMin) / (pMax - pMin ) * (Size - 1.0f); \n" \
-"int i = floor(t); \n" \
-"float s = t - i; \n" \
-"return table[i] * ( 1.0f - s ) + table[i + 1] * s; \n" \
-"} \n" \
-"float lookupCubic1D( float table[], float pMin, float pMax, float p) \n" \
-"{ \n" \
-"int Size = size(table); \n" \
-"if( p < pMin ) return table[ 0 ]; \n" \
-"if( p > pMax ) return table[ Size - 1 ]; \n" \
-"float t = (p - pMin) / (pMax - pMin) * (Size - 1 ); \n" \
-"int i = floor(t); \n" \
-"float s = t - i; \n" \
-"float m0; \n" \
-"float m1; \n" \
-"if( i > 0 ){ \n" \
-"m0 = (table[i + 1] - table[i - 1]) / 2.0f; \n" \
-"} \n" \
-"if( i < Size-2 ){ \n" \
-"m1 = (table[i + 2] - table[i]) / 2.0f; \n" \
-"} \n" \
-"if( i == 0) { \n" \
-"m0 = (3 * table[i+1] - table[i] - m1); \n" \
-"} \n" \
-"if( i == Size - 2 ){ \n" \
-"m1 = (3.0f * table[i + 1] - table[i] - m0); \n" \
-"} \n" \
-"return table[i] * (2.0f * s*s*s - 3.0f * s*s + 1.0f) + m0 * (s*s*s - 2.0f * s*s + s) + table[i + 1] * (-2.0f * s*s*s + 3.0f * s*s) + m1 * (s*s*s - s*s); \n" \
-"} \n" \
-"float interpolate1D( float2 table[], int Size, float p) \n" \
-"{ \n" \
+"inline float interpolate1D( float2 table[], int Size, float p) { \n" \
 "if( p <= table[0].x ) return table[0].y; \n" \
 "if( p >= table[Size - 1].x ) return table[Size - 1].y; \n" \
 "for( int i = 0; i < Size - 1; ++i ){ \n" \
@@ -390,44 +330,7 @@ const char* kernelSource =  \
 "return table[i].y * ( 1.0f - s ) + table[i+1].y * s;}} \n" \
 "return 0.0f; \n" \
 "} \n" \
-"float interpolateCubic1D( float2 table[], float p) \n" \
-"{ \n" \
-"int Size = size_f2(table); \n" \
-"if( p <= table[0].x ) return table[0].y; \n" \
-"if( p >= table[Size - 1].x ) return table[Size - 1].y; \n" \
-"if( Size == 2 ) { \n" \
-"float s = (p - table[0].x) / (table[1].x - table[0].x); \n" \
-"return (1.0f - s) * table[0].y + s * table[1].y; \n" \
-"} \n" \
-"for( int i = 0; i < Size - 1; ++i ){ \n" \
-"if( table[i].x <= p && p < table[i+1].x ){ \n" \
-"float s = (p - table[i].x) / (table[i + 1].x - table[i].x); \n" \
-"float dx1 = (table[i + 1].x - table[i].x); \n" \
-"float dy1 = (table[i + 1].y - table[i].y); \n" \
-"float m0; \n" \
-"float m1; \n" \
-"if( i > 0 ){ \n" \
-"float dy0 = (table[i].y - table[i - 1].y); \n" \
-"float dx0 = (table[i].x - table[i - 1].x); \n" \
-"m0 = (dy1 + dx1 * dy0 / dx0) / 2.0f; \n" \
-"} \n" \
-"if( i < Size - 2 ){ \n" \
-"float dx2 = (table[i + 2].x - table[i + 1].x); \n" \
-"float dy2 = (table[i + 2].y - table[i + 1].y); \n" \
-"m1 = (dy1 + dx1 * dy2 / dx2) / 2.0f; \n" \
-"} \n" \
-"if( i == 0) { \n" \
-"m0 = (3.0f * dy1 - m1) / 2.0f; \n" \
-"} \n" \
-"if( i == Size - 2 ){ \n" \
-"m1 = (3.0f * dy1 - m0) / 2.0f; \n" \
-"} \n" \
-"return table[i].y * (2.0f * s*s*s - 3.0f * s*s + 1.0f) + m0 * (s*s*s - 2.0f * s*s + s) + table[i + 1].y * (-2.0f * s*s*s + 3.0f * s*s) + m1 * (s*s*s - s*s); \n" \
-"}} \n" \
-"return 0.0f; \n" \
-"} \n" \
-"mat3 RGBtoXYZ( Chromaticities N) \n" \
-"{ \n" \
+"inline mat3 RGBtoXYZ( Chromaticities N) { \n" \
 "mat3 M = make_mat3(make_float3(N.red.x, N.red.y, 1.0f - (N.red.x + N.red.y)), \n" \
 "make_float3(N.green.x, N.green.y, 1.0f - (N.green.x + N.green.y)), make_float3(N.blue.x, N.blue.y, 1.0f - (N.blue.x + N.blue.y))); \n" \
 "float3 wh = make_float3(N.white.x / N.white.y, 1.0f, (1.0f - (N.white.x + N.white.y)) / N.white.y); \n" \
@@ -436,22 +339,28 @@ const char* kernelSource =  \
 "M = mult_f33_f33(WH, M); \n" \
 "return M; \n" \
 "} \n" \
-"mat3 XYZtoRGB( Chromaticities N) \n" \
-"{ \n" \
+"inline mat3 XYZtoRGB( Chromaticities N) { \n" \
 "mat3 M = invert_f33(RGBtoXYZ(N)); \n" \
 "return M; \n" \
 "} \n" \
-"float SLog3_to_linear( float SLog ) \n" \
-"{ \n" \
+"float SLog3_to_lin( float SLog ) { \n" \
 "float out = 0.0f; \n" \
 "if (SLog >= 171.2102946929f / 1023.0f){ \n" \
-"out = pow(10.0f, (SLog * 1023.0f - 420.0f) / 261.5f) * (0.18f + 0.01f) - 0.01f; \n" \
+"out = exp10((SLog * 1023.0f - 420.0f) / 261.5f) * (0.18f + 0.01f) - 0.01f; \n" \
 "} else { \n" \
 "out = (SLog * 1023.0f - 95.0f) * 0.01125000f / (171.2102946929f - 95.0f);} \n" \
 "return out; \n" \
 "} \n" \
-"float vLogToLinScene( float x) \n" \
-"{ \n" \
+"float lin_to_SLog3( float in) { \n" \
+"float out; \n" \
+"if (in >= 0.01125f) { \n" \
+"out = (420.0f + log10((in + 0.01f) / (0.18f + 0.01f)) * 261.5f) / 1023.0f; \n" \
+"} else { \n" \
+"out = (in * (171.2102946929f - 95.0f) / 0.01125f + 95.0f) / 1023.0f; \n" \
+"} \n" \
+"return out; \n" \
+"} \n" \
+"float vLogToLinScene( float x) { \n" \
 "const float cutInv = 0.181f; \n" \
 "const float b = 0.00873f; \n" \
 "const float c = 0.241514f; \n" \
@@ -459,79 +368,108 @@ const char* kernelSource =  \
 "if (x <= cutInv) \n" \
 "return (x - 0.125f) / 5.6f; \n" \
 "else \n" \
-"return pow(10.0f, (x - d) / c) - b; \n" \
+"return exp10((x - d) / c) - b; \n" \
 "} \n" \
-"float SLog1_to_lin( float SLog, float b, float ab, float w) \n" \
-"{ \n" \
+"float SLog1_to_lin( float SLog, float b, float ab, float w) { \n" \
 "float lin = 0.0f; \n" \
 "if (SLog >= ab) \n" \
-"lin = ( pow(10.0f, ( ( ( SLog - b) / ( w - b) - 0.616596f - 0.03f) / 0.432699f)) - 0.037584f) * 0.9f; \n" \
+"lin = ( exp10(( ( ( SLog - b) / ( w - b) - 0.616596f - 0.03f) / 0.432699f)) - 0.037584f) * 0.9f; \n" \
 "else if (SLog < ab) \n" \
 "lin = ( ( ( SLog - b) / ( w - b) - 0.030001222851889303f) / 5.0f) * 0.9f; \n" \
 "return lin; \n" \
 "} \n" \
-"float SLog2_to_lin( float SLog, float b, float ab, float w) \n" \
-"{ \n" \
+"float SLog2_to_lin( float SLog, float b, float ab, float w) { \n" \
 "float lin = 0.0f; \n" \
 "if (SLog >= ab) \n" \
-"lin = ( 219.0f * ( pow(10.0f, ( ( ( SLog - b) / ( w - b) - 0.616596f - 0.03f) / 0.432699f)) - 0.037584f) / 155.0f) * 0.9f; \n" \
+"lin = ( 219.0f * ( exp10(( ( ( SLog - b) / ( w - b) - 0.616596f - 0.03f) / 0.432699f)) - 0.037584f) / 155.0f) * 0.9f; \n" \
 "else if (SLog < ab) \n" \
 "lin = ( ( ( SLog - b) / ( w - b) - 0.030001222851889303f) / 3.53881278538813f) * 0.9f; \n" \
 "return lin; \n" \
 "} \n" \
-"float CanonLog_to_linear ( float clog) \n" \
-"{ \n" \
+"float CanonLog_to_lin ( float clog) { \n" \
 "float out = 0.0f; \n" \
 "if(clog < 0.12512248f) \n" \
-"out = -( pow( 10.0f, ( 0.12512248f - clog ) / 0.45310179f ) - 1.0f ) / 10.1596f; \n" \
+"out = -( exp10(( 0.12512248f - clog ) / 0.45310179f ) - 1.0f ) / 10.1596f; \n" \
 "else \n" \
-"out = ( pow( 10.0f, ( clog - 0.12512248f ) / 0.45310179f ) - 1.0f ) / 10.1596f; \n" \
+"out = ( exp10(( clog - 0.12512248f ) / 0.45310179f ) - 1.0f ) / 10.1596f; \n" \
 "return out; \n" \
 "} \n" \
-"float CanonLog2_to_linear ( float clog2) \n" \
-"{ \n" \
+"float CanonLog2_to_lin ( float clog2) { \n" \
 "float out = 0.0f; \n" \
 "if(clog2 < 0.092864125f) \n" \
-"out = -( pow( 10.0f, ( 0.092864125f - clog2 ) / 0.24136077f ) - 1.0f ) / 87.099375f; \n" \
+"out = -( exp10(( 0.092864125f - clog2 ) / 0.24136077f ) - 1.0f ) / 87.099375f; \n" \
 "else \n" \
-"out = ( pow( 10.0f, ( clog2 - 0.092864125f ) / 0.24136077f ) - 1.0f ) / 87.099375f; \n" \
+"out = ( exp10(( clog2 - 0.092864125f ) / 0.24136077f ) - 1.0f ) / 87.099375f; \n" \
 "return out; \n" \
 "} \n" \
-"float CanonLog3_to_linear ( float clog3) \n" \
-"{ \n" \
+"float CanonLog3_to_lin ( float clog3) { \n" \
 "float out = 0.0f; \n" \
 "if(clog3 < 0.097465473f) \n" \
-"out = -( pow( 10.0f, ( 0.12783901f - clog3 ) / 0.36726845f ) - 1.0f ) / 14.98325f; \n" \
+"out = -( exp10(( 0.12783901f - clog3 ) / 0.36726845f ) - 1.0f ) / 14.98325f; \n" \
 "else if(clog3 <= 0.15277891f) \n" \
 "out = ( clog3 - 0.12512219f ) / 1.9754798f; \n" \
 "else \n" \
-"out = ( pow( 10.0f, ( clog3 - 0.12240537f ) / 0.36726845f ) - 1.0f ) / 14.98325f; \n" \
+"out = ( exp10(( clog3 - 0.12240537f ) / 0.36726845f ) - 1.0f ) / 14.98325f; \n" \
 "return out; \n" \
 "} \n" \
-"float Log3G10_to_linear_2016 ( float log3g10) \n" \
-"{ \n" \
-"float a, b, c, mirror, linear; \n" \
-"a = 0.224282f; \n" \
-"b = 155.975327f; \n" \
-"c = 0.01f; \n" \
-"mirror = 1.0f; \n" \
-"if (log3g10 < 0.0f){ \n" \
-"mirror = -1.0f; \n" \
-"log3g10 = -log3g10;} \n" \
-"linear = (pow(10.0f, log3g10 / a) - 1.0f) / b; \n" \
-"linear = linear * mirror - c; \n" \
-"return linear; \n" \
+"float LogC_to_lin( float in) { \n" \
+"const float midGraySignal = 0.01f; \n" \
+"const float cut = 1.0f / 9.0f; \n" \
+"const float slope = 3.9086503371f; \n" \
+"const float offset =  -1.3885369913f; \n" \
+"const float encOffset = 0.3855369987f; \n" \
+"const float gain = 800.0f / 400.0f; \n" \
+"const float encGain = 0.2471896383f; \n" \
+"const float gray = 0.005f; \n" \
+"const float nz = 0.052272275f; \n" \
+"float out = (in - encOffset) / encGain; \n" \
+"float ns = (out - offset) / slope; \n" \
+"if (ns > cut) \n" \
+"ns = exp10(out); \n" \
+"ns = (ns - nz) * gray; \n" \
+"return ns * (0.18f * gain / midGraySignal); \n" \
 "} \n" \
-"float Log3G10_to_linear ( float log3g10) \n" \
-"{ \n" \
+"float lin_to_LogC( float in) { \n" \
+"const float midGraySignal = 0.01f; \n" \
+"const float cut = 1.0f / 9.0f; \n" \
+"const float slope = 3.9086503371f; \n" \
+"const float offset =  -1.3885369913f; \n" \
+"const float encOffset = 0.3855369987f; \n" \
+"const float gain = 800.0f / 400.0f; \n" \
+"const float encGain = 0.2471896383f; \n" \
+"const float gray = 0.005f; \n" \
+"const float nz = 0.052272275f; \n" \
+"float out; \n" \
+"float ns = in / (0.18f * gain / midGraySignal); \n" \
+"ns = nz + (ns / gray); \n" \
+"if (ns > cut) { \n" \
+"out = log10(ns); \n" \
+"} else { \n" \
+"out = offset + (ns * slope); \n" \
+"} \n" \
+"return encOffset + (out * encGain); \n" \
+"} \n" \
+"float Log3G10_to_lin ( float log3g10) { \n" \
 "float a, b, c, g, linear; \n" \
 "a = 0.224282f; b = 155.975327f; c = 0.01f; g = 15.1927f; \n" \
-"linear = log3g10 < 0.0f ? (log3g10 / g) : (pow(10.0f, log3g10 / a) - 1.0f) / b; \n" \
+"linear = log3g10 < 0.0f ? (log3g10 / g) : (exp10(log3g10 / a) - 1.0f) / b; \n" \
 "linear = linear - c; \n" \
 "return linear; \n" \
 "} \n" \
-"float3 XYZ_2_xyY( float3 XYZ) \n" \
-"{ \n" \
+"float lin_to_Log3G10( float in) { \n" \
+"const float a = 0.224282f; \n" \
+"const float b = 155.975327f; \n" \
+"const float c = 0.01f; \n" \
+"const float g = 15.1927f; \n" \
+"float out = in + c; \n" \
+"if (out < 0.0f) { \n" \
+"out =  out * g; \n" \
+"} else { \n" \
+"out = a * log10(out * b + 1.0f); \n" \
+"} \n" \
+"return out; \n" \
+"} \n" \
+"float3 inline XYZ_2_xyY( float3 XYZ) { \n" \
 "float3 xyY; \n" \
 "float divisor = (XYZ.x + XYZ.y + XYZ.z); \n" \
 "if (divisor == 0.0f) divisor = 1e-10f; \n" \
@@ -540,27 +478,24 @@ const char* kernelSource =  \
 "xyY.z = XYZ.y; \n" \
 "return xyY; \n" \
 "} \n" \
-"float3 xyY_2_XYZ( float3 xyY) \n" \
-"{ \n" \
+"float3 inline xyY_2_XYZ( float3 xyY) { \n" \
 "float3 XYZ; \n" \
 "XYZ.x = xyY.x * xyY.z / fmax( xyY.y, 1e-10f); \n" \
 "XYZ.y = xyY.z; \n" \
 "XYZ.z = (1.0f - xyY.x - xyY.y) * xyY.z / fmax( xyY.y, 1e-10f); \n" \
 "return XYZ; \n" \
 "} \n" \
-"float rgb_2_hue( float3 rgb) \n" \
-"{ \n" \
+"float inline rgb_2_hue( float3 rgb) { \n" \
 "float hue = 0.0f; \n" \
 "if (rgb.x == rgb.y && rgb.y == rgb.z) { \n" \
 "hue = 0.0f; \n" \
 "} else { \n" \
-"hue = (180.0f/3.14159265358979323846264338327950288f) * atan2( sqrt(3.0f) * (rgb.y - rgb.z), 2.0f * rgb.x - rgb.y - rgb.z); \n" \
+"hue = (180.0f/3.1415926535897932f) * atan2( sqrt(3.0f) * (rgb.y - rgb.z), 2.0f * rgb.x - rgb.y - rgb.z); \n" \
 "} \n" \
 "if (hue < 0.0f) hue = hue + 360.0f; \n" \
 "return hue; \n" \
 "} \n" \
-"float rgb_2_yc( float3 rgb) \n" \
-"{ \n" \
+"float inline rgb_2_yc( float3 rgb) { \n" \
 "float ycRadiusWeight = 1.75f; \n" \
 "float r = rgb.x; \n" \
 "float g = rgb.y; \n" \
@@ -568,9 +503,8 @@ const char* kernelSource =  \
 "float chroma = sqrt(b * (b - g) + g * (g - r) + r * (r - b)); \n" \
 "return ( b + g + r + ycRadiusWeight * chroma) / 3.0f; \n" \
 "} \n" \
-"mat3 calculate_cat_matrix( float2 src_xy, float2 des_xy) \n" \
-"{ \n" \
-"mat3 coneRespMat = CONE_RESP_MAT_BRADFORD; \n" \
+"mat3 calculate_cat_matrix( float2 src_xy, float2 des_xy) { \n" \
+"mat3 coneRespMat = CONE_RESP_MATRADFORD; \n" \
 "const float3 src_xyY = { src_xy.x, src_xy.y, 1.0f }; \n" \
 "const float3 des_xyY = { des_xy.x, des_xy.y, 1.0f }; \n" \
 "float3 src_XYZ = xyY_2_XYZ( src_xyY ); \n" \
@@ -580,23 +514,21 @@ const char* kernelSource =  \
 "mat3 vkMat = { \n" \
 "{ des_coneResp.x / src_coneResp.x, 0.0f, 0.0f }, \n" \
 "{ 0.0f, des_coneResp.y / src_coneResp.y, 0.0f }, \n" \
-"{ 0.0f, 0.0f, des_coneResp.z / src_coneResp.z } \n" \
-"}; \n" \
+"{ 0.0f, 0.0f, des_coneResp.z / src_coneResp.z }}; \n" \
 "mat3 cat_matrix = mult_f33_f33( coneRespMat, mult_f33_f33( vkMat, invert_f33( coneRespMat ) ) ); \n" \
 "return cat_matrix; \n" \
 "} \n" \
-"mat3 calc_sat_adjust_matrix( float sat, float3 rgb2Y) \n" \
-"{ \n" \
+"mat3 calc_sat_adjust_matrix( float sat, float3 rgb2Y) { \n" \
 "float M[3][3]; \n" \
 "M[0][0] = (1.0f - sat) * rgb2Y.x + sat; M[1][0] = (1.0f - sat) * rgb2Y.x; M[2][0] = (1.0f - sat) * rgb2Y.x; \n" \
 "M[0][1] = (1.0f - sat) * rgb2Y.y; M[1][1] = (1.0f - sat) * rgb2Y.y + sat; M[2][1] = (1.0f - sat) * rgb2Y.y; \n" \
 "M[0][2] = (1.0f - sat) * rgb2Y.z; M[1][2] = (1.0f - sat) * rgb2Y.z; M[2][2] = (1.0f - sat) * rgb2Y.z + sat; \n" \
-"mat3 R = make_mat3(make_float3(M[0][0], M[0][1], M[0][2]), make_float3(M[1][0], M[1][1], M[1][2]), make_float3(M[2][0], M[2][1], M[2][2])); \n" \
+"mat3 R = make_mat3(make_float3(M[0][0], M[0][1], M[0][2]),  \n" \
+"make_float3(M[1][0], M[1][1], M[1][2]), make_float3(M[2][0], M[2][1], M[2][2])); \n" \
 "R = transpose_f33(R); \n" \
 "return R; \n" \
 "} \n" \
-"float moncurve_f( float x, float gamma, float offs ) \n" \
-"{ \n" \
+"float moncurve_f( float x, float gamma, float offs ) { \n" \
 "float y; \n" \
 "const float fs = (( gamma - 1.0f) / offs) * pow( offs * gamma / ( ( gamma - 1.0f) * ( 1.0f + offs)), gamma); \n" \
 "const float xb = offs / ( gamma - 1.0f); \n" \
@@ -606,8 +538,7 @@ const char* kernelSource =  \
 "y = x * fs; \n" \
 "return y; \n" \
 "} \n" \
-"float moncurve_r( float y, float gamma, float offs ) \n" \
-"{ \n" \
+"float moncurve_r( float y, float gamma, float offs ) { \n" \
 "float x; \n" \
 "const float yb = pow( offs * gamma / ( ( gamma - 1.0f) * ( 1.0f + offs)), gamma); \n" \
 "const float rs = pow( ( gamma - 1.0f) / offs, gamma - 1.0f) * pow( ( 1.0f + offs) / gamma, gamma); \n" \
@@ -617,86 +548,73 @@ const char* kernelSource =  \
 "x = y * rs; \n" \
 "return x; \n" \
 "} \n" \
-"float3 moncurve_f_f3( float3 x, float gamma, float offs) \n" \
-"{ \n" \
+"float3 moncurve_f_f3( float3 x, float gamma, float offs) { \n" \
 "float3 y; \n" \
 "y.x = moncurve_f( x.x, gamma, offs); y.y = moncurve_f( x.y, gamma, offs); y.z = moncurve_f( x.z, gamma, offs); \n" \
 "return y; \n" \
 "} \n" \
-"float3 moncurve_r_f3( float3 y, float gamma, float offs) \n" \
-"{ \n" \
+"float3 moncurve_r_f3( float3 y, float gamma, float offs) { \n" \
 "float3 x; \n" \
 "x.x = moncurve_r( y.x, gamma, offs); x.y = moncurve_r( y.y, gamma, offs); x.z = moncurve_r( y.z, gamma, offs); \n" \
 "return x; \n" \
 "} \n" \
-"float bt1886_f( float V, float gamma, float Lw, float Lb) \n" \
-"{ \n" \
+"float bt1886_f( float V, float gamma, float Lw, float Lb) { \n" \
 "float a = pow( pow( Lw, 1.0f/gamma) - pow( Lb, 1.0f/gamma), gamma); \n" \
 "float b = pow( Lb, 1.0f/gamma) / ( pow( Lw, 1.0f/gamma) - pow( Lb, 1.0f/gamma)); \n" \
 "float L = a * pow( fmax( V + b, 0.0f), gamma); \n" \
 "return L; \n" \
 "} \n" \
-"float bt1886_r( float L, float gamma, float Lw, float Lb) \n" \
-"{ \n" \
+"float bt1886_r( float L, float gamma, float Lw, float Lb) { \n" \
 "float a = pow( pow( Lw, 1.0f/gamma) - pow( Lb, 1.0f/gamma), gamma); \n" \
 "float b = pow( Lb, 1.0f/gamma) / ( pow( Lw, 1.0f/gamma) - pow( Lb, 1.0f/gamma)); \n" \
 "float V = pow( fmax( L / a, 0.0f), 1.0f/gamma) - b; \n" \
 "return V; \n" \
 "} \n" \
-"float3 bt1886_f_f3( float3 V, float gamma, float Lw, float Lb) \n" \
-"{ \n" \
+"float3 bt1886_f_f3( float3 V, float gamma, float Lw, float Lb) { \n" \
 "float3 L; \n" \
 "L.x = bt1886_f( V.x, gamma, Lw, Lb); L.y = bt1886_f( V.y, gamma, Lw, Lb); L.z = bt1886_f( V.z, gamma, Lw, Lb); \n" \
 "return L; \n" \
 "} \n" \
-"float3 bt1886_r_f3( float3 L, float gamma, float Lw, float Lb) \n" \
-"{ \n" \
+"float3 bt1886_r_f3( float3 L, float gamma, float Lw, float Lb) { \n" \
 "float3 V; \n" \
 "V.x = bt1886_r( L.x, gamma, Lw, Lb); V.y = bt1886_r( L.y, gamma, Lw, Lb); V.z = bt1886_r( L.z, gamma, Lw, Lb); \n" \
 "return V; \n" \
 "} \n" \
-"float smpteRange_to_fullRange( float in) \n" \
-"{ \n" \
+"float smpteRange_to_fullRange( float in) { \n" \
 "const float REFBLACK = ( 64.0f / 1023.0f); \n" \
 "const float REFWHITE = ( 940.0f / 1023.0f); \n" \
 "return (( in - REFBLACK) / ( REFWHITE - REFBLACK)); \n" \
 "} \n" \
-"float fullRange_to_smpteRange( float in) \n" \
-"{ \n" \
+"float fullRange_to_smpteRange( float in) { \n" \
 "const float REFBLACK = ( 64.0f / 1023.0f); \n" \
 "const float REFWHITE = ( 940.0f / 1023.0f); \n" \
 "return ( in * ( REFWHITE - REFBLACK) + REFBLACK ); \n" \
 "} \n" \
-"float3 smpteRange_to_fullRange_f3( float3 rgbIn) \n" \
-"{ \n" \
+"float3 smpteRange_to_fullRange_f3( float3 rgbIn) { \n" \
 "float3 rgbOut; \n" \
 "rgbOut.x = smpteRange_to_fullRange( rgbIn.x); rgbOut.y = smpteRange_to_fullRange( rgbIn.y); rgbOut.z = smpteRange_to_fullRange( rgbIn.z); \n" \
 "return rgbOut; \n" \
 "} \n" \
-"float3 fullRange_to_smpteRange_f3( float3 rgbIn) \n" \
-"{ \n" \
+"float3 fullRange_to_smpteRange_f3( float3 rgbIn) { \n" \
 "float3 rgbOut; \n" \
 "rgbOut.x = fullRange_to_smpteRange( rgbIn.x); rgbOut.y = fullRange_to_smpteRange( rgbIn.y); rgbOut.z = fullRange_to_smpteRange( rgbIn.z); \n" \
 "return rgbOut; \n" \
 "} \n" \
-"float3 dcdm_decode( float3 XYZp) \n" \
-"{ \n" \
+"float3 dcdm_decode( float3 XYZp) { \n" \
 "float3 XYZ; \n" \
 "XYZ.x = (52.37f/48.0f) * pow( XYZp.x, 2.6f); \n" \
 "XYZ.y = (52.37f/48.0f) * pow( XYZp.y, 2.6f); \n" \
 "XYZ.z = (52.37f/48.0f) * pow( XYZp.z, 2.6f); \n" \
 "return XYZ; \n" \
 "} \n" \
-"float3 dcdm_encode( float3 XYZ) \n" \
-"{ \n" \
+"float3 dcdm_encode( float3 XYZ) { \n" \
 "float3 XYZp; \n" \
 "XYZp.x = pow( (48.0f/52.37f) * XYZ.x, 1.0f/2.6f); \n" \
 "XYZp.y = pow( (48.0f/52.37f) * XYZ.y, 1.0f/2.6f); \n" \
 "XYZp.z = pow( (48.0f/52.37f) * XYZ.z, 1.0f/2.6f); \n" \
 "return XYZp; \n" \
 "} \n" \
-"float ST2084_2_Y( float N ) \n" \
-"{ \n" \
+"float ST2084_2_Y( float N ) { \n" \
 "float Np = pow( N, 1.0f / pq_m2 ); \n" \
 "float L = Np - pq_c1; \n" \
 "if ( L < 0.0f ) \n" \
@@ -705,28 +623,24 @@ const char* kernelSource =  \
 "L = pow( L, 1.0f / pq_m1 ); \n" \
 "return L * pq_C; \n" \
 "} \n" \
-"float Y_2_ST2084( float C ) \n" \
-"{ \n" \
+"float Y_2_ST2084( float C ) { \n" \
 "float L = C / pq_C; \n" \
 "float Lm = pow( L, pq_m1 ); \n" \
 "float N = ( pq_c1 + pq_c2 * Lm ) / ( 1.0f + pq_c3 * Lm ); \n" \
 "N = pow( N, pq_m2 ); \n" \
 "return N; \n" \
 "} \n" \
-"float3 Y_2_ST2084_f3( float3 in) \n" \
-"{ \n" \
+"float3 Y_2_ST2084_f3( float3 in) { \n" \
 "float3 out; \n" \
 "out.x = Y_2_ST2084( in.x); out.y = Y_2_ST2084( in.y); out.z = Y_2_ST2084( in.z); \n" \
 "return out; \n" \
 "} \n" \
-"float3 ST2084_2_Y_f3( float3 in) \n" \
-"{ \n" \
+"float3 ST2084_2_Y_f3( float3 in) { \n" \
 "float3 out; \n" \
 "out.x = ST2084_2_Y( in.x); out.y = ST2084_2_Y( in.y); out.z = ST2084_2_Y( in.z); \n" \
 "return out; \n" \
 "} \n" \
-"float3 ST2084_2_HLG_1000nits_f3( float3 PQ) \n" \
-"{ \n" \
+"float3 ST2084_2_HLG_1000nits_f3( float3 PQ) { \n" \
 "float3 displayLinear = ST2084_2_Y_f3( PQ); \n" \
 "float Y_d = 0.2627f * displayLinear.x + 0.6780f * displayLinear.y + 0.0593f * displayLinear.z; \n" \
 "const float L_w = 1000.0f; \n" \
@@ -763,8 +677,7 @@ const char* kernelSource =  \
 "} \n" \
 "return HLG; \n" \
 "} \n" \
-"float3 HLG_2_ST2084_1000nits_f3( float3 HLG) \n" \
-"{ \n" \
+"float3 HLG_2_ST2084_1000nits_f3( float3 HLG) { \n" \
 "const float a = 0.17883277f; \n" \
 "const float b = 0.28466892f; \n" \
 "const float c = 0.55991073f; \n" \
@@ -797,19 +710,16 @@ const char* kernelSource =  \
 "float3 PQ = Y_2_ST2084_f3( displayLinear); \n" \
 "return PQ; \n" \
 "} \n" \
-"float rgb_2_saturation( float3 rgb) \n" \
-"{ \n" \
+"float rgb_2_saturation( float3 rgb) { \n" \
 "return ( fmax( max_f3(rgb), TINY) - fmax( min_f3(rgb), TINY)) / fmax( max_f3(rgb), 1e-2f); \n" \
 "} \n" \
-"SegmentedSplineParams_c5 RRT_PARAMS() \n" \
-"{ \n" \
+"SegmentedSplineParams_c5 RRT_PARAMS() { \n" \
 "SegmentedSplineParams_c5 A = {{ -4.0f, -4.0f, -3.1573765773f, -0.4852499958f, 1.8477324706f, 1.8477324706f}, \n" \
 "{ -0.7185482425f, 2.0810307172f, 3.6681241237f, 4.0f, 4.0f, 4.0f}, {0.18f * pow(2.0f, -15.0f), 0.0001f}, \n" \
 "{0.18f, 4.8f}, {0.18f * pow(2.0f, 18.0f), 10000.0f}, 0.0f, 0.0f}; \n" \
 "return A; \n" \
 "}; \n" \
-"float segmented_spline_c5_fwd( float x) \n" \
-"{ \n" \
+"float segmented_spline_c5_fwd( float x) { \n" \
 "SegmentedSplineParams_c5 C = RRT_PARAMS(); \n" \
 "const int N_KNOTS_LOW = 4; \n" \
 "const int N_KNOTS_HIGH = 4; \n" \
@@ -836,8 +746,7 @@ const char* kernelSource =  \
 "} \n" \
 "return exp10(logy); \n" \
 "} \n" \
-"SegmentedSplineParams_c9 ODT_48nits() \n" \
-"{ \n" \
+"SegmentedSplineParams_c9 ODT_48nits() { \n" \
 "SegmentedSplineParams_c9 A = \n" \
 "{{ -1.6989700043f, -1.6989700043f, -1.4779f, -1.2291f, -0.8648f, -0.448f, 0.00518f, 0.4511080334f, 0.9113744414f, 0.9113744414f}, \n" \
 "{ 0.5154386965f, 0.8470437783f, 1.1358f, 1.3802f, 1.5197f, 1.5985f, 1.6467f, 1.6746091357f, 1.6878733390f, 1.6878733390f }, \n" \
@@ -845,8 +754,7 @@ const char* kernelSource =  \
 "{segmented_spline_c5_fwd( 0.18f * pow(2.0f, 6.5f) ), 48.0f}, 0.0f, 0.04f}; \n" \
 "return A; \n" \
 "}; \n" \
-"SegmentedSplineParams_c9 ODT_1000nits() \n" \
-"{ \n" \
+"SegmentedSplineParams_c9 ODT_1000nits() { \n" \
 "SegmentedSplineParams_c9 A = \n" \
 "{{ -4.9706219331f, -3.0293780669f, -2.1262f, -1.5105f, -1.0578f, -0.4668f, 0.11938f, 0.7088134201f, 1.2911865799f, 1.2911865799f }, \n" \
 "{ 0.8089132070f, 1.1910867930f, 1.5683f, 1.9483f, 2.3083f, 2.6384f, 2.8595f, 2.9872608805f, 3.0127391195f, 3.0127391195f }, \n" \
@@ -854,8 +762,7 @@ const char* kernelSource =  \
 "{segmented_spline_c5_fwd( 0.18 * pow(2.0f, 10.0f) ), 1000.0f}, 3.0f, 0.06f}; \n" \
 "return A; \n" \
 "}; \n" \
-"SegmentedSplineParams_c9 ODT_2000nits() \n" \
-"{ \n" \
+"SegmentedSplineParams_c9 ODT_2000nits() { \n" \
 "SegmentedSplineParams_c9 A = \n" \
 "{{ -4.9706219331f, -3.0293780669f, -2.1262f, -1.5105f, -1.0578f, -0.4668f, 0.11938f, 0.7088134201f, 1.2911865799f, 1.2911865799f }, \n" \
 "{ 0.8019952042f, 1.1980047958f, 1.5943f, 1.9973f, 2.3783f, 2.7684f, 3.0515f, 3.2746293562f, 3.3274306351f, 3.3274306351f }, \n" \
@@ -863,8 +770,7 @@ const char* kernelSource =  \
 "{segmented_spline_c5_fwd( 0.18f * pow(2.0f, 11.0f) ), 2000.0f}, 3.0f, 0.12f}; \n" \
 "return A; \n" \
 "}; \n" \
-"SegmentedSplineParams_c9 ODT_4000nits() \n" \
-"{ \n" \
+"SegmentedSplineParams_c9 ODT_4000nits() { \n" \
 "SegmentedSplineParams_c9 A = \n" \
 "{{ -4.9706219331f, -3.0293780669f, -2.1262f, -1.5105f, -1.0578f, -0.4668f, 0.11938f, 0.7088134201f, 1.2911865799f, 1.2911865799f }, \n" \
 "{ 0.7973186613f, 1.2026813387f, 1.6093f, 2.0108f, 2.4148f, 2.8179f, 3.1725f, 3.5344995451f, 3.6696204376f, 3.6696204376f }, \n" \
@@ -872,8 +778,7 @@ const char* kernelSource =  \
 "{segmented_spline_c5_fwd( 0.18f * pow(2.0f, 12.0f) ), 4000.0f}, 3.0f, 0.3f}; \n" \
 "return A; \n" \
 "}; \n" \
-"float segmented_spline_c5_rev( float y) \n" \
-"{ \n" \
+"float segmented_spline_c5_rev( float y) { \n" \
 "SegmentedSplineParams_c5 C = RRT_PARAMS(); \n" \
 "const int N_KNOTS_LOW = 4; \n" \
 "const int N_KNOTS_HIGH = 4; \n" \
@@ -928,8 +833,7 @@ const char* kernelSource =  \
 "} \n" \
 "return exp10( logx); \n" \
 "} \n" \
-"float segmented_spline_c9_fwd( float x, SegmentedSplineParams_c9 C) \n" \
-"{ \n" \
+"float segmented_spline_c9_fwd( float x, SegmentedSplineParams_c9 C) { \n" \
 "const int N_KNOTS_LOW = 8; \n" \
 "const int N_KNOTS_HIGH = 8; \n" \
 "float logx = log10( fmax(x, 0.0f)); \n" \
@@ -955,8 +859,7 @@ const char* kernelSource =  \
 "} \n" \
 "return exp10(logy); \n" \
 "} \n" \
-"float segmented_spline_c9_rev( float y, SegmentedSplineParams_c9 C) \n" \
-"{ \n" \
+"float segmented_spline_c9_rev( float y, SegmentedSplineParams_c9 C) { \n" \
 "const int N_KNOTS_LOW = 8; \n" \
 "const int N_KNOTS_HIGH = 8; \n" \
 "const float KNOT_INC_LOW = (log10(C.midPoint.x) - log10(C.minPoint.x)) / (N_KNOTS_LOW - 1.0f); \n" \
@@ -1045,46 +948,67 @@ const char* kernelSource =  \
 "if (in <= 0.0f) \n" \
 "return -0.3584474886f; \n" \
 "else if (in < pow(2.0f, -15.0f)) \n" \
-"return (log2( pow(2.0f, -16.0f) + in * 0.5f) + 9.72f) / 17.52f; \n" \
+"return (log2( exp2(-16.0f) + in * 0.5f) + 9.72f) / 17.52f; \n" \
 "else \n" \
 "return (log2(in) + 9.72f) / 17.52f; \n" \
 "} \n" \
 "float3 ACES_to_ACEScc( float3 ACES) { \n" \
 "ACES = max_f3_f( ACES, 0.0f); \n" \
-"float3 lin_AP1 = mult_f3_f33( ACES, AP0_2_AP1_MAT_B); \n" \
+"float3 lin_AP1 = mult_f3_f33( ACES, AP0_2_AP1_MAT); \n" \
 "float3 out; \n" \
 "out.x = lin_to_ACEScc( lin_AP1.x); out.y = lin_to_ACEScc( lin_AP1.y); out.z = lin_to_ACEScc( lin_AP1.z); \n" \
 "return out; \n" \
 "} \n" \
 "float ACEScc_to_lin( float in) { \n" \
 "if (in < -0.3013698630f) \n" \
-"return (pow( 2.0f, in * 17.52f - 9.72f) - pow( 2.0f, -16.0f)) * 2.0f; \n" \
+"return (exp2(in * 17.52f - 9.72f) - exp2(-16.0f)) * 2.0f; \n" \
 "else \n" \
-"return pow( 2.0f, in * 17.52f - 9.72f); \n" \
+"return exp2(in * 17.52f - 9.72f); \n" \
 "} \n" \
 "float3 ACEScc_to_ACES( float3 ACEScc) { \n" \
 "float3 lin_AP1; \n" \
 "lin_AP1.x = ACEScc_to_lin( ACEScc.x); lin_AP1.y = ACEScc_to_lin( ACEScc.y); lin_AP1.z = ACEScc_to_lin( ACEScc.z); \n" \
-"float3 ACES = mult_f3_f33( lin_AP1, AP1_2_AP0_MAT_B); \n" \
+"float3 ACES = mult_f3_f33( lin_AP1, AP1_2_AP0_MAT); \n" \
 "return ACES; \n" \
+"} \n" \
+"float lin_to_ACEScct( float in) { \n" \
+"if (in <= X_BRK) \n" \
+"return A * in + B; \n" \
+"else \n" \
+"return (log2(in) + 9.72f) / 17.52f; \n" \
+"} \n" \
+"float ACEScct_to_lin( float in) { \n" \
+"if (in > Y_BRK) \n" \
+"return exp2(in * 17.52f - 9.72f); \n" \
+"else \n" \
+"return (in - B) / A; \n" \
+"} \n" \
+"float3 ACES_to_ACEScct( float3 in) { \n" \
+"float3 ap1_lin = mult_f3_f33( in, AP0_2_AP1_MAT); \n" \
+"float3 acescct; \n" \
+"acescct.x = lin_to_ACEScct( ap1_lin.x); acescct.y = lin_to_ACEScct( ap1_lin.y); acescct.z = lin_to_ACEScct( ap1_lin.z); \n" \
+"return acescct; \n" \
+"} \n" \
+"float3 ACEScct_to_ACES( float3 in) { \n" \
+"float3 ap1_lin; \n" \
+"ap1_lin.x = ACEScct_to_lin( in.x); ap1_lin.y = ACEScct_to_lin( in.y); ap1_lin.z = ACEScct_to_lin( in.z); \n" \
+"return mult_f3_f33( ap1_lin, AP1_2_AP0_MAT); \n" \
 "} \n" \
 "float3 ACES_to_ACEScg( float3 ACES) { \n" \
 "ACES = max_f3_f( ACES, 0.0f); \n" \
-"float3 ACEScg = mult_f3_f33( ACES, AP0_2_AP1_MAT_B); \n" \
+"float3 ACEScg = mult_f3_f33( ACES, AP0_2_AP1_MAT); \n" \
 "return ACEScg; \n" \
 "} \n" \
 "float3 ACEScg_to_ACES( float3 ACEScg) { \n" \
-"float3 ACES = mult_f3_f33( ACEScg, AP1_2_AP0_MAT_B); \n" \
+"float3 ACES = mult_f3_f33( ACEScg, AP1_2_AP0_MAT); \n" \
 "return ACES; \n" \
 "} \n" \
-"float ACESproxy_to_lin( float in) \n" \
-"{ \n" \
+"float ACESproxy_to_lin( float in) { \n" \
 "float StepsPerStop = 50.0f; \n" \
 "float MidCVoffset = 425.0f; \n" \
-"return pow( 2.0f, ( in - MidCVoffset)/StepsPerStop - 2.5f); \n" \
+"return exp2(( in - MidCVoffset)/StepsPerStop - 2.5f); \n" \
 "} \n" \
-"float3 ACESproxy_to_ACES( float3 In) \n" \
-"{ \n" \
+"float3 ACESproxy_to_ACES( float3 In) { \n" \
 "float3 ACESproxy; \n" \
 "ACESproxy.x = In.x * 1023.0f; \n" \
 "ACESproxy.y = In.y * 1023.0f; \n" \
@@ -1093,11 +1017,10 @@ const char* kernelSource =  \
 "lin_AP1.x = ACESproxy_to_lin( ACESproxy.x); \n" \
 "lin_AP1.y = ACESproxy_to_lin( ACESproxy.y); \n" \
 "lin_AP1.z = ACESproxy_to_lin( ACESproxy.z); \n" \
-"float3 ACES = mult_f3_f33( lin_AP1, AP1_2_AP0_MAT_B); \n" \
+"float3 ACES = mult_f3_f33( lin_AP1, AP1_2_AP0_MAT); \n" \
 "return ACES; \n" \
 "} \n" \
-"float lin_to_ACESproxy( float in) \n" \
-"{ \n" \
+"float lin_to_ACESproxy( float in) { \n" \
 "float StepsPerStop = 50.0f; \n" \
 "float MidCVoffset = 425.0f; \n" \
 "float CVmin = 64.0f; \n" \
@@ -1107,10 +1030,9 @@ const char* kernelSource =  \
 "else \n" \
 "return fmax( CVmin, fmin( CVmax, round( (log2(in) + 2.5f) * StepsPerStop + MidCVoffset))); \n" \
 "} \n" \
-"float3 ACES_to_ACESproxy( float3 ACES) \n" \
-"{ \n" \
+"float3 ACES_to_ACESproxy( float3 ACES) { \n" \
 "ACES = max_f3_f( ACES, 0.0f);  \n" \
-"float3 lin_AP1 = mult_f3_f33( ACES, AP0_2_AP1_MAT_B); \n" \
+"float3 lin_AP1 = mult_f3_f33( ACES, AP0_2_AP1_MAT); \n" \
 "float ACESproxy[3]; \n" \
 "ACESproxy[0] = lin_to_ACESproxy( lin_AP1.x ); \n" \
 "ACESproxy[1] = lin_to_ACESproxy( lin_AP1.y ); \n" \
@@ -1121,8 +1043,7 @@ const char* kernelSource =  \
 "out.z = ACESproxy[2] / 1023.0f; \n" \
 "return out; \n" \
 "} \n" \
-"float3 convertFromLinear( float3 aces) \n" \
-"{ \n" \
+"float3 adx_convertFromLinear( float3 aces) { \n" \
 "aces.x = aces.x < 0.00130127f ? (aces.x - 0.00130127f) / 0.04911331f : \n" \
 "aces.x < 0.001897934f ? (log(aces.x) + 6.644415f) / 37.74261f :  \n" \
 "aces.x < 0.118428f ? log(aces.x) * (0.02871031f * log(aces.x) + 0.383914f) + 1.288383f :  \n" \
@@ -1137,8 +1058,7 @@ const char* kernelSource =  \
 "(log(aces.z) + 4.645361f) / 4.1865183f; \n" \
 "return aces; \n" \
 "} \n" \
-"float3 convertToLinear( float3 aces) \n" \
-"{ \n" \
+"float3 adx_convertToLinear( float3 aces) { \n" \
 "aces.x = aces.x < 0.0f ? 0.04911331f * aces.x + 0.001301270f :  \n" \
 "aces.x < 0.01f ? exp(37.74261f * aces.x - 6.644415f) :  \n" \
 "aces.x < 0.6f ? exp(-6.685996f + 2.302585f * pow(6.569476f * aces.x - 0.03258072f, 0.5f)) :  \n" \
@@ -1153,46 +1073,111 @@ const char* kernelSource =  \
 "exp(fmin(4.1865183f * aces.z - 4.645361f, 86.4f)); \n" \
 "return aces; \n" \
 "} \n" \
-"float3 ADX_to_ACES( float3 aces) \n" \
-"{ \n" \
+"float3 ADX_to_ACES( float3 aces) { \n" \
 "aces.x = aces.x * 2.048f - 0.19f; \n" \
 "aces.y = aces.y * 2.048f - 0.19f; \n" \
 "aces.z = aces.z * 2.048f - 0.19f; \n" \
 "aces = mult_f3_f33(aces, CDD_TO_CID); \n" \
-"aces = convertToLinear(aces); \n" \
+"aces = adx_convertToLinear(aces); \n" \
 "aces = mult_f3_f33(aces, EXP_TO_ACES); \n" \
 "return aces; \n" \
 "} \n" \
-"float3 ACES_to_ADX( float3 aces) \n" \
-"{ \n" \
+"float3 ACES_to_ADX( float3 aces) { \n" \
 "aces = mult_f3_f33(aces, invert_f33(EXP_TO_ACES)); \n" \
-"aces = convertFromLinear(aces); \n" \
+"aces = adx_convertFromLinear(aces); \n" \
 "aces =  mult_f3_f33(aces, invert_f33(CDD_TO_CID)); \n" \
 "aces.x = (aces.x + 0.19f) / 2.048f; \n" \
 "aces.y = (aces.y + 0.19f) / 2.048f; \n" \
 "aces.z = (aces.z + 0.19f) / 2.048f; \n" \
 "return aces; \n" \
 "} \n" \
-"float normalizedLogCToRelativeExposure(float x) \n" \
-"{ \n" \
-"if (x > 0.149659f) \n" \
-"return (pow(10.0f, (x - 0.385537f) / 0.247189f) - 0.052272f) / 5.555556f; \n" \
-"else \n" \
-"return (x - 0.092809f) / 5.367650f; \n" \
-"} \n" \
-"float3 IDT_Alexa_v3_logC_EI800( float3 Alexa) \n" \
-"{ \n" \
-"float r_lin = normalizedLogCToRelativeExposure(Alexa.x); \n" \
-"float g_lin = normalizedLogCToRelativeExposure(Alexa.y); \n" \
-"float b_lin = normalizedLogCToRelativeExposure(Alexa.z); \n" \
-"float3 aces; \n" \
-"aces.x = r_lin * 0.680206f + g_lin * 0.236137f + b_lin * 0.083658f; \n" \
-"aces.y = r_lin * 0.085415f + g_lin * 1.017471f + b_lin * -0.102886f; \n" \
-"aces.z = r_lin * 0.002057f + g_lin * -0.062563f + b_lin * 1.060506f; \n" \
+"float3 ICpCt_to_ACES( float3 ICtCp) { \n" \
+"float3 LMSp = mult_f3_f33( ICtCp, ICtCp_2_LMSp_MAT); \n" \
+"float3 LMS; \n" \
+"LMS.x = ST2084_2_Y(LMSp.x); \n" \
+"LMS.y = ST2084_2_Y(LMSp.y); \n" \
+"LMS.z = ST2084_2_Y(LMSp.z); \n" \
+"float3 aces = mult_f3_f33(LMS, LMS_2_AP0_MAT); \n" \
+"float scale = 209.0f; \n" \
+"aces = mult_f_f3( 1.0f / scale, aces); \n" \
 "return aces; \n" \
 "} \n" \
-"float3 IDT_Alexa_v3_raw_EI800_CCT6500( float3 In) \n" \
-"{ \n" \
+"float3 ACES_to_ICpCt( float3 aces) { \n" \
+"float scale = 209.0f; \n" \
+"aces = mult_f_f3( scale, aces); \n" \
+"float3 LMS = mult_f3_f33(aces, AP0_2_LMS_MAT); \n" \
+"float3 LMSp; \n" \
+"LMSp.x = Y_2_ST2084(LMS.x); \n" \
+"LMSp.y = Y_2_ST2084(LMS.y); \n" \
+"LMSp.z = Y_2_ST2084(LMS.z); \n" \
+"float3 ICtCp = mult_f3_f33(LMSp, LMSp_2_ICtCp_MAT); \n" \
+"return ICtCp; \n" \
+"} \n" \
+"float3 LogC_EI800_AWG_to_ACES( float3 in) { \n" \
+"float3 lin_AWG; \n" \
+"lin_AWG.x = LogC_to_lin(in.x); \n" \
+"lin_AWG.y = LogC_to_lin(in.y); \n" \
+"lin_AWG.z = LogC_to_lin(in.z); \n" \
+"float3 aces = mult_f3_f33( lin_AWG, AWG_2_AP0_MAT); \n" \
+"return aces; \n" \
+"} \n" \
+"float3 ACES_to_LogC_EI800_AWG( float3 in) { \n" \
+"float3 lin_AWG = mult_f3_f33( in, AP0_2_AWG_MAT); \n" \
+"float3 out; \n" \
+"out.x = lin_to_LogC(lin_AWG.x); \n" \
+"out.y = lin_to_LogC(lin_AWG.y); \n" \
+"out.z = lin_to_LogC(lin_AWG.z); \n" \
+"return out; \n" \
+"} \n" \
+"float3 Log3G10_RWG_to_ACES( float3 in) { \n" \
+"float3 lin_RWG; \n" \
+"lin_RWG.x = Log3G10_to_lin(in.x); \n" \
+"lin_RWG.y = Log3G10_to_lin(in.y); \n" \
+"lin_RWG.z = Log3G10_to_lin(in.z); \n" \
+"float3 aces = mult_f3_f33( lin_RWG, RWG_2_AP0_MAT); \n" \
+"return aces; \n" \
+"} \n" \
+"float3 ACES_to_Log3G10_RWG( float3 in) { \n" \
+"float3 lin_RWG = mult_f3_f33(in, AP0_2_RWG_MAT); \n" \
+"float3 out; \n" \
+"out.x = lin_to_Log3G10(lin_RWG.x); \n" \
+"out.y = lin_to_Log3G10(lin_RWG.y); \n" \
+"out.z = lin_to_Log3G10(lin_RWG.z); \n" \
+"return out; \n" \
+"} \n" \
+"float3 SLog3_SG3_to_ACES( float3 in) { \n" \
+"float3 lin_SG3; \n" \
+"lin_SG3.x = SLog3_to_lin(in.x); \n" \
+"lin_SG3.y = SLog3_to_lin(in.y); \n" \
+"lin_SG3.z = SLog3_to_lin(in.z); \n" \
+"float3 aces = mult_f3_f33(lin_SG3, SG3_2_AP0_MAT); \n" \
+"return aces; \n" \
+"} \n" \
+"float3 ACES_to_SLog3_SG3( float3 in) { \n" \
+"float3 lin_SG3 = mult_f3_f33(in, AP0_2_SG3_MAT); \n" \
+"float3 out; \n" \
+"out.x = lin_to_SLog3(lin_SG3.x); \n" \
+"out.y = lin_to_SLog3(lin_SG3.y); \n" \
+"out.z = lin_to_SLog3(lin_SG3.z); \n" \
+"return out; \n" \
+"} \n" \
+"float3 SLog3_SG3C_to_ACES( float3 in) { \n" \
+"float3 lin_SG3C; \n" \
+"lin_SG3C.x = SLog3_to_lin(in.x); \n" \
+"lin_SG3C.y = SLog3_to_lin(in.y); \n" \
+"lin_SG3C.z = SLog3_to_lin(in.z); \n" \
+"float3 aces = mult_f3_f33(lin_SG3C, SG3C_2_AP0_MAT); \n" \
+"return aces; \n" \
+"} \n" \
+"float3 ACES_to_SLog3_SG3C( float3 in) { \n" \
+"float3 lin_SG3C = mult_f3_f33(in, AP0_2_SG3C_MAT); \n" \
+"float3 out; \n" \
+"out.x = lin_to_SLog3(lin_SG3C.x); \n" \
+"out.y = lin_to_SLog3(lin_SG3C.y); \n" \
+"out.z = lin_to_SLog3(lin_SG3C.z); \n" \
+"return out; \n" \
+"} \n" \
+"float3 IDT_Alexa_v3_raw_EI800_CCT6500( float3 In){ \n" \
 "float black = 256.0f / 65535.0f; \n" \
 "float r_lin = (In.x - black); \n" \
 "float g_lin = (In.y - black); \n" \
@@ -1203,9 +1188,10 @@ const char* kernelSource =  \
 "aces.z = r_lin * 0.044166f + g_lin * -0.272038f + b_lin * 1.227872f; \n" \
 "return aces; \n" \
 "} \n" \
-"float3 IDT_Panasonic_V35( float3 VLog) \n" \
-"{ \n" \
-"mat3 mat = { {0.724382758f, 0.166748484f, 0.108497411f}, {0.021354009f, 0.985138372f, -0.006319092f}, {-0.009234278f, -0.00104295f, 1.010272625f} }; \n" \
+"float3 IDT_Panasonic_V35( float3 VLog) { \n" \
+"mat3 mat = { {0.724382758f, 0.166748484f, 0.108497411f},  \n" \
+"{0.021354009f, 0.985138372f, -0.006319092f},  \n" \
+"{-0.009234278f, -0.00104295f, 1.010272625f} }; \n" \
 "float rLin = vLogToLinScene(VLog.x); \n" \
 "float gLin = vLogToLinScene(VLog.y); \n" \
 "float bLin = vLogToLinScene(VLog.z); \n" \
@@ -1215,19 +1201,7 @@ const char* kernelSource =  \
 "out.z = mat.c2.x * rLin + mat.c2.y * gLin + mat.c2.z * bLin; \n" \
 "return out; \n" \
 "} \n" \
-"float3 IDT_REDWideGamutRGB_Log3G10( float3 log3G10) \n" \
-"{ \n" \
-"float r_lin = Log3G10_to_linear(log3G10.x); \n" \
-"float g_lin = Log3G10_to_linear(log3G10.y); \n" \
-"float b_lin = Log3G10_to_linear(log3G10.z); \n" \
-"float3 aces; \n" \
-"aces.x = r_lin * 0.785043f + g_lin * 0.083844f + b_lin * 0.131118f; \n" \
-"aces.y = r_lin * 0.023172f + g_lin * 1.087892f + b_lin * -0.111055f; \n" \
-"aces.z = r_lin * -0.073769f + g_lin * -0.314639f + b_lin * 1.388537f; \n" \
-"return aces; \n" \
-"} \n" \
-"float3 IDT_Canon_C100_A_D55( float3 In) \n" \
-"{ \n" \
+"float3 IDT_Canon_C100_A_D55( float3 In) { \n" \
 "float iR, iG, iB; \n" \
 "iR = (In.x * 1023.0f - 64.0f) / 876.0f; \n" \
 "iG = (In.y * 1023.0f - 64.0f) / 876.0f; \n" \
@@ -1252,17 +1226,16 @@ const char* kernelSource =  \
 "-1.43030768398665 * iR*iG*iB -0.0388323570817641 * iR*iB*iB +2.63698573112453 * iG*iG*iB -1.66598882056039 * iG*iB*iB \n" \
 "+0.33450249360103 * iR*iR*iR -1.65856930730901 * iG*iG*iG +0.521956184547685 * iB*iB*iB; \n" \
 "float3 lin; \n" \
-"lin.x = CanonLog_to_linear( pmtx.x); \n" \
-"lin.y = CanonLog_to_linear( pmtx.y); \n" \
-"lin.z = CanonLog_to_linear( pmtx.z); \n" \
+"lin.x = CanonLog_to_lin( pmtx.x); \n" \
+"lin.y = CanonLog_to_lin( pmtx.y); \n" \
+"lin.z = CanonLog_to_lin( pmtx.z); \n" \
 "float3 aces; \n" \
 "aces.x = 0.561538969f * lin.x + 0.402060105f * lin.y + 0.036400926f * lin.z; \n" \
 "aces.y = 0.092739623f * lin.x + 0.924121198f * lin.y - 0.016860821f * lin.z; \n" \
 "aces.z = 0.084812961f * lin.x + 0.006373835f * lin.y + 0.908813204f * lin.z; \n" \
 "return aces; \n" \
 "} \n" \
-"float3 IDT_Canon_C100_A_Tng( float3 In) \n" \
-"{ \n" \
+"float3 IDT_Canon_C100_A_Tng( float3 In) { \n" \
 "float iR, iG, iB; \n" \
 "iR = (In.x * 1023.0f - 64.0f) / 876.0f; \n" \
 "iG = (In.y * 1023.0f - 64.0f) / 876.0f; \n" \
@@ -1287,17 +1260,16 @@ const char* kernelSource =  \
 "-1.20021905668355 * iR*iG*iB - 0.254838995845129 * iR*iB*iB + 2.33232411639308 * iG*iG*iB - 1.86381505762773 * iG*iB*iB \n" \
 "+0.111576038956423 * iR*iR*iR - 1.12593315849766 * iG*iG*iG + 0.751693186157287 * iB*iB*iB; \n" \
 "float3 lin; \n" \
-"lin.x = CanonLog_to_linear( pmtx.x); \n" \
-"lin.y = CanonLog_to_linear( pmtx.y); \n" \
-"lin.z = CanonLog_to_linear( pmtx.z); \n" \
+"lin.x = CanonLog_to_lin( pmtx.x); \n" \
+"lin.y = CanonLog_to_lin( pmtx.y); \n" \
+"lin.z = CanonLog_to_lin( pmtx.z); \n" \
 "float3 aces; \n" \
 "aces.x = 0.566996399f * lin.x + 0.365079418f * lin.y + 0.067924183f * lin.z; \n" \
 "aces.y = 0.070901044f * lin.x + 0.880331008f * lin.y + 0.048767948f * lin.z; \n" \
 "aces.z = 0.073013542f * lin.x - 0.066540862f * lin.y + 0.99352732f * lin.z; \n" \
 "return aces; \n" \
 "} \n" \
-"float3 IDT_Canon_C100mk2_A_D55( float3 In) \n" \
-"{ \n" \
+"float3 IDT_Canon_C100mk2_A_D55( float3 In) { \n" \
 "float iR, iG, iB; \n" \
 "iR = (In.x * 1023.0f - 64.0f) / 876.0f; \n" \
 "iG = (In.y * 1023.0f - 64.0f) / 876.0f; \n" \
@@ -1322,17 +1294,16 @@ const char* kernelSource =  \
 "-1.43030768398665 * iR*iG*iB -0.0388323570817641 * iR*iB*iB +2.63698573112453 * iG*iG*iB -1.66598882056039 * iG*iB*iB \n" \
 "+0.33450249360103 * iR*iR*iR -1.65856930730901 * iG*iG*iG +0.521956184547685 * iB*iB*iB; \n" \
 "float3 lin; \n" \
-"lin.x = CanonLog_to_linear( (pmtx.x * 876.0f + 64.0f) / 1023.0f ); \n" \
-"lin.y = CanonLog_to_linear( (pmtx.y * 876.0f + 64.0f) / 1023.0f ); \n" \
-"lin.z = CanonLog_to_linear( (pmtx.z * 876.0f + 64.0f) / 1023.0f ); \n" \
+"lin.x = CanonLog_to_lin( (pmtx.x * 876.0f + 64.0f) / 1023.0f ); \n" \
+"lin.y = CanonLog_to_lin( (pmtx.y * 876.0f + 64.0f) / 1023.0f ); \n" \
+"lin.z = CanonLog_to_lin( (pmtx.z * 876.0f + 64.0f) / 1023.0f ); \n" \
 "float3 aces; \n" \
 "aces.x = 0.561538969f * lin.x + 0.402060105f * lin.y + 0.036400926f * lin.z; \n" \
 "aces.y = 0.092739623f * lin.x + 0.924121198f * lin.y - 0.016860821f * lin.z; \n" \
 "aces.z = 0.084812961f * lin.x + 0.006373835f * lin.y + 0.908813204f * lin.z; \n" \
 "return aces; \n" \
 "} \n" \
-"float3 IDT_Canon_C100mk2_A_Tng( float3 In) \n" \
-"{ \n" \
+"float3 IDT_Canon_C100mk2_A_Tng( float3 In) { \n" \
 "float iR, iG, iB; \n" \
 "iR = (In.x * 1023.0f - 64.0f) / 876.0f; \n" \
 "iG = (In.y * 1023.0f - 64.0f) / 876.0f; \n" \
@@ -1357,17 +1328,16 @@ const char* kernelSource =  \
 "-1.20021905668355 * iR*iG*iB -0.254838995845129 * iR*iB*iB +2.33232411639308 * iG*iG*iB -1.86381505762773 * iG*iB*iB \n" \
 "+0.111576038956423 * iR*iR*iR -1.12593315849766 * iG*iG*iG +0.751693186157287 * iB*iB*iB; \n" \
 "float3 lin; \n" \
-"lin.x = CanonLog_to_linear( (pmtx.x * 876.0f + 64.0f) / 1023.0f ); \n" \
-"lin.y = CanonLog_to_linear( (pmtx.y * 876.0f + 64.0f) / 1023.0f ); \n" \
-"lin.z = CanonLog_to_linear( (pmtx.z * 876.0f + 64.0f) / 1023.0f ); \n" \
+"lin.x = CanonLog_to_lin( (pmtx.x * 876.0f + 64.0f) / 1023.0f ); \n" \
+"lin.y = CanonLog_to_lin( (pmtx.y * 876.0f + 64.0f) / 1023.0f ); \n" \
+"lin.z = CanonLog_to_lin( (pmtx.z * 876.0f + 64.0f) / 1023.0f ); \n" \
 "float3 aces; \n" \
 "aces.x = 0.566996399 * lin.x + 0.365079418 * lin.y + 0.067924183 * lin.z; \n" \
 "aces.y = 0.070901044 * lin.x + 0.880331008 * lin.y + 0.048767948 * lin.z; \n" \
 "aces.z = 0.073013542 * lin.x - 0.066540862 * lin.y + 0.99352732 * lin.z; \n" \
 "return aces; \n" \
 "} \n" \
-"float3 IDT_Canon_C300_A_D55( float3 In) \n" \
-"{ \n" \
+"float3 IDT_Canon_C300_A_D55( float3 In) { \n" \
 "float iR, iG, iB; \n" \
 "iR = (In.x * 1023.0f - 64.0f) / 876.0f; \n" \
 "iG = (In.y * 1023.0f - 64.0f) / 876.0f; \n" \
@@ -1392,17 +1362,16 @@ const char* kernelSource =  \
 "-1.43030768398665 * iR*iG*iB -0.0388323570817641 * iR*iB*iB +2.63698573112453 * iG*iG*iB -1.66598882056039 * iG*iB*iB \n" \
 "+0.33450249360103 * iR*iR*iR -1.65856930730901 * iG*iG*iG +0.521956184547685 * iB*iB*iB; \n" \
 "float3 lin; \n" \
-"lin.x = CanonLog_to_linear( pmtx.x); \n" \
-"lin.y = CanonLog_to_linear( pmtx.y); \n" \
-"lin.z = CanonLog_to_linear( pmtx.z); \n" \
+"lin.x = CanonLog_to_lin( pmtx.x); \n" \
+"lin.y = CanonLog_to_lin( pmtx.y); \n" \
+"lin.z = CanonLog_to_lin( pmtx.z); \n" \
 "float3 aces; \n" \
 "aces.x = 0.561538969f * lin.x + 0.402060105f * lin.y + 0.036400926 * lin.z; \n" \
 "aces.y = 0.092739623f * lin.x + 0.924121198f * lin.y - 0.016860821 * lin.z; \n" \
 "aces.z = 0.084812961f * lin.x + 0.006373835f * lin.y + 0.908813204 * lin.z; \n" \
 "return aces; \n" \
 "} \n" \
-"float3 IDT_Canon_C300_A_Tng( float3 In) \n" \
-"{ \n" \
+"float3 IDT_Canon_C300_A_Tng( float3 In) { \n" \
 "float iR, iG, iB; \n" \
 "iR = (In.x * 1023.0f - 64.0f) / 876.0f; \n" \
 "iG = (In.y * 1023.0f - 64.0f) / 876.0f; \n" \
@@ -1427,49 +1396,46 @@ const char* kernelSource =  \
 "-1.20021905668355 * iR*iG*iB -0.254838995845129 * iR*iB*iB +2.33232411639308 * iG*iG*iB -1.86381505762773 * iG*iB*iB \n" \
 "+0.111576038956423 * iR*iR*iR -1.12593315849766 * iG*iG*iG +0.751693186157287 * iB*iB*iB; \n" \
 "float3 lin; \n" \
-"lin.x = CanonLog_to_linear( pmtx.x); \n" \
-"lin.y = CanonLog_to_linear( pmtx.y); \n" \
-"lin.z = CanonLog_to_linear( pmtx.z); \n" \
+"lin.x = CanonLog_to_lin( pmtx.x); \n" \
+"lin.y = CanonLog_to_lin( pmtx.y); \n" \
+"lin.z = CanonLog_to_lin( pmtx.z); \n" \
 "float3 aces; \n" \
 "aces.x = 0.566996399 * lin.x +0.365079418 * lin.y + 0.067924183 * lin.z; \n" \
 "aces.y = 0.070901044 * lin.x +0.880331008 * lin.y + 0.048767948 * lin.z; \n" \
 "aces.z = 0.073013542 * lin.x -0.066540862 * lin.y + 0.99352732 * lin.z; \n" \
 "return aces; \n" \
 "} \n" \
-"float3 IDT_Canon_C500_A_D55( float3 In) \n" \
-"{ \n" \
+"float3 IDT_Canon_C500_A_D55( float3 In) { \n" \
 "float3 CLogIRE; \n" \
 "CLogIRE.x = (In.x * 1023 - 64) / 876; \n" \
 "CLogIRE.y = (In.y * 1023 - 64) / 876; \n" \
 "CLogIRE.z = (In.z * 1023 - 64) / 876; \n" \
 "float3 lin; \n" \
-"lin.x = CanonLog_to_linear( CLogIRE.x); \n" \
-"lin.y = CanonLog_to_linear( CLogIRE.y); \n" \
-"lin.z = CanonLog_to_linear( CLogIRE.z); \n" \
+"lin.x = CanonLog_to_lin( CLogIRE.x); \n" \
+"lin.y = CanonLog_to_lin( CLogIRE.y); \n" \
+"lin.z = CanonLog_to_lin( CLogIRE.z); \n" \
 "float3 aces; \n" \
 "aces.x = 0.561538969f * lin.x +0.402060105f * lin.y + 0.036400926f * lin.z; \n" \
 "aces.y = 0.092739623f * lin.x +0.924121198f * lin.y - 0.016860821f * lin.z; \n" \
 "aces.z = 0.084812961f * lin.x +0.006373835f * lin.y + 0.908813204f * lin.z; \n" \
 "return aces; \n" \
 "} \n" \
-"float3 IDT_Canon_C500_A_Tng( float3 In) \n" \
-"{ \n" \
+"float3 IDT_Canon_C500_A_Tng( float3 In) { \n" \
 "float3 CLogIRE; \n" \
 "CLogIRE.x = (In.x * 1023 - 64) / 876; \n" \
 "CLogIRE.y = (In.y * 1023 - 64) / 876; \n" \
 "CLogIRE.z = (In.z * 1023 - 64) / 876; \n" \
 "float3 lin; \n" \
-"lin.x = CanonLog_to_linear( CLogIRE.x); \n" \
-"lin.y = CanonLog_to_linear( CLogIRE.y); \n" \
-"lin.z = CanonLog_to_linear( CLogIRE.z); \n" \
+"lin.x = CanonLog_to_lin( CLogIRE.x); \n" \
+"lin.y = CanonLog_to_lin( CLogIRE.y); \n" \
+"lin.z = CanonLog_to_lin( CLogIRE.z); \n" \
 "float3 aces; \n" \
 "aces.x = 0.566996399 * lin.x +0.365079418 * lin.y + 0.067924183 * lin.z; \n" \
 "aces.y = 0.070901044 * lin.x +0.880331008 * lin.y + 0.048767948 * lin.z; \n" \
 "aces.z = 0.073013542 * lin.x -0.066540862 * lin.y + 0.99352732 * lin.z; \n" \
 "return aces; \n" \
 "} \n" \
-"float3 IDT_Canon_C500_B_D55( float3 In) \n" \
-"{ \n" \
+"float3 IDT_Canon_C500_B_D55( float3 In) { \n" \
 "float iR, iG, iB; \n" \
 "iR = (In.x * 1023.0f - 64.0f) / 876.0f; \n" \
 "iG = (In.y * 1023.0f - 64.0f) / 876.0f; \n" \
@@ -1494,17 +1460,16 @@ const char* kernelSource =  \
 "-1.43030768398665 * iR*iG*iB -0.0388323570817641 * iR*iB*iB +2.63698573112453 * iG*iG*iB - 1.66598882056039 * iG*iB*iB \n" \
 "+0.33450249360103 * iR*iR*iR -1.65856930730901 * iG*iG*iG +0.521956184547685 * iB*iB*iB; \n" \
 "float3 lin; \n" \
-"lin.x = CanonLog_to_linear( pmtx.x); \n" \
-"lin.y = CanonLog_to_linear( pmtx.y); \n" \
-"lin.z = CanonLog_to_linear( pmtx.z); \n" \
+"lin.x = CanonLog_to_lin( pmtx.x); \n" \
+"lin.y = CanonLog_to_lin( pmtx.y); \n" \
+"lin.z = CanonLog_to_lin( pmtx.z); \n" \
 "float3 aces; \n" \
 "aces.x = 0.561538969f * lin.x + 0.402060105f * lin.y + 0.036400926f * lin.z; \n" \
 "aces.y = 0.092739623f * lin.x + 0.924121198f * lin.y - 0.016860821f * lin.z; \n" \
 "aces.z = 0.084812961f * lin.x + 0.006373835f * lin.y + 0.908813204f * lin.z; \n" \
 "return aces; \n" \
 "} \n" \
-"float3 IDT_Canon_C500_B_Tng( float3 In) \n" \
-"{ \n" \
+"float3 IDT_Canon_C500_B_Tng( float3 In) { \n" \
 "float iR, iG, iB; \n" \
 "iR = (In.x * 1023.0f - 64.0f) / 876.0f; \n" \
 "iG = (In.y * 1023.0f - 64.0f) / 876.0f; \n" \
@@ -1529,274 +1494,259 @@ const char* kernelSource =  \
 "-1.20021905668355 * iR*iG*iB -0.254838995845129 * iR*iB*iB +2.33232411639308 * iG*iG*iB - 1.86381505762773 * iG*iB*iB \n" \
 "+0.111576038956423 * iR*iR*iR -1.12593315849766 * iG*iG*iG +0.751693186157287 * iB*iB*iB; \n" \
 "float3 lin; \n" \
-"lin.x = CanonLog_to_linear( pmtx.x); \n" \
-"lin.y = CanonLog_to_linear( pmtx.y); \n" \
-"lin.z = CanonLog_to_linear( pmtx.z); \n" \
+"lin.x = CanonLog_to_lin( pmtx.x); \n" \
+"lin.y = CanonLog_to_lin( pmtx.y); \n" \
+"lin.z = CanonLog_to_lin( pmtx.z); \n" \
 "float3 aces; \n" \
 "aces.x = 0.566996399 * lin.x +0.365079418 * lin.y + 0.067924183 * lin.z; \n" \
 "aces.y = 0.070901044 * lin.x +0.880331008 * lin.y + 0.048767948 * lin.z; \n" \
 "aces.z = 0.073013542 * lin.x -0.066540862 * lin.y + 0.99352732 * lin.z; \n" \
 "return aces; \n" \
 "} \n" \
-"float3 IDT_Canon_C500_CinemaGamut_A_D55( float3 In) \n" \
-"{ \n" \
+"float3 IDT_Canon_C500_CinemaGamut_A_D55( float3 In) { \n" \
 "float3 CLogIRE; \n" \
 "CLogIRE.x = (In.x * 1023.0f - 64.0f) / 876.0f; \n" \
 "CLogIRE.y = (In.y * 1023.0f - 64.0f) / 876.0f; \n" \
 "CLogIRE.z = (In.z * 1023.0f - 64.0f) / 876.0f; \n" \
 "float3 lin; \n" \
-"lin.x = 0.9f * CanonLog_to_linear( CLogIRE.x); \n" \
-"lin.y = 0.9f * CanonLog_to_linear( CLogIRE.y); \n" \
-"lin.z = 0.9f * CanonLog_to_linear( CLogIRE.z); \n" \
+"lin.x = 0.9f * CanonLog_to_lin( CLogIRE.x); \n" \
+"lin.y = 0.9f * CanonLog_to_lin( CLogIRE.y); \n" \
+"lin.z = 0.9f * CanonLog_to_lin( CLogIRE.z); \n" \
 "float3 aces; \n" \
 "aces.x = 0.763064455f * lin.x + 0.149021161f * lin.y + 0.087914384f * lin.z; \n" \
 "aces.y = 0.003657457f * lin.x + 1.10696038f * lin.y - 0.110617837f * lin.z; \n" \
 "aces.z = -0.009407794f * lin.x - 0.218383305f * lin.y + 1.227791099f * lin.z; \n" \
 "return aces; \n" \
 "} \n" \
-"float3 IDT_Canon_C500_CinemaGamut_A_Tng( float3 In) \n" \
-"{ \n" \
+"float3 IDT_Canon_C500_CinemaGamut_A_Tng( float3 In) { \n" \
 "float3 CLogIRE; \n" \
 "CLogIRE.x = (In.x * 1023.0f - 64.0f) / 876.0f; \n" \
 "CLogIRE.y = (In.y * 1023.0f - 64.0f) / 876.0f; \n" \
 "CLogIRE.z = (In.z * 1023.0f - 64.0f) / 876.0f; \n" \
 "float3 lin; \n" \
-"lin.x = 0.9f * CanonLog_to_linear( CLogIRE.x); \n" \
-"lin.y = 0.9f * CanonLog_to_linear( CLogIRE.y); \n" \
-"lin.z = 0.9f * CanonLog_to_linear( CLogIRE.z); \n" \
+"lin.x = 0.9f * CanonLog_to_lin( CLogIRE.x); \n" \
+"lin.y = 0.9f * CanonLog_to_lin( CLogIRE.y); \n" \
+"lin.z = 0.9f * CanonLog_to_lin( CLogIRE.z); \n" \
 "float3 aces; \n" \
 "aces.x = 0.817416293f * lin.x + 0.090755698f * lin.y + 0.091828009f * lin.z; \n" \
 "aces.y = -0.035361374f * lin.x + 1.065690585f * lin.y - 0.030329211f * lin.z; \n" \
 "aces.z = 0.010390366f * lin.x - 0.299271107f * lin.y + 1.288880741f * lin.z; \n" \
 "return aces; \n" \
 "} \n" \
-"float3 IDT_Canon_C500_DCI_P3_A_D55( float3 In) \n" \
-"{ \n" \
+"float3 IDT_Canon_C500_DCI_P3_A_D55( float3 In) { \n" \
 "float3 CLogIRE; \n" \
 "CLogIRE.x = (In.x * 1023.0f - 64.0f) / 876.0f; \n" \
 "CLogIRE.y = (In.y * 1023.0f - 64.0f) / 876.0f; \n" \
 "CLogIRE.z = (In.z * 1023.0f - 64.0f) / 876.0f; \n" \
 "float3 lin; \n" \
-"lin.x = 0.9f * CanonLog_to_linear( CLogIRE.x); \n" \
-"lin.y = 0.9f * CanonLog_to_linear( CLogIRE.y); \n" \
-"lin.z = 0.9f * CanonLog_to_linear( CLogIRE.z); \n" \
+"lin.x = 0.9f * CanonLog_to_lin( CLogIRE.x); \n" \
+"lin.y = 0.9f * CanonLog_to_lin( CLogIRE.y); \n" \
+"lin.z = 0.9f * CanonLog_to_lin( CLogIRE.z); \n" \
 "float3 aces; \n" \
 "aces.x = 0.607160575f * lin.x + 0.299507286f * lin.y + 0.093332140f * lin.z; \n" \
 "aces.y = 0.004968120f * lin.x + 1.050982224f * lin.y - 0.055950343f * lin.z; \n" \
 "aces.z = -0.007839939f * lin.x + 0.000809127f * lin.y + 1.007030813f * lin.z; \n" \
 "return aces; \n" \
 "} \n" \
-"float3 IDT_Canon_C500_DCI_P3_A_Tng( float3 In) \n" \
-"{ \n" \
+"float3 IDT_Canon_C500_DCI_P3_A_Tng( float3 In) { \n" \
 "float3 CLogIRE; \n" \
 "CLogIRE.x = (In.x * 1023.0f - 64.0f) / 876.0f; \n" \
 "CLogIRE.y = (In.y * 1023.0f - 64.0f) / 876.0f; \n" \
 "CLogIRE.z = (In.z * 1023.0f - 64.0f) / 876.0f; \n" \
 "float3 lin; \n" \
-"lin.x = 0.9f * CanonLog_to_linear( CLogIRE.x); \n" \
-"lin.y = 0.9f * CanonLog_to_linear( CLogIRE.y); \n" \
-"lin.z = 0.9f * CanonLog_to_linear( CLogIRE.z); \n" \
+"lin.x = 0.9f * CanonLog_to_lin( CLogIRE.x); \n" \
+"lin.y = 0.9f * CanonLog_to_lin( CLogIRE.y); \n" \
+"lin.z = 0.9f * CanonLog_to_lin( CLogIRE.z); \n" \
 "float3 aces; \n" \
 "aces.x = 0.650279125f * lin.x + 0.253880169f * lin.y + 0.095840706f * lin.z; \n" \
 "aces.y = -0.026137986f * lin.x + 1.017900530f * lin.y + 0.008237456f * lin.z; \n" \
 "aces.z = 0.007757558f * lin.x - 0.063081669f * lin.y + 1.055324110f * lin.z; \n" \
 "return aces; \n" \
 "} \n" \
-"float3 IDT_Canon_C300mk2_CanonLog_BT2020_D_D55( float3 In) \n" \
-"{ \n" \
+"float3 IDT_Canon_C300mk2_CanonLog_BT2020_D_D55( float3 In) { \n" \
 "float3 CLogIRE; \n" \
 "CLogIRE.x = (In.x * 1023.0f - 64.0f) / 876.0f; \n" \
 "CLogIRE.y = (In.y * 1023.0f - 64.0f) / 876.0f; \n" \
 "CLogIRE.z = (In.z * 1023.0f - 64.0f) / 876.0f; \n" \
 "float3 lin; \n" \
-"lin.x = 0.9f * CanonLog_to_linear( CLogIRE.x); \n" \
-"lin.y = 0.9f * CanonLog_to_linear( CLogIRE.y); \n" \
-"lin.z = 0.9f * CanonLog_to_linear( CLogIRE.z); \n" \
+"lin.x = 0.9f * CanonLog_to_lin( CLogIRE.x); \n" \
+"lin.y = 0.9f * CanonLog_to_lin( CLogIRE.y); \n" \
+"lin.z = 0.9f * CanonLog_to_lin( CLogIRE.z); \n" \
 "float3 aces; \n" \
 "aces.x = 0.678891151f * lin.x + 0.158868422f * lin.y + 0.162240427f * lin.z; \n" \
 "aces.y = 0.045570831f * lin.x + 0.860712772f * lin.y + 0.093716397f * lin.z; \n" \
 "aces.z = -0.000485710f * lin.x + 0.025060196f * lin.y + 0.975425515f * lin.z; \n" \
 "return aces; \n" \
 "} \n" \
-"float3 IDT_Canon_C300mk2_CanonLog_BT2020_D_Tng( float3 In) \n" \
-"{ \n" \
+"float3 IDT_Canon_C300mk2_CanonLog_BT2020_D_Tng( float3 In) { \n" \
 "float3 CLogIRE; \n" \
 "CLogIRE.x = (In.x * 1023.0f - 64.0f) / 876.0f; \n" \
 "CLogIRE.y = (In.y * 1023.0f - 64.0f) / 876.0f; \n" \
 "CLogIRE.z = (In.z * 1023.0f - 64.0f) / 876.0f; \n" \
 "float3 lin; \n" \
-"lin.x = 0.9f * CanonLog_to_linear( CLogIRE.x); \n" \
-"lin.y = 0.9f * CanonLog_to_linear( CLogIRE.y); \n" \
-"lin.z = 0.9f * CanonLog_to_linear( CLogIRE.z); \n" \
+"lin.x = 0.9f * CanonLog_to_lin( CLogIRE.x); \n" \
+"lin.y = 0.9f * CanonLog_to_lin( CLogIRE.y); \n" \
+"lin.z = 0.9f * CanonLog_to_lin( CLogIRE.z); \n" \
 "float3 aces; \n" \
 "aces.x = 0.724488568f * lin.x + 0.115140904f * lin.y + 0.160370529f * lin.z; \n" \
 "aces.y = 0.010659276f * lin.x + 0.839605344f * lin.y + 0.149735380f * lin.z; \n" \
 "aces.z = 0.014560161f * lin.x - 0.028562057f * lin.y + 1.014001897f * lin.z; \n" \
 "return aces; \n" \
 "} \n" \
-"float3 IDT_Canon_C300mk2_CanonLog_CinemaGamut_C_D55( float3 In) \n" \
-"{ \n" \
+"float3 IDT_Canon_C300mk2_CanonLog_CinemaGamut_C_D55( float3 In) { \n" \
 "float3 CLogIRE; \n" \
 "CLogIRE.x = (In.x * 1023.0f - 64.0f) / 876.0f; \n" \
 "CLogIRE.y = (In.y * 1023.0f - 64.0f) / 876.0f; \n" \
 "CLogIRE.z = (In.z * 1023.0f - 64.0f) / 876.0f; \n" \
 "float3 lin; \n" \
-"lin.x = 0.9f * CanonLog_to_linear( CLogIRE.x); \n" \
-"lin.y = 0.9f * CanonLog_to_linear( CLogIRE.y); \n" \
-"lin.z = 0.9f * CanonLog_to_linear( CLogIRE.z); \n" \
+"lin.x = 0.9f * CanonLog_to_lin( CLogIRE.x); \n" \
+"lin.y = 0.9f * CanonLog_to_lin( CLogIRE.y); \n" \
+"lin.z = 0.9f * CanonLog_to_lin( CLogIRE.z); \n" \
 "float3 aces; \n" \
 "aces.x = 0.763064455f * lin.x + 0.149021161f * lin.y + 0.087914384f * lin.z; \n" \
 "aces.y = 0.003657457f * lin.x + 1.10696038f * lin.y - 0.110617837f * lin.z; \n" \
 "aces.z = -0.009407794f * lin.x - 0.218383305f * lin.y + 1.227791099f * lin.z; \n" \
 "return aces; \n" \
 "} \n" \
-"float3 IDT_Canon_C300mk2_CanonLog_CinemaGamut_C_Tng( float3 In) \n" \
-"{ \n" \
+"float3 IDT_Canon_C300mk2_CanonLog_CinemaGamut_C_Tng( float3 In) { \n" \
 "float3 CLogIRE; \n" \
 "CLogIRE.x = (In.x * 1023.0f - 64.0f) / 876.0f; \n" \
 "CLogIRE.y = (In.y * 1023.0f - 64.0f) / 876.0f; \n" \
 "CLogIRE.z = (In.z * 1023.0f - 64.0f) / 876.0f; \n" \
 "float3 lin; \n" \
-"lin.x = 0.9f * CanonLog_to_linear( CLogIRE.x); \n" \
-"lin.y = 0.9f * CanonLog_to_linear( CLogIRE.y); \n" \
-"lin.z = 0.9f * CanonLog_to_linear( CLogIRE.z); \n" \
+"lin.x = 0.9f * CanonLog_to_lin( CLogIRE.x); \n" \
+"lin.y = 0.9f * CanonLog_to_lin( CLogIRE.y); \n" \
+"lin.z = 0.9f * CanonLog_to_lin( CLogIRE.z); \n" \
 "float3 aces; \n" \
 "aces.x = 0.817416293f * lin.x + 0.090755698f * lin.y + 0.091828009f * lin.z; \n" \
 "aces.y = -0.035361374f * lin.x + 1.065690585f * lin.y - 0.030329211f * lin.z; \n" \
 "aces.z = 0.010390366f * lin.x - 0.299271107f * lin.y + 1.288880741f * lin.z; \n" \
 "return aces; \n" \
 "} \n" \
-"float3 IDT_Canon_C300mk2_CanonLog2_BT2020_B_D55( float3 In) \n" \
-"{ \n" \
+"float3 IDT_Canon_C300mk2_CanonLog2_BT2020_B_D55( float3 In) { \n" \
 "float3 CLogIRE; \n" \
 "CLogIRE.x = (In.x * 1023.0f - 64.0f) / 876.0f; \n" \
 "CLogIRE.y = (In.y * 1023.0f - 64.0f) / 876.0f; \n" \
 "CLogIRE.z = (In.z * 1023.0f - 64.0f) / 876.0f; \n" \
 "float3 lin; \n" \
-"lin.x = 0.9f * CanonLog2_to_linear( CLogIRE.x); \n" \
-"lin.y = 0.9f * CanonLog2_to_linear( CLogIRE.y); \n" \
-"lin.z = 0.9f * CanonLog2_to_linear( CLogIRE.z); \n" \
+"lin.x = 0.9f * CanonLog2_to_lin( CLogIRE.x); \n" \
+"lin.y = 0.9f * CanonLog2_to_lin( CLogIRE.y); \n" \
+"lin.z = 0.9f * CanonLog2_to_lin( CLogIRE.z); \n" \
 "float3 aces; \n" \
 "aces.x = 0.678891151f * lin.x + 0.158868422f * lin.y + 0.162240427f * lin.z; \n" \
 "aces.y = 0.045570831f * lin.x + 0.860712772f * lin.y + 0.093716397f * lin.z; \n" \
 "aces.z = -0.000485710f * lin.x + 0.025060196f * lin.y + 0.975425515f * lin.z; \n" \
 "return aces; \n" \
 "} \n" \
-"float3 IDT_Canon_C300mk2_CanonLog2_BT2020_B_Tng( float3 In) \n" \
-"{ \n" \
+"float3 IDT_Canon_C300mk2_CanonLog2_BT2020_B_Tng( float3 In) { \n" \
 "float3 CLogIRE; \n" \
 "CLogIRE.x = (In.x * 1023.0f - 64.0f) / 876.0f; \n" \
 "CLogIRE.y = (In.y * 1023.0f - 64.0f) / 876.0f; \n" \
 "CLogIRE.z = (In.z * 1023.0f - 64.0f) / 876.0f; \n" \
 "float3 lin; \n" \
-"lin.x = 0.9f * CanonLog2_to_linear( CLogIRE.x); \n" \
-"lin.y = 0.9f * CanonLog2_to_linear( CLogIRE.y); \n" \
-"lin.z = 0.9f * CanonLog2_to_linear( CLogIRE.z); \n" \
+"lin.x = 0.9f * CanonLog2_to_lin( CLogIRE.x); \n" \
+"lin.y = 0.9f * CanonLog2_to_lin( CLogIRE.y); \n" \
+"lin.z = 0.9f * CanonLog2_to_lin( CLogIRE.z); \n" \
 "float3 aces; \n" \
 "aces.x = 0.724488568f * lin.x + 0.115140904f * lin.y + 0.160370529f * lin.z; \n" \
 "aces.y = 0.010659276f * lin.x + 0.839605344f * lin.y + 0.149735380f * lin.z; \n" \
 "aces.z = 0.014560161f * lin.x - 0.028562057f * lin.y + 1.014001897f * lin.z; \n" \
 "return aces; \n" \
 "} \n" \
-"float3 IDT_Canon_C300mk2_CanonLog2_CinemaGamut_A_D55( float3 In) \n" \
-"{ \n" \
+"float3 IDT_Canon_C300mk2_CanonLog2_CinemaGamut_A_D55( float3 In) { \n" \
 "float3 CLogIRE; \n" \
 "CLogIRE.x = (In.x * 1023.0f - 64.0f) / 876.0f; \n" \
 "CLogIRE.y = (In.y * 1023.0f - 64.0f) / 876.0f; \n" \
 "CLogIRE.z = (In.z * 1023.0f - 64.0f) / 876.0f; \n" \
 "float3 lin; \n" \
-"lin.x = 0.9f * CanonLog2_to_linear( CLogIRE.x); \n" \
-"lin.y = 0.9f * CanonLog2_to_linear( CLogIRE.y); \n" \
-"lin.z = 0.9f * CanonLog2_to_linear( CLogIRE.z); \n" \
+"lin.x = 0.9f * CanonLog2_to_lin( CLogIRE.x); \n" \
+"lin.y = 0.9f * CanonLog2_to_lin( CLogIRE.y); \n" \
+"lin.z = 0.9f * CanonLog2_to_lin( CLogIRE.z); \n" \
 "float3 aces; \n" \
 "aces.x = 0.763064455f * lin.x + 0.149021161f * lin.y + 0.087914384f * lin.z; \n" \
 "aces.y = 0.003657457f * lin.x + 1.10696038f * lin.y - 0.110617837f * lin.z; \n" \
 "aces.z = -0.009407794f * lin.x - 0.218383305f * lin.y + 1.227791099f * lin.z; \n" \
 "return aces; \n" \
 "} \n" \
-"float3 IDT_Canon_C300mk2_CanonLog2_CinemaGamut_A_Tng( float3 In) \n" \
-"{ \n" \
+"float3 IDT_Canon_C300mk2_CanonLog2_CinemaGamut_A_Tng( float3 In) { \n" \
 "float3 CLogIRE; \n" \
 "CLogIRE.x = (In.x * 1023.0f - 64.0f) / 876.0f; \n" \
 "CLogIRE.y = (In.y * 1023.0f - 64.0f) / 876.0f; \n" \
 "CLogIRE.z = (In.z * 1023.0f - 64.0f) / 876.0f; \n" \
 "float3 lin; \n" \
-"lin.x = 0.9f * CanonLog2_to_linear( CLogIRE.x); \n" \
-"lin.y = 0.9f * CanonLog2_to_linear( CLogIRE.y); \n" \
-"lin.z = 0.9f * CanonLog2_to_linear( CLogIRE.z); \n" \
+"lin.x = 0.9f * CanonLog2_to_lin( CLogIRE.x); \n" \
+"lin.y = 0.9f * CanonLog2_to_lin( CLogIRE.y); \n" \
+"lin.z = 0.9f * CanonLog2_to_lin( CLogIRE.z); \n" \
 "float3 aces; \n" \
 "aces.x = 0.817416293f * lin.x + 0.090755698f * lin.y + 0.091828009f * lin.z; \n" \
 "aces.y = -0.035361374f * lin.x + 1.065690585f * lin.y - 0.030329211f * lin.z; \n" \
 "aces.z = 0.010390366f * lin.x - 0.299271107f * lin.y + 1.288880741f * lin.z; \n" \
 "return aces; \n" \
 "} \n" \
-"float3 IDT_Canon_C300mk2_CanonLog3_BT2020_F_D55( float3 In) \n" \
-"{ \n" \
+"float3 IDT_Canon_C300mk2_CanonLog3_BT2020_F_D55( float3 In) { \n" \
 "float3 CLogIRE; \n" \
 "CLogIRE.x = (In.x * 1023.0f - 64.0f) / 876.0f; \n" \
 "CLogIRE.y = (In.y * 1023.0f - 64.0f) / 876.0f; \n" \
 "CLogIRE.z = (In.z * 1023.0f - 64.0f) / 876.0f; \n" \
 "float3 lin; \n" \
-"lin.x = 0.9f * CanonLog3_to_linear( CLogIRE.x); \n" \
-"lin.y = 0.9f * CanonLog3_to_linear( CLogIRE.y); \n" \
-"lin.z = 0.9f * CanonLog3_to_linear( CLogIRE.z); \n" \
+"lin.x = 0.9f * CanonLog3_to_lin( CLogIRE.x); \n" \
+"lin.y = 0.9f * CanonLog3_to_lin( CLogIRE.y); \n" \
+"lin.z = 0.9f * CanonLog3_to_lin( CLogIRE.z); \n" \
 "float3 aces; \n" \
 "aces.x = 0.678891151f * lin.x + 0.158868422f * lin.y + 0.162240427f * lin.z; \n" \
 "aces.y = 0.045570831f * lin.x + 0.860712772f * lin.y + 0.093716397f * lin.z; \n" \
 "aces.z = -0.000485710f * lin.x + 0.025060196f * lin.y + 0.975425515f * lin.z; \n" \
 "return aces; \n" \
 "} \n" \
-"float3 IDT_Canon_C300mk2_CanonLog3_BT2020_F_Tng( float3 In) \n" \
-"{ \n" \
+"float3 IDT_Canon_C300mk2_CanonLog3_BT2020_F_Tng( float3 In) { \n" \
 "float3 CLogIRE; \n" \
 "CLogIRE.x = (In.x * 1023.0f - 64.0f) / 876.0f; \n" \
 "CLogIRE.y = (In.y * 1023.0f - 64.0f) / 876.0f; \n" \
 "CLogIRE.z = (In.z * 1023.0f - 64.0f) / 876.0f; \n" \
 "float3 lin; \n" \
-"lin.x = 0.9f * CanonLog3_to_linear( CLogIRE.x); \n" \
-"lin.y = 0.9f * CanonLog3_to_linear( CLogIRE.y); \n" \
-"lin.z = 0.9f * CanonLog3_to_linear( CLogIRE.z); \n" \
+"lin.x = 0.9f * CanonLog3_to_lin( CLogIRE.x); \n" \
+"lin.y = 0.9f * CanonLog3_to_lin( CLogIRE.y); \n" \
+"lin.z = 0.9f * CanonLog3_to_lin( CLogIRE.z); \n" \
 "float3 aces; \n" \
 "aces.x = 0.724488568f * lin.x + 0.115140904f * lin.y + 0.160370529f * lin.z; \n" \
 "aces.y = 0.010659276f * lin.x + 0.839605344f * lin.y + 0.149735380f * lin.z; \n" \
 "aces.z = 0.014560161f * lin.x - 0.028562057f * lin.y + 1.014001897f * lin.z; \n" \
 "return aces; \n" \
 "} \n" \
-"float3 IDT_Canon_C300mk2_CanonLog3_CinemaGamut_E_D55( float3 In) \n" \
-"{ \n" \
+"float3 IDT_Canon_C300mk2_CanonLog3_CinemaGamut_E_D55( float3 In) { \n" \
 "float3 CLogIRE; \n" \
 "CLogIRE.x = (In.x * 1023.0f - 64.0f) / 876.0f; \n" \
 "CLogIRE.y = (In.y * 1023.0f - 64.0f) / 876.0f; \n" \
 "CLogIRE.z = (In.z * 1023.0f - 64.0f) / 876.0f; \n" \
 "float3 lin; \n" \
-"lin.x = 0.9f * CanonLog3_to_linear( CLogIRE.x); \n" \
-"lin.y = 0.9f * CanonLog3_to_linear( CLogIRE.y); \n" \
-"lin.z = 0.9f * CanonLog3_to_linear( CLogIRE.z); \n" \
+"lin.x = 0.9f * CanonLog3_to_lin( CLogIRE.x); \n" \
+"lin.y = 0.9f * CanonLog3_to_lin( CLogIRE.y); \n" \
+"lin.z = 0.9f * CanonLog3_to_lin( CLogIRE.z); \n" \
 "float3 aces; \n" \
 "aces.x = 0.763064455f * lin.x + 0.149021161f * lin.y + 0.087914384f * lin.z; \n" \
 "aces.y = 0.003657457f * lin.x + 1.10696038f * lin.y - 0.110617837f * lin.z; \n" \
 "aces.z = -0.009407794f * lin.x - 0.218383305f * lin.y + 1.227791099f * lin.z; \n" \
 "return aces; \n" \
 "} \n" \
-"float3 IDT_Canon_C300mk2_CanonLog3_CinemaGamut_E_Tng( float3 In) \n" \
-"{ \n" \
+"float3 IDT_Canon_C300mk2_CanonLog3_CinemaGamut_E_Tng( float3 In) { \n" \
 "float3 CLogIRE; \n" \
 "CLogIRE.x = (In.x * 1023.0f - 64.0f) / 876.0f; \n" \
 "CLogIRE.y = (In.y * 1023.0f - 64.0f) / 876.0f; \n" \
 "CLogIRE.z = (In.z * 1023.0f - 64.0f) / 876.0f; \n" \
 "float3 lin; \n" \
-"lin.x = 0.9f * CanonLog3_to_linear( CLogIRE.x); \n" \
-"lin.y = 0.9f * CanonLog3_to_linear( CLogIRE.y); \n" \
-"lin.z = 0.9f * CanonLog3_to_linear( CLogIRE.z); \n" \
+"lin.x = 0.9f * CanonLog3_to_lin( CLogIRE.x); \n" \
+"lin.y = 0.9f * CanonLog3_to_lin( CLogIRE.y); \n" \
+"lin.z = 0.9f * CanonLog3_to_lin( CLogIRE.z); \n" \
 "float3 aces; \n" \
 "aces.x = 0.817416293f * lin.x + 0.090755698f * lin.y + 0.091828009f * lin.z; \n" \
 "aces.y = -0.035361374f * lin.x + 1.065690585f * lin.y - 0.030329211f * lin.z; \n" \
 "aces.z = 0.010390366f * lin.x - 0.299271107f * lin.y + 1.288880741f * lin.z; \n" \
 "return aces; \n" \
 "} \n" \
-"float3 IDT_Sony_SLog1_SGamut( float3 In) \n" \
-"{ \n" \
-"mat3 SGAMUT_TO_ACES_MTX = { { 0.754338638f, 0.021198141f, -0.009756991f }, { 0.133697046f, 1.005410934f, 0.004508563f }, { 0.111968437f, -0.026610548f, 1.005253201f } }; \n" \
+"float3 IDT_Sony_SLog1_SGamut( float3 In) { \n" \
+"mat3 SGAMUT_TO_ACES_MTX = { { 0.754338638f, 0.021198141f, -0.009756991f },  \n" \
+"{ 0.133697046f, 1.005410934f, 0.004508563f },  \n" \
+"{ 0.111968437f, -0.026610548f, 1.005253201f } }; \n" \
 "float B = 64.0f; \n" \
 "float AB = 90.0f; \n" \
 "float W = 940.0f; \n" \
@@ -1811,9 +1761,10 @@ const char* kernelSource =  \
 "float3 aces = mult_f3_f33( lin, SGAMUT_TO_ACES_MTX); \n" \
 "return aces; \n" \
 "} \n" \
-"float3 IDT_Sony_SLog2_SGamut_Daylight( float3 In) \n" \
-"{ \n" \
-"mat3 SGAMUT_DAYLIGHT_TO_ACES_MTX = { { 0.8764457030f, 0.0774075345f, 0.0573564351f}, { 0.0145411681f, 0.9529571767f, -0.1151066335f}, { 0.1090131290f, -0.0303647111f, 1.0577501984f} }; \n" \
+"float3 IDT_Sony_SLog2_SGamut_Daylight( float3 In) { \n" \
+"mat3 SGAMUT_DAYLIGHT_TO_ACES_MTX = { { 0.8764457030f, 0.0774075345f, 0.0573564351f},  \n" \
+"{ 0.0145411681f, 0.9529571767f, -0.1151066335f},  \n" \
+"{ 0.1090131290f, -0.0303647111f, 1.0577501984f} }; \n" \
 "float B = 64.0f; \n" \
 "float AB = 90.0f; \n" \
 "float W = 940.0f; \n" \
@@ -1828,9 +1779,10 @@ const char* kernelSource =  \
 "float3 aces = mult_f3_f33( lin, SGAMUT_DAYLIGHT_TO_ACES_MTX); \n" \
 "return aces; \n" \
 "} \n" \
-"float3 IDT_Sony_SLog2_SGamut_Tungsten( float3 In) \n" \
-"{ \n" \
-"mat3 SGAMUT_TUNG_TO_ACES_MTX = { { 1.0110238740f, 0.1011994504f, 0.0600766530f}, { -0.1362526051f, 0.9562196265f, -0.1010185315f}, { 0.1252287310f, -0.0574190769f, 1.0409418785f} }; \n" \
+"float3 IDT_Sony_SLog2_SGamut_Tungsten( float3 In) { \n" \
+"mat3 SGAMUT_TUNG_TO_ACES_MTX = { { 1.0110238740f, 0.1011994504f, 0.0600766530f},  \n" \
+"{ -0.1362526051f, 0.9562196265f, -0.1010185315f},  \n" \
+"{ 0.1252287310f, -0.0574190769f, 1.0409418785f} }; \n" \
 "float B = 64.0f; \n" \
 "float AB = 90.0f; \n" \
 "float W = 940.0f; \n" \
@@ -1845,48 +1797,37 @@ const char* kernelSource =  \
 "float3 aces = mult_f3_f33( lin, SGAMUT_TUNG_TO_ACES_MTX); \n" \
 "return aces; \n" \
 "} \n" \
-"float3 IDT_Sony_SLog3_SGamut3( float3 SLog3) \n" \
-"{ \n" \
-"mat3 matrixCoef = { {0.7529825954f, 0.0217076974f, -0.0094160528f}, {0.1433702162f, 1.0153188355f, 0.0033704179f}, {0.1036471884f, -0.0370265329f, 1.0060456349f} }; \n" \
-"float3 linear; \n" \
-"linear.x = SLog3_to_linear( SLog3.x ); \n" \
-"linear.y = SLog3_to_linear( SLog3.y ); \n" \
-"linear.z = SLog3_to_linear( SLog3.z ); \n" \
-"float3 aces = mult_f3_f33( linear, matrixCoef ); \n" \
+"float3 IDT_Sony_Venice_SGamut3( float3 linear) { \n" \
+"mat3 matrixCoeff = { {0.7933297411f, 0.0155810585f, -0.0188647478f},  \n" \
+"{0.0890786256f, 1.0327123069f, 0.0127694121f},  \n" \
+"{0.1175916333f, -0.0482933654f, 1.0060953358f} }; \n" \
+"float3 aces = mult_f3_f33(linear, matrixCoeff); \n" \
 "return aces; \n" \
 "} \n" \
-"float3 IDT_Sony_SLog3_SGamut3Cine( float3 SLog3) \n" \
-"{ \n" \
-"mat3 matrixCoef = { {0.6387886672f, -0.0039159060f, -0.0299072021f}, {0.2723514337f, 1.0880732309f, -0.0264325799f}, {0.0888598991f, -0.0841573249f, 1.0563397820f} }; \n" \
-"float3 linear; \n" \
-"linear.x = SLog3_to_linear( SLog3.x ); \n" \
-"linear.y = SLog3_to_linear( SLog3.y ); \n" \
-"linear.z = SLog3_to_linear( SLog3.z ); \n" \
-"float3 aces = mult_f3_f33( linear, matrixCoef ); \n" \
+"float3 IDT_Sony_Venice_SGamut3Cine( float3 linear) { \n" \
+"mat3 matrixCoeff = { {0.6742570921f, -0.0093136061f, -0.0382090673f},  \n" \
+"{0.2205717359f, 1.1059588614f, -0.0179383766f},  \n" \
+"{0.1051711720f, -0.0966452553f, 1.0561474439f} }; \n" \
+"float3 aces = mult_f3_f33(linear, matrixCoeff ); \n" \
 "return aces; \n" \
 "} \n" \
-"float Y_2_linCV( float Y, float Ymax, float Ymin) \n" \
-"{ \n" \
+"float Y_2_linCV( float Y, float Ymax, float Ymin) { \n" \
 "return (Y - Ymin) / (Ymax - Ymin); \n" \
 "} \n" \
-"float linCV_2_Y( float linCV, float Ymax, float Ymin) \n" \
-"{ \n" \
+"float linCV_2_Y( float linCV, float Ymax, float Ymin) { \n" \
 "return linCV * (Ymax - Ymin) + Ymin; \n" \
 "} \n" \
-"float3 Y_2_linCV_f3( float3 Y, float Ymax, float Ymin) \n" \
-"{ \n" \
+"float3 Y_2_linCV_f3( float3 Y, float Ymax, float Ymin) { \n" \
 "float3 linCV; \n" \
 "linCV.x = Y_2_linCV( Y.x, Ymax, Ymin); linCV.y = Y_2_linCV( Y.y, Ymax, Ymin); linCV.z = Y_2_linCV( Y.z, Ymax, Ymin); \n" \
 "return linCV; \n" \
 "} \n" \
-"float3 linCV_2_Y_f3( float3 linCV, float Ymax, float Ymin) \n" \
-"{ \n" \
+"float3 linCV_2_Y_f3( float3 linCV, float Ymax, float Ymin) { \n" \
 "float3 Y; \n" \
 "Y.x = linCV_2_Y( linCV.x, Ymax, Ymin); Y.y = linCV_2_Y( linCV.y, Ymax, Ymin); Y.z = linCV_2_Y( linCV.z, Ymax, Ymin); \n" \
 "return Y; \n" \
 "} \n" \
-"float3 darkSurround_to_dimSurround( float3 linearCV) \n" \
-"{ \n" \
+"float3 darkSurround_to_dimSurround( float3 linearCV) { \n" \
 "float3 XYZ = mult_f3_f33( linearCV, RGBtoXYZ( AP1)); \n" \
 "float3 xyY = XYZ_2_xyY(XYZ); \n" \
 "xyY.z = fmax( xyY.z, 0.0f); \n" \
@@ -1894,8 +1835,7 @@ const char* kernelSource =  \
 "XYZ = xyY_2_XYZ(xyY); \n" \
 "return mult_f3_f33( XYZ, XYZtoRGB( AP1)); \n" \
 "} \n" \
-"float3 dimSurround_to_darkSurround( float3 linearCV) \n" \
-"{ \n" \
+"float3 dimSurround_to_darkSurround( float3 linearCV) { \n" \
 "float3 XYZ = mult_f3_f33( linearCV, RGBtoXYZ( AP1)); \n" \
 "float3 xyY = XYZ_2_xyY(XYZ); \n" \
 "xyY.z = fmax( xyY.z, 0.0f); \n" \
@@ -1903,8 +1843,7 @@ const char* kernelSource =  \
 "XYZ = xyY_2_XYZ(xyY); \n" \
 "return mult_f3_f33( XYZ, XYZtoRGB( AP1)); \n" \
 "} \n" \
-"float roll_white_fwd( float in, float new_wht, float width) \n" \
-"{ \n" \
+"float roll_white_fwd( float in, float new_wht, float width) { \n" \
 "const float x0 = -1.0f; \n" \
 "const float x1 = x0 + width; \n" \
 "const float y0 = -new_wht; \n" \
@@ -1923,8 +1862,7 @@ const char* kernelSource =  \
 "out = -(( t * a + b) * t + c); \n" \
 "return out; \n" \
 "} \n" \
-"float roll_white_rev( float in, float new_wht, float width) \n" \
-"{ \n" \
+"float roll_white_rev( float in, float new_wht, float width) { \n" \
 "const float x0 = -1.0f; \n" \
 "const float x1 = x0 + width; \n" \
 "const float y0 = -new_wht; \n" \
@@ -1946,18 +1884,15 @@ const char* kernelSource =  \
 "} \n" \
 "return out; \n" \
 "} \n" \
-"float lookup_ACESmin( float minLum ) \n" \
-"{ \n" \
+"float lookup_ACESmin( float minLum ) { \n" \
 "float2 minTable[2] = { { log10(MIN_LUM_RRT), MIN_STOP_RRT }, { log10(MIN_LUM_SDR), MIN_STOP_SDR } }; \n" \
-"return 0.18f * pow( 2.0f, interpolate1D( minTable, 2, log10( minLum))); \n" \
+"return 0.18f * exp2(interpolate1D( minTable, 2, log10( minLum))); \n" \
 "} \n" \
-"float lookup_ACESmax( float maxLum ) \n" \
-"{ \n" \
+"float lookup_ACESmax( float maxLum ) { \n" \
 "float2 maxTable[2] = { { log10(MAX_LUM_SDR), MAX_STOP_SDR }, { log10(MAX_LUM_RRT), MAX_STOP_RRT } }; \n" \
-"return 0.18f * pow( 2.0f, interpolate1D( maxTable, 2, log10( maxLum))); \n" \
+"return 0.18f * exp2(interpolate1D( maxTable, 2, log10( maxLum))); \n" \
 "} \n" \
-"Floater5 init_coefsLow( TsPoint TsPointLow, TsPoint TsPointMid) \n" \
-"{ \n" \
+"Floater5 init_coefsLow( TsPoint TsPointLow, TsPoint TsPointMid) { \n" \
 "Floater5 coefsLow; \n" \
 "float knotIncLow = (log10(TsPointMid.x) - log10(TsPointLow.x)) / 3.0f; \n" \
 "coefsLow.x = (TsPointLow.slope * (log10(TsPointLow.x) - 0.5f * knotIncLow)) + ( log10(TsPointLow.y) - TsPointLow.slope * log10(TsPointLow.x)); \n" \
@@ -1969,8 +1904,7 @@ const char* kernelSource =  \
 "coefsLow.z = log10(TsPointLow.y) + pctLow*(log10(TsPointMid.y) - log10(TsPointLow.y)); \n" \
 "return coefsLow; \n" \
 "} \n" \
-"Floater5 init_coefsHigh( TsPoint TsPointMid, TsPoint TsPointMax) \n" \
-"{ \n" \
+"Floater5 init_coefsHigh( TsPoint TsPointMid, TsPoint TsPointMax) { \n" \
 "Floater5 coefsHigh; \n" \
 "float knotIncHigh = (log10(TsPointMax.x) - log10(TsPointMid.x)) / 3.0f; \n" \
 "coefsHigh.x = (TsPointMid.slope * (log10(TsPointMid.x) - 0.5f * knotIncHigh)) + ( log10(TsPointMid.y) - TsPointMid.slope * log10(TsPointMid.x)); \n" \
@@ -1982,12 +1916,10 @@ const char* kernelSource =  \
 "coefsHigh.z = log10(TsPointMid.y) + pctHigh*(log10(TsPointMax.y) - log10(TsPointMid.y)); \n" \
 "return coefsHigh; \n" \
 "} \n" \
-"float shift( float in, float expShift) \n" \
-"{ \n" \
+"float shift( float in, float expShift) { \n" \
 "return pow(2.0f, (log2(in) - expShift)); \n" \
 "} \n" \
-"TsParams init_TsParams( float minLum, float maxLum, float expShift) \n" \
-"{ \n" \
+"TsParams init_TsParams( float minLum, float maxLum, float expShift) { \n" \
 "TsPoint MIN_PT = { lookup_ACESmin(minLum), minLum, 0.0f}; \n" \
 "TsPoint MID_PT = { 0.18f, 4.8f, 1.55f}; \n" \
 "TsPoint MAX_PT = { lookup_ACESmax(maxLum), maxLum, 0.0f}; \n" \
@@ -2003,8 +1935,7 @@ const char* kernelSource =  \
 "{cHigh.x, cHigh.y, cHigh.z, cHigh.w, cHigh.m, cHigh.m} }; \n" \
 "return P; \n" \
 "} \n" \
-"float ssts( float x, TsParams C) \n" \
-"{ \n" \
+"float ssts( float x, TsParams C) { \n" \
 "const int N_KNOTS_LOW = 4; \n" \
 "const int N_KNOTS_HIGH = 4; \n" \
 "float logx = log10( fmax(x, 1e-10f)); \n" \
@@ -2017,21 +1948,20 @@ const char* kernelSource =  \
 "float t = knot_coord - j; \n" \
 "float3 cf = { C.coefsLow[ j], C.coefsLow[ j + 1], C.coefsLow[ j + 2]}; \n" \
 "float3 monomials = { t * t, t, 1.0f }; \n" \
-"logy = dot_f3_f3( monomials, mult_f3_f33( cf, M1)); \n" \
+"logy = dot_f3_f3( monomials, mult_f3_f33( cf, MM)); \n" \
 "} else if (( logx >= log10(C.Mid.x) ) && ( logx < log10(C.Max.x) )) { \n" \
 "float knot_coord = (N_KNOTS_HIGH - 1) * (logx - log10(C.Mid.x)) / (log10(C.Max.x) - log10(C.Mid.x)); \n" \
 "int j = knot_coord; \n" \
 "float t = knot_coord - j; \n" \
 "float3 cf = { C.coefsHigh[ j], C.coefsHigh[ j + 1], C.coefsHigh[ j + 2]}; \n" \
 "float3 monomials = { t * t, t, 1.0f }; \n" \
-"logy = dot_f3_f3( monomials, mult_f3_f33( cf, M1)); \n" \
+"logy = dot_f3_f3( monomials, mult_f3_f33( cf, MM)); \n" \
 "} else { \n" \
 "logy = logx * C.Max.slope + ( log10(C.Max.y) - C.Max.slope * log10(C.Max.x) ); \n" \
 "} \n" \
 "return exp10(logy); \n" \
 "} \n" \
-"float inv_ssts( float y, TsParams C) \n" \
-"{ \n" \
+"float inv_ssts( float y, TsParams C) { \n" \
 "const int N_KNOTS_LOW = 4; \n" \
 "const int N_KNOTS_HIGH = 4; \n" \
 "const float KNOT_INC_LOW = (log10(C.Mid.x) - log10(C.Min.x)) / (N_KNOTS_LOW - 1.0f); \n" \
@@ -2058,7 +1988,7 @@ const char* kernelSource =  \
 "} else if ( logy > KNOT_Y_LOW[ 2] && logy <= KNOT_Y_LOW[ 3]) { \n" \
 "cf.x = C.coefsLow[2]; cf.y = C.coefsLow[3]; cf.z = C.coefsLow[4]; j = 2; \n" \
 "} \n" \
-"const float3 tmp = mult_f3_f33( cf, M1); \n" \
+"const float3 tmp = mult_f3_f33( cf, MM); \n" \
 "float a = tmp.x; float b = tmp.y; float c = tmp.z; \n" \
 "c = c - logy; \n" \
 "const float d = sqrt( b * b - 4.0f * a * c); \n" \
@@ -2074,7 +2004,7 @@ const char* kernelSource =  \
 "} else if ( logy > KNOT_Y_HIGH[ 2] && logy <= KNOT_Y_HIGH[ 3]) { \n" \
 "cf.x = C.coefsHigh[2]; cf.y = C.coefsHigh[3]; cf.z = C.coefsHigh[4]; j = 2; \n" \
 "} \n" \
-"const float3 tmp = mult_f3_f33( cf, M1); \n" \
+"const float3 tmp = mult_f3_f33( cf, MM); \n" \
 "float a = tmp.x; float b = tmp.y; float c = tmp.z; \n" \
 "c = c - logy; \n" \
 "const float d = sqrt( b * b - 4.0f * a * c); \n" \
@@ -2085,20 +2015,17 @@ const char* kernelSource =  \
 "} \n" \
 "return exp10( logx); \n" \
 "} \n" \
-"float3 ssts_f3( float3 x, TsParams C) \n" \
-"{ \n" \
+"float3 ssts_f3( float3 x, TsParams C) { \n" \
 "float3 out; \n" \
 "out.x = ssts( x.x, C); out.y = ssts( x.y, C); out.z = ssts( x.z, C); \n" \
 "return out; \n" \
 "} \n" \
-"float3 inv_ssts_f3( float3 x, TsParams C) \n" \
-"{ \n" \
+"float3 inv_ssts_f3( float3 x, TsParams C) { \n" \
 "float3 out; \n" \
 "out.x = inv_ssts( x.x, C); out.y = inv_ssts( x.y, C); out.z = inv_ssts( x.z, C); \n" \
 "return out; \n" \
 "} \n" \
-"float glow_fwd( float ycIn, float glowGainIn, float glowMid) \n" \
-"{ \n" \
+"float glow_fwd( float ycIn, float glowGainIn, float glowMid) { \n" \
 "float glowGainOut; \n" \
 "if (ycIn <= 2.0f/3.0f * glowMid) { \n" \
 "glowGainOut = glowGainIn; \n" \
@@ -2109,8 +2036,7 @@ const char* kernelSource =  \
 "} \n" \
 "return glowGainOut; \n" \
 "} \n" \
-"float glow_inv( float ycOut, float glowGainIn, float glowMid) \n" \
-"{ \n" \
+"float glow_inv( float ycOut, float glowGainIn, float glowMid) { \n" \
 "float glowGainOut; \n" \
 "if (ycOut <= ((1.0f + glowGainIn) * 2.0f/3.0f * glowMid)) { \n" \
 "glowGainOut = -glowGainIn / (1.0f + glowGainIn); \n" \
@@ -2121,14 +2047,12 @@ const char* kernelSource =  \
 "} \n" \
 "return glowGainOut; \n" \
 "} \n" \
-"float sigmoid_shaper( float x) \n" \
-"{ \n" \
+"float sigmoid_shaper( float x) { \n" \
 "float t = fmax( 1.0f - fabs( x / 2.0f), 0.0f); \n" \
 "float y = 1.0f + _sign(x) * (1.0f - t * t); \n" \
 "return y / 2.0f; \n" \
 "} \n" \
-"float cubic_basis_shaper ( float x, float w) \n" \
-"{ \n" \
+"float cubic_basis_shaper ( float x, float w) { \n" \
 "float M[4][4] = { {-1.0f/6.0f, 3.0f/6.0f,-3.0f/6.0f, 1.0f/6.0f}, {3.0f/6.0f, -6.0f/6.0f, 3.0f/6.0f, 0.0f/6.0f}, \n" \
 "{-3.0f/6.0f, 0.0f/6.0f, 3.0f/6.0f, 0.0f/6.0f}, {1.0f/6.0f, 4.0f/6.0f, 1.0f/6.0f, 0.0f/6.0f} }; \n" \
 "float knots[5] = { -w/2.0f, -w/4.0f, 0.0f, w/4.0f, w/2.0f }; \n" \
@@ -2154,22 +2078,19 @@ const char* kernelSource =  \
 "y = 0.0f;}} \n" \
 "return y * 3.0f/2.0f; \n" \
 "} \n" \
-"float center_hue( float hue, float centerH) \n" \
-"{ \n" \
+"float center_hue( float hue, float centerH) { \n" \
 "float hueCentered = hue - centerH; \n" \
 "if (hueCentered < -180.0f) hueCentered = hueCentered + 360.0f; \n" \
 "else if (hueCentered > 180.0f) hueCentered = hueCentered - 360.0f; \n" \
 "return hueCentered; \n" \
 "} \n" \
-"float uncenter_hue( float hueCentered, float centerH) \n" \
-"{ \n" \
+"float uncenter_hue( float hueCentered, float centerH) { \n" \
 "float hue = hueCentered + centerH; \n" \
 "if (hue < 0.0f) hue = hue + 360.0f; \n" \
 "else if (hue > 360.0f) hue = hue - 360.0f; \n" \
 "return hue; \n" \
 "} \n" \
-"float3 rrt_sweeteners( float3 in) \n" \
-"{ \n" \
+"float3 rrt_sweeteners( float3 in) { \n" \
 "float3 aces = in; \n" \
 "float saturation = rgb_2_saturation( aces); \n" \
 "float ycIn = rgb_2_yc( aces); \n" \
@@ -2181,17 +2102,18 @@ const char* kernelSource =  \
 "float hueWeight = cubic_basis_shaper( centeredHue, RRT_RED_WIDTH); \n" \
 "aces.x = aces.x + hueWeight * saturation * (RRT_RED_PIVOT - aces.x) * (1.0f - RRT_RED_SCALE); \n" \
 "aces = max_f3_f( aces, 0.0f); \n" \
-"float3 rgbPre = mult_f3_f33( aces, AP0_2_AP1_MAT_B); \n" \
+"float3 rgbPre = mult_f3_f33( aces, AP0_2_AP1_MAT); \n" \
 "rgbPre = max_f3_f( rgbPre, 0.0f); \n" \
-"rgbPre = mult_f3_f33( rgbPre, calc_sat_adjust_matrix( RRT_SAT_FACTOR, make_float3(RGBtoXYZ( AP1).c0.y, RGBtoXYZ( AP1).c1.y, RGBtoXYZ( AP1).c2.y))); \n" \
+"rgbPre = mult_f3_f33( rgbPre, calc_sat_adjust_matrix( RRT_SAT_FACTOR,  \n" \
+"make_float3(RGBtoXYZ( AP1).c0.y, RGBtoXYZ( AP1).c1.y, RGBtoXYZ( AP1).c2.y))); \n" \
 "return rgbPre; \n" \
 "} \n" \
-"float3 inv_rrt_sweeteners( float3 in) \n" \
-"{ \n" \
+"float3 inv_rrt_sweeteners( float3 in) { \n" \
 "float3 rgbPost = in; \n" \
-"rgbPost = mult_f3_f33( rgbPost, invert_f33(calc_sat_adjust_matrix( RRT_SAT_FACTOR, make_float3(RGBtoXYZ( AP1).c0.y, RGBtoXYZ( AP1).c1.y, RGBtoXYZ( AP1).c2.y)))); \n" \
+"rgbPost = mult_f3_f33( rgbPost, invert_f33(calc_sat_adjust_matrix( RRT_SAT_FACTOR,  \n" \
+"make_float3(RGBtoXYZ( AP1).c0.y, RGBtoXYZ( AP1).c1.y, RGBtoXYZ( AP1).c2.y)))); \n" \
 "rgbPost = max_f3_f( rgbPost, 0.0f); \n" \
-"float3 aces = mult_f3_f33( rgbPost, AP1_2_AP0_MAT_B); \n" \
+"float3 aces = mult_f3_f33( rgbPost, AP1_2_AP0_MAT); \n" \
 "aces = max_f3_f( aces, 0.0f); \n" \
 "float hue = rgb_2_hue( aces); \n" \
 "float centeredHue = center_hue( hue, RRT_RED_HUE); \n" \
@@ -2213,23 +2135,20 @@ const char* kernelSource =  \
 "aces = mult_f_f3( ( reducedGlow), aces); \n" \
 "return aces; \n" \
 "} \n" \
-"float3 limit_to_primaries( float3 XYZ, Chromaticities LIMITING_PRI) \n" \
-"{ \n" \
+"float3 limit_to_primaries( float3 XYZ, Chromaticities LIMITING_PRI) { \n" \
 "mat3 XYZ_2_LIMITING_PRI_MAT = XYZtoRGB( LIMITING_PRI); \n" \
 "mat3 LIMITING_PRI_2_XYZ_MAT = RGBtoXYZ( LIMITING_PRI); \n" \
 "float3 rgb = mult_f3_f33( XYZ, XYZ_2_LIMITING_PRI_MAT); \n" \
 "float3 limitedRgb = clamp_f3( rgb, 0.0f, 1.0f); \n" \
 "return mult_f3_f33( limitedRgb, LIMITING_PRI_2_XYZ_MAT); \n" \
 "} \n" \
-"float3 dark_to_dim( float3 XYZ) \n" \
-"{ \n" \
+"float3 dark_to_dim( float3 XYZ) { \n" \
 "float3 xyY = XYZ_2_xyY(XYZ); \n" \
 "xyY.z = fmax( xyY.z, 0.0f); \n" \
 "xyY.z = pow( xyY.z, DIM_SURROUND_GAMMA); \n" \
 "return xyY_2_XYZ(xyY); \n" \
 "} \n" \
-"float3 dim_to_dark( float3 XYZ) \n" \
-"{ \n" \
+"float3 dim_to_dark( float3 XYZ) { \n" \
 "float3 xyY = XYZ_2_xyY(XYZ); \n" \
 "xyY.z = fmax( xyY.z, 0.0f); \n" \
 "xyY.z = pow( xyY.z, 1.0f / DIM_SURROUND_GAMMA); \n" \
@@ -2248,8 +2167,7 @@ const char* kernelSource =  \
 "bool STRETCH_BLACK, \n" \
 "bool D60_SIM, \n" \
 "bool LEGAL_RANGE \n" \
-") \n" \
-"{ \n" \
+") { \n" \
 "mat3 XYZ_2_DISPLAY_PRI_MAT = XYZtoRGB( DISPLAY_PRI); \n" \
 "TsParams PARAMS_DEFAULT = init_TsParams( Y_MIN, Y_MAX, 0.0f); \n" \
 "float expShift = log2(inv_ssts(Y_MID, PARAMS_DEFAULT)) - log2(0.18f); \n" \
@@ -2262,15 +2180,13 @@ const char* kernelSource =  \
 "} else if (SURROUND == 1) { \n" \
 "if ((EOTF == 1) || (EOTF == 2) || (EOTF == 3)) { \n" \
 "XYZ = dark_to_dim( XYZ); \n" \
-"} \n" \
-"} else if (SURROUND == 2) { \n" \
+"}} else if (SURROUND == 2) { \n" \
 "} \n" \
 "XYZ = limit_to_primaries( XYZ, LIMITING_PRI); \n" \
 "if (D60_SIM == false) { \n" \
 "if ((DISPLAY_PRI.white.x != AP0.white.x) && (DISPLAY_PRI.white.y != AP0.white.y)) { \n" \
 "XYZ = mult_f3_f33( XYZ, calculate_cat_matrix( AP0.white, REC709_PRI.white)); \n" \
-"} \n" \
-"} \n" \
+"}} \n" \
 "linearCV = mult_f3_f33( XYZ, XYZ_2_DISPLAY_PRI_MAT); \n" \
 "if (D60_SIM == true) { \n" \
 "float SCALE = 1.0f; \n" \
@@ -2292,8 +2208,7 @@ const char* kernelSource =  \
 "outputCV = Y_2_ST2084_f3( max_f3_f( linCV_2_Y_f3(linearCV, Y_MAX, 0.0f), 0.0f) ); \n" \
 "} else { \n" \
 "outputCV = Y_2_ST2084_f3( linCV_2_Y_f3(linearCV, Y_MAX, Y_MIN) ); \n" \
-"} \n" \
-"} else if (EOTF == 1) { \n" \
+"}} else if (EOTF == 1) { \n" \
 "outputCV = bt1886_r_f3( linearCV, 2.4f, 1.0f, 0.0f); \n" \
 "} else if (EOTF == 2) { \n" \
 "outputCV = moncurve_r_f3( linearCV, 2.4f, 0.055f); \n" \
@@ -2328,8 +2243,7 @@ const char* kernelSource =  \
 "bool STRETCH_BLACK, \n" \
 "bool D60_SIM, \n" \
 "bool LEGAL_RANGE \n" \
-") \n" \
-"{ \n" \
+") { \n" \
 "mat3 DISPLAY_PRI_2_XYZ_MAT = RGBtoXYZ( DISPLAY_PRI); \n" \
 "TsParams PARAMS_DEFAULT = init_TsParams( Y_MIN, Y_MAX, 0.0f); \n" \
 "float expShift = log2(inv_ssts(Y_MID, PARAMS_DEFAULT)) - log2(0.18f); \n" \
@@ -2344,8 +2258,7 @@ const char* kernelSource =  \
 "linearCV = Y_2_linCV_f3( ST2084_2_Y_f3( outputCV), Y_MAX, 0.0f); \n" \
 "} else { \n" \
 "linearCV = Y_2_linCV_f3( ST2084_2_Y_f3( outputCV), Y_MAX, Y_MIN); \n" \
-"} \n" \
-"} else if (EOTF == 1) { \n" \
+"}} else if (EOTF == 1) { \n" \
 "linearCV = bt1886_f_f3( outputCV, 2.4f, 1.0f, 0.0f); \n" \
 "} else if (EOTF == 2) { \n" \
 "linearCV = moncurve_f_f3( outputCV, 2.4f, 0.055f); \n" \
@@ -2359,8 +2272,7 @@ const char* kernelSource =  \
 "linearCV = Y_2_linCV_f3( ST2084_2_Y_f3( outputCV), Y_MAX, 0.0f); \n" \
 "} else { \n" \
 "linearCV = Y_2_linCV_f3( ST2084_2_Y_f3( outputCV), Y_MAX, Y_MIN); \n" \
-"} \n" \
-"} \n" \
+"}} \n" \
 "if (D60_SIM == true) { \n" \
 "float SCALE = 1.0f; \n" \
 "if ((DISPLAY_PRI.white.x == 0.3127f) && (DISPLAY_PRI.white.y == 0.329f)) { \n" \
@@ -2372,20 +2284,17 @@ const char* kernelSource =  \
 "linearCV.x = roll_white_rev( linearCV.x / SCALE, 0.918f, 0.5f); \n" \
 "linearCV.y = roll_white_rev( linearCV.y / SCALE, 0.918f, 0.5f); \n" \
 "linearCV.z = roll_white_rev( linearCV.z / SCALE, 0.918f, 0.5f); \n" \
-"} \n" \
-"} \n" \
+"}} \n" \
 "float3 XYZ = mult_f3_f33( linearCV, DISPLAY_PRI_2_XYZ_MAT); \n" \
 "if (D60_SIM == false) { \n" \
 "if ((DISPLAY_PRI.white.x != AP0.white.x) && (DISPLAY_PRI.white.y != AP0.white.y)) { \n" \
 "XYZ = mult_f3_f33( XYZ, invert_f33(calculate_cat_matrix( AP0.white, REC709_PRI.white)) ); \n" \
-"} \n" \
-"} \n" \
+"}} \n" \
 "if (SURROUND == 0) { \n" \
 "} else if (SURROUND == 1) { \n" \
 "if ((EOTF == 1) || (EOTF == 2) || (EOTF == 3)) { \n" \
 "XYZ = dim_to_dark( XYZ); \n" \
-"} \n" \
-"} else if (SURROUND == 2) { \n" \
+"}} else if (SURROUND == 2) { \n" \
 "} \n" \
 "linearCV = mult_f3_f33( XYZ, XYZtoRGB( AP1)); \n" \
 "float3 rgbPost = linCV_2_Y_f3( linearCV, Y_MAX, Y_MIN); \n" \
@@ -2393,42 +2302,55 @@ const char* kernelSource =  \
 "float3 aces = inv_rrt_sweeteners( rgbPre); \n" \
 "return aces; \n" \
 "} \n" \
-"float lin_to_ACEScct( float in) \n" \
-"{ \n" \
-"if (in <= X_BRK) \n" \
-"return A * in + B; \n" \
-"else \n" \
-"return (log2(in) + 9.72f) / 17.52f; \n" \
+"float3 InvODT_Rec709( float3 outputCV) { \n" \
+"mat3 DISPLAY_PRI_2_XYZ_MAT = RGBtoXYZ(REC709_PRI); \n" \
+"float DISPGAMMA = 2.4f; \n" \
+"float L_W = 1.0f; \n" \
+"float L_B = 0.0f; \n" \
+"float3 linearCV = bt1886_f_f3( outputCV, DISPGAMMA, L_W, L_B); \n" \
+"float3 XYZ = mult_f3_f33( linearCV, DISPLAY_PRI_2_XYZ_MAT); \n" \
+"XYZ = mult_f3_f33( XYZ, invert_f33( calculate_cat_matrix( AP0.white, REC709_PRI.white))); \n" \
+"linearCV = mult_f3_f33( XYZ, XYZtoRGB( AP1)); \n" \
+"linearCV = mult_f3_f33( linearCV, invert_f33( calc_sat_adjust_matrix( ODT_SAT_FACTOR,  \n" \
+"make_float3(RGBtoXYZ( AP1).c0.y, RGBtoXYZ( AP1).c1.y, RGBtoXYZ( AP1).c2.y)))); \n" \
+"float3 rgbPre = linCV_2_Y_f3( linearCV, 48.0f, exp10(log10(0.02f))); \n" \
+"float3 rgbPost; \n" \
+"rgbPost = segmented_spline_c9_rev_f3( rgbPre); \n" \
+"float3 oces = mult_f3_f33( rgbPost, AP1_2_AP0_MAT); \n" \
+"return oces; \n" \
 "} \n" \
-"float ACEScct_to_lin( float in) \n" \
-"{ \n" \
-"if (in > Y_BRK) \n" \
-"return pow( 2.0f, in * 17.52f - 9.72f); \n" \
-"else \n" \
-"return (in - B) / A; \n" \
+"float3 InvODT_sRGB( float3 outputCV) { \n" \
+"mat3 DISPLAY_PRI_2_XYZ_MAT = RGBtoXYZ(REC709_PRI); \n" \
+"float DISPGAMMA = 2.4f; \n" \
+"float OFFSET = 0.055f; \n" \
+"float3 linearCV; \n" \
+"linearCV = moncurve_f_f3( outputCV, DISPGAMMA, OFFSET); \n" \
+"float3 XYZ = mult_f3_f33( linearCV, DISPLAY_PRI_2_XYZ_MAT); \n" \
+"XYZ = mult_f3_f33( XYZ, invert_f33( calculate_cat_matrix( AP0.white, REC709_PRI.white))); \n" \
+"linearCV = mult_f3_f33( XYZ, XYZtoRGB( AP1)); \n" \
+"linearCV = mult_f3_f33( linearCV, invert_f33( calc_sat_adjust_matrix( ODT_SAT_FACTOR,  \n" \
+"make_float3(RGBtoXYZ( AP1).c0.y, RGBtoXYZ( AP1).c1.y, RGBtoXYZ( AP1).c2.y)))); \n" \
+"float3 rgbPre = linCV_2_Y_f3( linearCV, 48.0f, exp10(log10(0.02f))); \n" \
+"float3 rgbPost; \n" \
+"rgbPost = segmented_spline_c9_rev_f3( rgbPre); \n" \
+"float3 oces = mult_f3_f33( rgbPost, AP1_2_AP0_MAT); \n" \
+"return oces; \n" \
 "} \n" \
-"float3 ACES_to_ACEScct( float3 in) \n" \
-"{ \n" \
-"float3 ap1_lin = mult_f3_f33( in, AP0_2_AP1_MAT_B); \n" \
-"float3 acescct; \n" \
-"acescct.x = lin_to_ACEScct( ap1_lin.x); acescct.y = lin_to_ACEScct( ap1_lin.y); acescct.z = lin_to_ACEScct( ap1_lin.z); \n" \
-"return acescct; \n" \
+"float3 IDT_sRGB( float3 rgb) { \n" \
+"float3 aces; \n" \
+"aces = InvODT_sRGB(rgb); \n" \
+"aces = segmented_spline_c5_rev_f3( aces); \n" \
+"aces = max_f3_f(aces, 0.0f); \n" \
+"return aces; \n" \
 "} \n" \
-"float3 ACEScct_to_ACES( float3 in) \n" \
-"{ \n" \
-"float3 ap1_lin; \n" \
-"ap1_lin.x = ACEScct_to_lin( in.x); ap1_lin.y = ACEScct_to_lin( in.y); ap1_lin.z = ACEScct_to_lin( in.z); \n" \
-"return mult_f3_f33( ap1_lin, AP1_2_AP0_MAT_B); \n" \
+"float3 IDT_Rec709( float3 rgb) { \n" \
+"float3 aces; \n" \
+"aces = InvODT_Rec709(rgb); \n" \
+"aces = segmented_spline_c5_rev_f3( aces); \n" \
+"aces = max_f3_f(aces, 0.0f); \n" \
+"return aces; \n" \
 "} \n" \
-"float3 ASCCDL_inACEScct \n" \
-"( \n" \
-"float3 acesIn, \n" \
-"float3 SLOPE, \n" \
-"float3 OFFSET, \n" \
-"float3 POWER, \n" \
-"float SAT \n" \
-") \n" \
-"{ \n" \
+"float3 ASCCDL_inACEScct( float3 acesIn, float3 SLOPE, float3 OFFSET, float3 POWER, float SAT) { \n" \
 "float3 acescct = ACES_to_ACEScct( acesIn); \n" \
 "acescct.x = pow( clamp( (acescct.x * SLOPE.x) + OFFSET.x, 0.0f, 1.0f), 1.0f / POWER.x); \n" \
 "acescct.y = pow( clamp( (acescct.y * SLOPE.y) + OFFSET.y, 0.0f, 1.0f), 1.0f / POWER.y); \n" \
@@ -2440,8 +2362,7 @@ const char* kernelSource =  \
 "acescct.z = luma + satClamp * (acescct.z - luma); \n" \
 "return ACEScct_to_ACES( acescct); \n" \
 "} \n" \
-"float3 gamma_adjust_linear( float3 rgbIn, float GAMMA, float PIVOT) \n" \
-"{ \n" \
+"float3 gamma_adjust_linear( float3 rgbIn, float GAMMA, float PIVOT) { \n" \
 "const float SCALAR = PIVOT / pow( PIVOT, GAMMA); \n" \
 "float3 rgbOut = rgbIn; \n" \
 "if (rgbIn.x > 0.0f) rgbOut.x = pow( rgbIn.x, GAMMA) * SCALAR; \n" \
@@ -2449,50 +2370,45 @@ const char* kernelSource =  \
 "if (rgbIn.z > 0.0f) rgbOut.z = pow( rgbIn.z, GAMMA) * SCALAR; \n" \
 "return rgbOut; \n" \
 "} \n" \
-"float3 sat_adjust( float3 rgbIn, float SAT_FACTOR) \n" \
-"{ \n" \
+"float3 sat_adjust( float3 rgbIn, float SAT_FACTOR) { \n" \
 "float3 RGB2Y = make_float3(RGBtoXYZ( REC709_PRI).c0.y, RGBtoXYZ( REC709_PRI).c1.y, RGBtoXYZ( REC709_PRI).c2.y); \n" \
 "const mat3 SAT_MAT = calc_sat_adjust_matrix( SAT_FACTOR, RGB2Y); \n" \
 "return mult_f3_f33( rgbIn, SAT_MAT); \n" \
 "} \n" \
-"float3 rgb_2_yab( float3 rgb) \n" \
-"{ \n" \
-"float3 yab = mult_f3_f33( rgb, make_mat3(make_float3(1.0f/3.0f, 1.0f/2.0f, 0.0f), make_float3(1.0f/3.0f, -1.0f/4.0f, sqrt3over4), make_float3(1.0f/3.0f, -1.0f/4.0f, -sqrt3over4))); \n" \
+"float3 rgb_2_yab( float3 rgb) { \n" \
+"float3 yab = mult_f3_f33( rgb, make_mat3(make_float3(1.0f/3.0f, 1.0f/2.0f, 0.0f),  \n" \
+"make_float3(1.0f/3.0f, -1.0f/4.0f, sqrt3over4),  \n" \
+"make_float3(1.0f/3.0f, -1.0f/4.0f, -sqrt3over4))); \n" \
 "return yab; \n" \
 "} \n" \
-"float3 yab_2_rgb( float3 yab) \n" \
-"{ \n" \
-"float3 rgb = mult_f3_f33( yab, invert_f33(make_mat3(make_float3(1.0f/3.0f, 1.0f/2.0f, 0.0f), make_float3(1.0f/3.0f, -1.0f/4.0f, sqrt3over4), make_float3(1.0f/3.0f, -1.0f/4.0f, -sqrt3over4)))); \n" \
+"float3 yab_2_rgb( float3 yab) { \n" \
+"float3 rgb = mult_f3_f33( yab, invert_f33(make_mat3(make_float3(1.0f/3.0f, 1.0f/2.0f, 0.0f),  \n" \
+"make_float3(1.0f/3.0f, -1.0f/4.0f, sqrt3over4), make_float3(1.0f/3.0f, -1.0f/4.0f, -sqrt3over4)))); \n" \
 "return rgb; \n" \
 "} \n" \
-"float3 yab_2_ych(float3 yab) \n" \
-"{ \n" \
+"float3 yab_2_ych(float3 yab) { \n" \
 "float3 ych = yab; \n" \
 "float yo = yab.y * yab.y + yab.z * yab.z; \n" \
 "ych.y = sqrt(yo); \n" \
-"ych.z = atan2(yab.z, yab.y) * (180.0f / 3.14159265358979323846264338327950288f); \n" \
+"ych.z = atan2(yab.z, yab.y) * (180.0f / 3.1415926535897932f); \n" \
 "if (ych.z < 0.0f) ych.z += 360.0f; \n" \
 "return ych; \n" \
 "} \n" \
-"float3 ych_2_yab( float3 ych ) \n" \
-"{ \n" \
+"float3 ych_2_yab( float3 ych ) { \n" \
 "float3 yab; \n" \
 "yab.x = ych.x; \n" \
-"float h = ych.z * (3.14159265358979323846264338327950288f / 180.0f); \n" \
+"float h = ych.z * (3.1415926535897932f / 180.0f); \n" \
 "yab.y = ych.y * cos(h); \n" \
 "yab.z = ych.y * sin(h); \n" \
 "return yab; \n" \
 "} \n" \
-"float3 rgb_2_ych( float3 rgb) \n" \
-"{ \n" \
+"float3 rgb_2_ych( float3 rgb) { \n" \
 "return yab_2_ych( rgb_2_yab( rgb)); \n" \
 "} \n" \
-"float3 ych_2_rgb( float3 ych) \n" \
-"{ \n" \
+"float3 ych_2_rgb( float3 ych) { \n" \
 "return yab_2_rgb( ych_2_yab( ych)); \n" \
 "} \n" \
-"float3 scale_C_at_H( float3 rgb, float centerH, float widthH, float percentC) \n" \
-"{ \n" \
+"float3 scale_C_at_H( float3 rgb, float centerH, float widthH, float percentC) { \n" \
 "float3 new_rgb = rgb; \n" \
 "float3 ych = rgb_2_ych( rgb); \n" \
 "if (ych.y > 0.0f) { \n" \
@@ -2507,8 +2423,7 @@ const char* kernelSource =  \
 "}} \n" \
 "return new_rgb; \n" \
 "} \n" \
-"float3 rotate_H_in_H( float3 rgb, float centerH, float widthH, float degreesShift) \n" \
-"{ \n" \
+"float3 rotate_H_in_H( float3 rgb, float centerH, float widthH, float degreesShift) { \n" \
 "float3 ych = rgb_2_ych( rgb); \n" \
 "float3 new_ych = ych; \n" \
 "float centeredHue = center_hue( ych.z, centerH); \n" \
@@ -2520,14 +2435,12 @@ const char* kernelSource =  \
 "if (f_H > 0.0f) new_ych.z = uncenter_hue(blended_hue, centerH); \n" \
 "return ych_2_rgb( new_ych); \n" \
 "} \n" \
-"float3 scale_C( float3 rgb, float percentC) \n" \
-"{ \n" \
+"float3 scale_C( float3 rgb, float percentC) { \n" \
 "float3 ych = rgb_2_ych( rgb); \n" \
 "ych.y = ych.y * percentC; \n" \
 "return ych_2_rgb( ych); \n" \
 "} \n" \
-"float3 overlay_f3( float3 a, float3 b) \n" \
-"{ \n" \
+"float3 overlay_f3( float3 a, float3 b) { \n" \
 "const float LUMA_CUT = lin_to_ACEScct( 0.5f); \n" \
 "float luma = 0.2126f * a.x + 0.7152f * a.y + 0.0722f * a.z; \n" \
 "float3 out; \n" \
@@ -2542,8 +2455,7 @@ const char* kernelSource =  \
 "} \n" \
 "return out; \n" \
 "} \n" \
-"float3 LMT_PFE( float3 aces) \n" \
-"{ \n" \
+"float3 LMT_PFE( float3 aces) { \n" \
 "aces = scale_C( aces, 0.7f); \n" \
 "float3 SLOPE = make_float3(1.0f, 1.0f, 0.94f); \n" \
 "float3 OFFSET = make_float3(0.0f, 0.0f, 0.02f); \n" \
@@ -2558,8 +2470,7 @@ const char* kernelSource =  \
 "aces = scale_C_at_H( aces, 240.0f, 120.0f, 1.4f); \n" \
 "return aces; \n" \
 "} \n" \
-"float3 LMT_Bleach( float3 aces) \n" \
-"{ \n" \
+"float3 LMT_Bleach( float3 aces) { \n" \
 "float3 a, b, blend; \n" \
 "a = sat_adjust( aces, 0.9f); \n" \
 "a = mult_f_f3( 2.0f, a); \n" \
@@ -2571,8 +2482,7 @@ const char* kernelSource =  \
 "aces = ACEScct_to_ACES( blend); \n" \
 "return aces; \n" \
 "} \n" \
-"float3 LMT_BlueLightArtifactFix( float3 aces) \n" \
-"{ \n" \
+"float3 LMT_BlueLightArtifactFix( float3 aces) { \n" \
 "mat3 correctionMatrix = \n" \
 "{ {0.9404372683f, 0.0083786969f, 0.0005471261f }, \n" \
 "{-0.0183068787f, 0.8286599939f, -0.0008833746f }, \n" \
@@ -2580,8 +2490,7 @@ const char* kernelSource =  \
 "float3 acesMod = mult_f3_f33( aces, correctionMatrix); \n" \
 "return acesMod; \n" \
 "} \n" \
-"float3 RRT( float3 aces) \n" \
-"{ \n" \
+"float3 RRT( float3 aces) { \n" \
 "float saturation = rgb_2_saturation( aces); \n" \
 "float ycIn = rgb_2_yc( aces); \n" \
 "float s = sigmoid_shaper( (saturation - 0.4f) / 0.2f); \n" \
@@ -2592,26 +2501,27 @@ const char* kernelSource =  \
 "float hueWeight = cubic_basis_shaper( centeredHue, RRT_RED_WIDTH); \n" \
 "aces.x = aces.x + hueWeight * saturation * (RRT_RED_PIVOT - aces.x) * (1.0f - RRT_RED_SCALE); \n" \
 "aces = max_f3_f( aces, 0.0f); \n" \
-"float3 rgbPre = mult_f3_f33( aces, AP0_2_AP1_MAT_B); \n" \
+"float3 rgbPre = mult_f3_f33( aces, AP0_2_AP1_MAT); \n" \
 "rgbPre = max_f3_f( rgbPre, 0.0f); \n" \
-"rgbPre = mult_f3_f33( rgbPre, calc_sat_adjust_matrix( RRT_SAT_FACTOR, make_float3(RGBtoXYZ( AP1).c0.y, RGBtoXYZ( AP1).c1.y, RGBtoXYZ( AP1).c2.y))); \n" \
+"rgbPre = mult_f3_f33( rgbPre, calc_sat_adjust_matrix( RRT_SAT_FACTOR,  \n" \
+"make_float3(RGBtoXYZ( AP1).c0.y, RGBtoXYZ( AP1).c1.y, RGBtoXYZ( AP1).c2.y))); \n" \
 "float3 rgbPost; \n" \
 "rgbPost.x = segmented_spline_c5_fwd( rgbPre.x); \n" \
 "rgbPost.y = segmented_spline_c5_fwd( rgbPre.y); \n" \
 "rgbPost.z = segmented_spline_c5_fwd( rgbPre.z); \n" \
-"float3 rgbOces = mult_f3_f33( rgbPost, AP1_2_AP0_MAT_B); \n" \
+"float3 rgbOces = mult_f3_f33( rgbPost, AP1_2_AP0_MAT); \n" \
 "return rgbOces; \n" \
 "} \n" \
-"float3 InvRRT( float3 oces) \n" \
-"{ \n" \
-"float3 rgbPre = mult_f3_f33( oces, AP0_2_AP1_MAT_B); \n" \
+"float3 InvRRT( float3 oces) { \n" \
+"float3 rgbPre = mult_f3_f33( oces, AP0_2_AP1_MAT); \n" \
 "float3 rgbPost; \n" \
 "rgbPost.x = segmented_spline_c5_rev( rgbPre.x); \n" \
 "rgbPost.y = segmented_spline_c5_rev( rgbPre.y); \n" \
 "rgbPost.z = segmented_spline_c5_rev( rgbPre.z); \n" \
-"rgbPost = mult_f3_f33( rgbPost, invert_f33(calc_sat_adjust_matrix( RRT_SAT_FACTOR, make_float3(RGBtoXYZ( AP1).c0.y, RGBtoXYZ( AP1).c1.y, RGBtoXYZ( AP1).c2.y)))); \n" \
+"rgbPost = mult_f3_f33( rgbPost, invert_f33(calc_sat_adjust_matrix( RRT_SAT_FACTOR,  \n" \
+"make_float3(RGBtoXYZ( AP1).c0.y, RGBtoXYZ( AP1).c1.y, RGBtoXYZ( AP1).c2.y)))); \n" \
 "rgbPost = max_f3_f( rgbPost, 0.0f); \n" \
-"float3 aces = mult_f3_f33( rgbPost, AP1_2_AP0_MAT_B); \n" \
+"float3 aces = mult_f3_f33( rgbPost, AP1_2_AP0_MAT); \n" \
 "aces = max_f3_f( aces, 0.0f); \n" \
 "float hue = rgb_2_hue( aces); \n" \
 "float centeredHue = center_hue( hue, RRT_RED_HUE); \n" \
@@ -2633,25 +2543,25 @@ const char* kernelSource =  \
 "aces = mult_f_f3( ( reducedGlow), aces); \n" \
 "return aces; \n" \
 "} \n" \
-"float3 ODT_Rec709_100nits_dim( float3 oces) \n" \
-"{ \n" \
+"float3 ODT_Rec709_100nits_dim( float3 oces) { \n" \
 "Chromaticities DISPLAY_PRI = REC709_PRI; \n" \
 "mat3 XYZ_2_DISPLAY_PRI_MAT = XYZtoRGB(DISPLAY_PRI); \n" \
 "float DISPGAMMA = 2.4f; \n" \
 "float L_W = 1.0f; \n" \
 "float L_B = 0.0f; \n" \
 "bool legalRange = false; \n" \
-"float3 rgbPre = mult_f3_f33( oces, AP0_2_AP1_MAT_B); \n" \
+"float3 rgbPre = mult_f3_f33( oces, AP0_2_AP1_MAT); \n" \
 "float3 rgbPost; \n" \
 "rgbPost.x = segmented_spline_c9_fwd( rgbPre.x, ODT_48nits()); \n" \
 "rgbPost.y = segmented_spline_c9_fwd( rgbPre.y, ODT_48nits()); \n" \
 "rgbPost.z = segmented_spline_c9_fwd( rgbPre.z, ODT_48nits()); \n" \
 "float3 linearCV; \n" \
-"linearCV.x = Y_2_linCV( rgbPost.x, 48.0f, pow(10.0f, log10(0.02f))); \n" \
-"linearCV.y = Y_2_linCV( rgbPost.y, 48.0f, pow(10.0f, log10(0.02f))); \n" \
-"linearCV.z = Y_2_linCV( rgbPost.z, 48.0f, pow(10.0f, log10(0.02f))); \n" \
+"linearCV.x = Y_2_linCV( rgbPost.x, 48.0f, exp10(log10(0.02f))); \n" \
+"linearCV.y = Y_2_linCV( rgbPost.y, 48.0f, exp10(log10(0.02f))); \n" \
+"linearCV.z = Y_2_linCV( rgbPost.z, 48.0f, exp10(log10(0.02f))); \n" \
 "linearCV = darkSurround_to_dimSurround( linearCV); \n" \
-"linearCV = mult_f3_f33( linearCV, calc_sat_adjust_matrix( ODT_SAT_FACTOR, make_float3(RGBtoXYZ( AP1).c0.y, RGBtoXYZ( AP1).c1.y, RGBtoXYZ( AP1).c2.y))); \n" \
+"linearCV = mult_f3_f33( linearCV, calc_sat_adjust_matrix( ODT_SAT_FACTOR,  \n" \
+"make_float3(RGBtoXYZ( AP1).c0.y, RGBtoXYZ( AP1).c1.y, RGBtoXYZ( AP1).c2.y))); \n" \
 "float3 XYZ = mult_f3_f33( linearCV, RGBtoXYZ( AP1)); \n" \
 "XYZ = mult_f3_f33( XYZ, calculate_cat_matrix( AP0.white, REC709_PRI.white)); \n" \
 "linearCV = mult_f3_f33( XYZ, XYZ_2_DISPLAY_PRI_MAT); \n" \
@@ -2663,8 +2573,7 @@ const char* kernelSource =  \
 "if(legalRange) outputCV = fullRange_to_smpteRange_f3( outputCV); \n" \
 "return outputCV; \n" \
 "} \n" \
-"float3 ODT_Rec709_D60sim_100nits_dim( float3 oces) \n" \
-"{ \n" \
+"float3 ODT_Rec709_D60sim_100nits_dim( float3 oces) { \n" \
 "const Chromaticities DISPLAY_PRI = REC709_PRI; \n" \
 "const mat3 XYZ_2_DISPLAY_PRI_MAT = XYZtoRGB( DISPLAY_PRI); \n" \
 "const float DISPGAMMA = 2.4f; \n" \
@@ -2672,20 +2581,21 @@ const char* kernelSource =  \
 "const float L_B = 0.0f; \n" \
 "const float SCALE = 0.955f; \n" \
 "bool legalRange = false; \n" \
-"float3 rgbPre = mult_f3_f33( oces, AP0_2_AP1_MAT_B); \n" \
+"float3 rgbPre = mult_f3_f33( oces, AP0_2_AP1_MAT); \n" \
 "float3 rgbPost; \n" \
 "rgbPost.x = segmented_spline_c9_fwd( rgbPre.x, ODT_48nits()); \n" \
 "rgbPost.y = segmented_spline_c9_fwd( rgbPre.y, ODT_48nits()); \n" \
 "rgbPost.z = segmented_spline_c9_fwd( rgbPre.z, ODT_48nits()); \n" \
 "float3 linearCV; \n" \
-"linearCV.x = Y_2_linCV( rgbPost.x, 48.0f, pow(10.0f, log10(0.02f))); \n" \
-"linearCV.y = Y_2_linCV( rgbPost.y, 48.0f, pow(10.0f, log10(0.02f))); \n" \
-"linearCV.z = Y_2_linCV( rgbPost.z, 48.0f, pow(10.0f, log10(0.02f))); \n" \
+"linearCV.x = Y_2_linCV( rgbPost.x, 48.0f, exp10(log10(0.02f))); \n" \
+"linearCV.y = Y_2_linCV( rgbPost.y, 48.0f, exp10(log10(0.02f))); \n" \
+"linearCV.z = Y_2_linCV( rgbPost.z, 48.0f, exp10(log10(0.02f))); \n" \
 "linearCV.x = fmin( linearCV.x, 1.0f) * SCALE; \n" \
 "linearCV.y = fmin( linearCV.y, 1.0f) * SCALE; \n" \
 "linearCV.z = fmin( linearCV.z, 1.0f) * SCALE; \n" \
 "linearCV = darkSurround_to_dimSurround( linearCV); \n" \
-"linearCV = mult_f3_f33( linearCV, calc_sat_adjust_matrix( ODT_SAT_FACTOR, make_float3(RGBtoXYZ( AP1).c0.y, RGBtoXYZ( AP1).c1.y, RGBtoXYZ( AP1).c2.y))); \n" \
+"linearCV = mult_f3_f33( linearCV, calc_sat_adjust_matrix( ODT_SAT_FACTOR,  \n" \
+"make_float3(RGBtoXYZ( AP1).c0.y, RGBtoXYZ( AP1).c1.y, RGBtoXYZ( AP1).c2.y))); \n" \
 "float3 XYZ = mult_f3_f33( linearCV, RGBtoXYZ( AP1)); \n" \
 "linearCV = mult_f3_f33( XYZ, XYZ_2_DISPLAY_PRI_MAT); \n" \
 "linearCV = clamp_f3( linearCV, 0.0f, 1.0f); \n" \
@@ -2698,25 +2608,25 @@ const char* kernelSource =  \
 "} \n" \
 "return outputCV; \n" \
 "} \n" \
-"float3 ODT_Rec2020_100nits_dim( float3 oces) \n" \
-"{ \n" \
+"float3 ODT_Rec2020_100nits_dim( float3 oces) { \n" \
 "Chromaticities DISPLAY_PRI = REC2020_PRI; \n" \
 "mat3 XYZ_2_DISPLAY_PRI_MAT = XYZtoRGB(DISPLAY_PRI); \n" \
 "float DISPGAMMA = 2.4f; \n" \
 "float L_W = 1.0f; \n" \
 "float L_B = 0.0f; \n" \
 "bool legalRange = false; \n" \
-"float3 rgbPre = mult_f3_f33( oces, AP0_2_AP1_MAT_B); \n" \
+"float3 rgbPre = mult_f3_f33( oces, AP0_2_AP1_MAT); \n" \
 "float3 rgbPost; \n" \
 "rgbPost.x = segmented_spline_c9_fwd( rgbPre.x, ODT_48nits()); \n" \
 "rgbPost.y = segmented_spline_c9_fwd( rgbPre.y, ODT_48nits()); \n" \
 "rgbPost.z = segmented_spline_c9_fwd( rgbPre.z, ODT_48nits()); \n" \
 "float3 linearCV; \n" \
-"linearCV.x = Y_2_linCV( rgbPost.x, 48.0f, pow(10.0f, log10(0.02f))); \n" \
-"linearCV.y = Y_2_linCV( rgbPost.y, 48.0f, pow(10.0f, log10(0.02f))); \n" \
-"linearCV.z = Y_2_linCV( rgbPost.z, 48.0f, pow(10.0f, log10(0.02f))); \n" \
+"linearCV.x = Y_2_linCV( rgbPost.x, 48.0f, exp10(log10(0.02f))); \n" \
+"linearCV.y = Y_2_linCV( rgbPost.y, 48.0f, exp10(log10(0.02f))); \n" \
+"linearCV.z = Y_2_linCV( rgbPost.z, 48.0f, exp10(log10(0.02f))); \n" \
 "linearCV = darkSurround_to_dimSurround( linearCV); \n" \
-"linearCV = mult_f3_f33( linearCV, calc_sat_adjust_matrix( ODT_SAT_FACTOR, make_float3(RGBtoXYZ( AP1).c0.y, RGBtoXYZ( AP1).c1.y, RGBtoXYZ( AP1).c2.y))); \n" \
+"linearCV = mult_f3_f33( linearCV, calc_sat_adjust_matrix( ODT_SAT_FACTOR,  \n" \
+"make_float3(RGBtoXYZ( AP1).c0.y, RGBtoXYZ( AP1).c1.y, RGBtoXYZ( AP1).c2.y))); \n" \
 "float3 XYZ = mult_f3_f33( linearCV, RGBtoXYZ( AP1)); \n" \
 "XYZ = mult_f3_f33( XYZ, calculate_cat_matrix( AP0.white, REC709_PRI.white)); \n" \
 "linearCV = mult_f3_f33( XYZ, XYZ_2_DISPLAY_PRI_MAT); \n" \
@@ -2730,11 +2640,10 @@ const char* kernelSource =  \
 "} \n" \
 "return outputCV; \n" \
 "} \n" \
-"float3 ODT_Rec2020_ST2084_1000nits( float3 oces) \n" \
-"{ \n" \
+"float3 ODT_Rec2020_ST2084_1000nits( float3 oces) { \n" \
 "Chromaticities DISPLAY_PRI = REC2020_PRI; \n" \
 "mat3 XYZ_2_DISPLAY_PRI_MAT = XYZtoRGB(DISPLAY_PRI); \n" \
-"float3 rgbPre = mult_f3_f33( oces, AP0_2_AP1_MAT_B); \n" \
+"float3 rgbPre = mult_f3_f33( oces, AP0_2_AP1_MAT); \n" \
 "float3 rgbPost; \n" \
 "rgbPost.x = segmented_spline_c9_fwd( rgbPre.x, ODT_1000nits()); \n" \
 "rgbPost.y = segmented_spline_c9_fwd( rgbPre.y, ODT_1000nits()); \n" \
@@ -2747,8 +2656,7 @@ const char* kernelSource =  \
 "float3 outputCV = Y_2_ST2084_f3( rgb); \n" \
 "return outputCV; \n" \
 "} \n" \
-"float3 ODT_Rec2020_Rec709limited_100nits_dim( float3 oces) \n" \
-"{ \n" \
+"float3 ODT_Rec2020_Rec709limited_100nits_dim( float3 oces) { \n" \
 "const Chromaticities DISPLAY_PRI = REC2020_PRI; \n" \
 "const mat3 XYZ_2_DISPLAY_PRI_MAT = XYZtoRGB(DISPLAY_PRI); \n" \
 "const Chromaticities LIMITING_PRI = REC709_PRI; \n" \
@@ -2756,17 +2664,18 @@ const char* kernelSource =  \
 "const float L_W = 1.0f; \n" \
 "const float L_B = 0.0f; \n" \
 "bool legalRange = false; \n" \
-"float3 rgbPre = mult_f3_f33( oces, AP0_2_AP1_MAT_B); \n" \
+"float3 rgbPre = mult_f3_f33( oces, AP0_2_AP1_MAT); \n" \
 "float3 rgbPost; \n" \
 "rgbPost.x = segmented_spline_c9_fwd( rgbPre.x, ODT_48nits()); \n" \
 "rgbPost.y = segmented_spline_c9_fwd( rgbPre.y, ODT_48nits()); \n" \
 "rgbPost.z = segmented_spline_c9_fwd( rgbPre.z, ODT_48nits()); \n" \
 "float3 linearCV; \n" \
-"linearCV.x = Y_2_linCV( rgbPost.x, 48.0f, pow(10.0f, log10(0.02f))); \n" \
-"linearCV.y = Y_2_linCV( rgbPost.y, 48.0f, pow(10.0f, log10(0.02f))); \n" \
-"linearCV.z = Y_2_linCV( rgbPost.z, 48.0f, pow(10.0f, log10(0.02f))); \n" \
+"linearCV.x = Y_2_linCV( rgbPost.x, 48.0f, exp10(log10(0.02f))); \n" \
+"linearCV.y = Y_2_linCV( rgbPost.y, 48.0f, exp10(log10(0.02f))); \n" \
+"linearCV.z = Y_2_linCV( rgbPost.z, 48.0f, exp10(log10(0.02f))); \n" \
 "linearCV = darkSurround_to_dimSurround( linearCV); \n" \
-"linearCV = mult_f3_f33( linearCV, calc_sat_adjust_matrix( ODT_SAT_FACTOR, make_float3(RGBtoXYZ( AP1).c0.y, RGBtoXYZ( AP1).c1.y, RGBtoXYZ( AP1).c2.y))); \n" \
+"linearCV = mult_f3_f33( linearCV, calc_sat_adjust_matrix( ODT_SAT_FACTOR,  \n" \
+"make_float3(RGBtoXYZ( AP1).c0.y, RGBtoXYZ( AP1).c1.y, RGBtoXYZ( AP1).c2.y))); \n" \
 "float3 XYZ = mult_f3_f33( linearCV, RGBtoXYZ( AP1)); \n" \
 "XYZ = mult_f3_f33( XYZ, calculate_cat_matrix( AP0.white, REC709_PRI.white)); \n" \
 "XYZ = limit_to_primaries( XYZ, LIMITING_PRI); \n" \
@@ -2781,8 +2690,7 @@ const char* kernelSource =  \
 "} \n" \
 "return outputCV; \n" \
 "} \n" \
-"float3 ODT_Rec2020_P3D65limited_100nits_dim( float3 oces) \n" \
-"{ \n" \
+"float3 ODT_Rec2020_P3D65limited_100nits_dim( float3 oces) { \n" \
 "const Chromaticities DISPLAY_PRI = REC2020_PRI; \n" \
 "const mat3 XYZ_2_DISPLAY_PRI_MAT = XYZtoRGB(DISPLAY_PRI); \n" \
 "const Chromaticities LIMITING_PRI = P3D65_PRI; \n" \
@@ -2790,17 +2698,18 @@ const char* kernelSource =  \
 "const float L_W = 1.0f; \n" \
 "const float L_B = 0.0f; \n" \
 "bool legalRange = false; \n" \
-"float3 rgbPre = mult_f3_f33( oces, AP0_2_AP1_MAT_B); \n" \
+"float3 rgbPre = mult_f3_f33( oces, AP0_2_AP1_MAT); \n" \
 "float3 rgbPost; \n" \
 "rgbPost.x = segmented_spline_c9_fwd( rgbPre.x, ODT_48nits()); \n" \
 "rgbPost.y = segmented_spline_c9_fwd( rgbPre.y, ODT_48nits()); \n" \
 "rgbPost.z = segmented_spline_c9_fwd( rgbPre.z, ODT_48nits()); \n" \
 "float3 linearCV; \n" \
-"linearCV.x = Y_2_linCV( rgbPost.x, 48.0f, pow(10.0f, log10(0.02f))); \n" \
-"linearCV.y = Y_2_linCV( rgbPost.y, 48.0f, pow(10.0f, log10(0.02f))); \n" \
-"linearCV.z = Y_2_linCV( rgbPost.z, 48.0f, pow(10.0f, log10(0.02f))); \n" \
+"linearCV.x = Y_2_linCV( rgbPost.x, 48.0f, exp10(log10(0.02f))); \n" \
+"linearCV.y = Y_2_linCV( rgbPost.y, 48.0f, exp10(log10(0.02f))); \n" \
+"linearCV.z = Y_2_linCV( rgbPost.z, 48.0f, exp10(log10(0.02f))); \n" \
 "linearCV = darkSurround_to_dimSurround( linearCV); \n" \
-"linearCV = mult_f3_f33( linearCV, calc_sat_adjust_matrix( ODT_SAT_FACTOR, make_float3(RGBtoXYZ( AP1).c0.y, RGBtoXYZ( AP1).c1.y, RGBtoXYZ( AP1).c2.y))); \n" \
+"linearCV = mult_f3_f33( linearCV, calc_sat_adjust_matrix( ODT_SAT_FACTOR,  \n" \
+"make_float3(RGBtoXYZ( AP1).c0.y, RGBtoXYZ( AP1).c1.y, RGBtoXYZ( AP1).c2.y))); \n" \
 "float3 XYZ = mult_f3_f33( linearCV, RGBtoXYZ( AP1)); \n" \
 "XYZ = mult_f3_f33( XYZ, calculate_cat_matrix( AP0.white, REC709_PRI.white)); \n" \
 "XYZ = limit_to_primaries( XYZ, LIMITING_PRI); \n" \
@@ -2815,27 +2724,27 @@ const char* kernelSource =  \
 "} \n" \
 "return outputCV; \n" \
 "} \n" \
-"float3 ODT_sRGB_D60sim_100nits_dim( float3 oces) \n" \
-"{ \n" \
+"float3 ODT_sRGB_D60sim_100nits_dim( float3 oces) { \n" \
 "const Chromaticities DISPLAY_PRI = REC709_PRI; \n" \
 "const mat3 XYZ_2_DISPLAY_PRI_MAT = XYZtoRGB(DISPLAY_PRI); \n" \
 "const float DISPGAMMA = 2.4f; \n" \
 "const float OFFSET = 0.055f; \n" \
 "const float SCALE = 0.955f; \n" \
-"float3 rgbPre = mult_f3_f33( oces, AP0_2_AP1_MAT_B); \n" \
+"float3 rgbPre = mult_f3_f33( oces, AP0_2_AP1_MAT); \n" \
 "float3 rgbPost; \n" \
 "rgbPost.x = segmented_spline_c9_fwd( rgbPre.x, ODT_48nits()); \n" \
 "rgbPost.y = segmented_spline_c9_fwd( rgbPre.y, ODT_48nits()); \n" \
 "rgbPost.z = segmented_spline_c9_fwd( rgbPre.z, ODT_48nits()); \n" \
 "float3 linearCV; \n" \
-"linearCV.x = Y_2_linCV( rgbPost.x, 48.0f, pow(10.0f, log10(0.02f))); \n" \
-"linearCV.y = Y_2_linCV( rgbPost.y, 48.0f, pow(10.0f, log10(0.02f))); \n" \
-"linearCV.z = Y_2_linCV( rgbPost.z, 48.0f, pow(10.0f, log10(0.02f))); \n" \
+"linearCV.x = Y_2_linCV( rgbPost.x, 48.0f, exp10(log10(0.02f))); \n" \
+"linearCV.y = Y_2_linCV( rgbPost.y, 48.0f, exp10(log10(0.02f))); \n" \
+"linearCV.z = Y_2_linCV( rgbPost.z, 48.0f, exp10(log10(0.02f))); \n" \
 "linearCV.x = fmin( linearCV.x, 1.0f) * SCALE; \n" \
 "linearCV.y = fmin( linearCV.y, 1.0f) * SCALE; \n" \
 "linearCV.z = fmin( linearCV.z, 1.0f) * SCALE; \n" \
 "linearCV = darkSurround_to_dimSurround( linearCV); \n" \
-"linearCV = mult_f3_f33( linearCV, calc_sat_adjust_matrix( ODT_SAT_FACTOR, make_float3(RGBtoXYZ( AP1).c0.y, RGBtoXYZ( AP1).c1.y, RGBtoXYZ( AP1).c2.y))); \n" \
+"linearCV = mult_f3_f33( linearCV, calc_sat_adjust_matrix( ODT_SAT_FACTOR,  \n" \
+"make_float3(RGBtoXYZ( AP1).c0.y, RGBtoXYZ( AP1).c1.y, RGBtoXYZ( AP1).c2.y))); \n" \
 "float3 XYZ = mult_f3_f33( linearCV, RGBtoXYZ( AP1)); \n" \
 "linearCV = mult_f3_f33( XYZ, XYZ_2_DISPLAY_PRI_MAT); \n" \
 "linearCV = clamp_f3( linearCV, 0.0f, 1.0f); \n" \
@@ -2845,23 +2754,23 @@ const char* kernelSource =  \
 "outputCV.z = moncurve_r( linearCV.z, DISPGAMMA, OFFSET); \n" \
 "return outputCV; \n" \
 "} \n" \
-"float3 ODT_sRGB_100nits_dim( float3 oces) \n" \
-"{ \n" \
+"float3 ODT_sRGB_100nits_dim( float3 oces) { \n" \
 "const Chromaticities DISPLAY_PRI = REC709_PRI; \n" \
 "const mat3 XYZ_2_DISPLAY_PRI_MAT = XYZtoRGB(DISPLAY_PRI); \n" \
 "const float DISPGAMMA = 2.4f; \n" \
 "const float OFFSET = 0.055f; \n" \
-"float3 rgbPre = mult_f3_f33( oces, AP0_2_AP1_MAT_B); \n" \
+"float3 rgbPre = mult_f3_f33( oces, AP0_2_AP1_MAT); \n" \
 "float3 rgbPost; \n" \
 "rgbPost.x = segmented_spline_c9_fwd( rgbPre.x, ODT_48nits()); \n" \
 "rgbPost.y = segmented_spline_c9_fwd( rgbPre.y, ODT_48nits()); \n" \
 "rgbPost.z = segmented_spline_c9_fwd( rgbPre.z, ODT_48nits()); \n" \
 "float3 linearCV; \n" \
-"linearCV.x = Y_2_linCV( rgbPost.x, 48.0f, pow(10.0f, log10(0.02f))); \n" \
-"linearCV.y = Y_2_linCV( rgbPost.y, 48.0f, pow(10.0f, log10(0.02f))); \n" \
-"linearCV.z = Y_2_linCV( rgbPost.z, 48.0f, pow(10.0f, log10(0.02f))); \n" \
+"linearCV.x = Y_2_linCV( rgbPost.x, 48.0f, exp10(log10(0.02f))); \n" \
+"linearCV.y = Y_2_linCV( rgbPost.y, 48.0f, exp10(log10(0.02f))); \n" \
+"linearCV.z = Y_2_linCV( rgbPost.z, 48.0f, exp10(log10(0.02f))); \n" \
 "linearCV = darkSurround_to_dimSurround( linearCV); \n" \
-"linearCV = mult_f3_f33( linearCV, calc_sat_adjust_matrix( ODT_SAT_FACTOR, make_float3(RGBtoXYZ( AP1).c0.y, RGBtoXYZ( AP1).c1.y, RGBtoXYZ( AP1).c2.y))); \n" \
+"linearCV = mult_f3_f33( linearCV, calc_sat_adjust_matrix( ODT_SAT_FACTOR,  \n" \
+"make_float3(RGBtoXYZ( AP1).c0.y, RGBtoXYZ( AP1).c1.y, RGBtoXYZ( AP1).c2.y))); \n" \
 "float3 XYZ = mult_f3_f33( linearCV, RGBtoXYZ( AP1)); \n" \
 "XYZ = mult_f3_f33( XYZ, calculate_cat_matrix( AP0.white, REC709_PRI.white)); \n" \
 "linearCV = mult_f3_f33( XYZ, XYZ_2_DISPLAY_PRI_MAT); \n" \
@@ -2872,23 +2781,22 @@ const char* kernelSource =  \
 "outputCV.z = moncurve_r( linearCV.z, DISPGAMMA, OFFSET); \n" \
 "return outputCV; \n" \
 "} \n" \
-"float3 ODT_P3DCI_48nits( float3 oces) \n" \
-"{ \n" \
+"float3 ODT_P3DCI_48nits( float3 oces) { \n" \
 "const Chromaticities DISPLAY_PRI = P3DCI_PRI; \n" \
 "const mat3 XYZ_2_DISPLAY_PRI_MAT = XYZtoRGB( DISPLAY_PRI); \n" \
 "const float DISPGAMMA = 2.6f; \n" \
 "const float NEW_WHT = 0.918f; \n" \
 "const float ROLL_WIDTH = 0.5f; \n" \
 "const float SCALE = 0.96f; \n" \
-"float3 rgbPre = mult_f3_f33( oces, AP0_2_AP1_MAT_B); \n" \
+"float3 rgbPre = mult_f3_f33( oces, AP0_2_AP1_MAT); \n" \
 "float3 rgbPost; \n" \
 "rgbPost.x = segmented_spline_c9_fwd( rgbPre.x, ODT_48nits()); \n" \
 "rgbPost.y = segmented_spline_c9_fwd( rgbPre.y, ODT_48nits()); \n" \
 "rgbPost.z = segmented_spline_c9_fwd( rgbPre.z, ODT_48nits()); \n" \
 "float3 linearCV; \n" \
-"linearCV.x = Y_2_linCV( rgbPost.x, 48.0f, pow(10.0f, log10(0.02f))); \n" \
-"linearCV.y = Y_2_linCV( rgbPost.y, 48.0f, pow(10.0f, log10(0.02f))); \n" \
-"linearCV.z = Y_2_linCV( rgbPost.z, 48.0f, pow(10.0f, log10(0.02f))); \n" \
+"linearCV.x = Y_2_linCV( rgbPost.x, 48.0f, exp10(log10(0.02f))); \n" \
+"linearCV.y = Y_2_linCV( rgbPost.y, 48.0f, exp10(log10(0.02f))); \n" \
+"linearCV.z = Y_2_linCV( rgbPost.z, 48.0f, exp10(log10(0.02f))); \n" \
 "linearCV.x = roll_white_fwd( linearCV.x, NEW_WHT, ROLL_WIDTH); \n" \
 "linearCV.y = roll_white_fwd( linearCV.y, NEW_WHT, ROLL_WIDTH); \n" \
 "linearCV.z = roll_white_fwd( linearCV.z, NEW_WHT, ROLL_WIDTH); \n" \
@@ -2901,23 +2809,22 @@ const char* kernelSource =  \
 "float3 outputCV = pow_f3( linearCV, 1.0f / DISPGAMMA); \n" \
 "return outputCV; \n" \
 "} \n" \
-"float3 ODT_P3DCI_D60sim_48nits( float3 oces) \n" \
-"{ \n" \
+"float3 ODT_P3DCI_D60sim_48nits( float3 oces) { \n" \
 "const Chromaticities DISPLAY_PRI = P3DCI_PRI; \n" \
 "const mat3 XYZ_2_DISPLAY_PRI_MAT = XYZtoRGB( DISPLAY_PRI); \n" \
 "const float DISPGAMMA = 2.6f; \n" \
 "const float NEW_WHT = 0.918; \n" \
 "const float ROLL_WIDTH = 0.5; \n" \
 "const float SCALE = 0.96; \n" \
-"float3 rgbPre = mult_f3_f33( oces, AP0_2_AP1_MAT_B); \n" \
+"float3 rgbPre = mult_f3_f33( oces, AP0_2_AP1_MAT); \n" \
 "float3 rgbPost; \n" \
 "rgbPost.x = segmented_spline_c9_fwd( rgbPre.x, ODT_48nits()); \n" \
 "rgbPost.y = segmented_spline_c9_fwd( rgbPre.y, ODT_48nits()); \n" \
 "rgbPost.z = segmented_spline_c9_fwd( rgbPre.z, ODT_48nits()); \n" \
 "float3 linearCV; \n" \
-"linearCV.x = Y_2_linCV( rgbPost.x, 48.0f, pow(10.0f, log10(0.02f))); \n" \
-"linearCV.y = Y_2_linCV( rgbPost.y, 48.0f, pow(10.0f, log10(0.02f))); \n" \
-"linearCV.z = Y_2_linCV( rgbPost.z, 48.0f, pow(10.0f, log10(0.02f))); \n" \
+"linearCV.x = Y_2_linCV( rgbPost.x, 48.0f, exp10(log10(0.02f))); \n" \
+"linearCV.y = Y_2_linCV( rgbPost.y, 48.0f, exp10(log10(0.02f))); \n" \
+"linearCV.z = Y_2_linCV( rgbPost.z, 48.0f, exp10(log10(0.02f))); \n" \
 "linearCV.x = roll_white_fwd( linearCV.x, NEW_WHT, ROLL_WIDTH); \n" \
 "linearCV.y = roll_white_fwd( linearCV.y, NEW_WHT, ROLL_WIDTH); \n" \
 "linearCV.z = roll_white_fwd( linearCV.z, NEW_WHT, ROLL_WIDTH); \n" \
@@ -2931,23 +2838,22 @@ const char* kernelSource =  \
 "float3 outputCV = pow_f3( linearCV, 1.0f / DISPGAMMA); \n" \
 "return outputCV; \n" \
 "} \n" \
-"float3 ODT_P3DCI_D65sim_48nits( float3 oces) \n" \
-"{ \n" \
+"float3 ODT_P3DCI_D65sim_48nits( float3 oces) { \n" \
 "const Chromaticities DISPLAY_PRI = P3DCI_PRI; \n" \
 "const mat3 XYZ_2_DISPLAY_PRI_MAT = XYZtoRGB( DISPLAY_PRI); \n" \
 "const float DISPGAMMA = 2.6f; \n" \
 "const float NEW_WHT = 0.908f; \n" \
 "const float ROLL_WIDTH = 0.5f; \n" \
 "const float SCALE = 0.9575f; \n" \
-"float3 rgbPre = mult_f3_f33( oces, AP0_2_AP1_MAT_B); \n" \
+"float3 rgbPre = mult_f3_f33( oces, AP0_2_AP1_MAT); \n" \
 "float3 rgbPost; \n" \
 "rgbPost.x = segmented_spline_c9_fwd( rgbPre.x, ODT_48nits()); \n" \
 "rgbPost.y = segmented_spline_c9_fwd( rgbPre.y, ODT_48nits()); \n" \
 "rgbPost.z = segmented_spline_c9_fwd( rgbPre.z, ODT_48nits()); \n" \
 "float3 linearCV; \n" \
-"linearCV.x = Y_2_linCV( rgbPost.x, 48.0f, pow(10.0f, log10(0.02f))); \n" \
-"linearCV.y = Y_2_linCV( rgbPost.y, 48.0f, pow(10.0f, log10(0.02f))); \n" \
-"linearCV.z = Y_2_linCV( rgbPost.z, 48.0f, pow(10.0f, log10(0.02f))); \n" \
+"linearCV.x = Y_2_linCV( rgbPost.x, 48.0f, exp10(log10(0.02f))); \n" \
+"linearCV.y = Y_2_linCV( rgbPost.y, 48.0f, exp10(log10(0.02f))); \n" \
+"linearCV.z = Y_2_linCV( rgbPost.z, 48.0f, exp10(log10(0.02f))); \n" \
 "linearCV.x = roll_white_fwd( linearCV.x, NEW_WHT, ROLL_WIDTH); \n" \
 "linearCV.y = roll_white_fwd( linearCV.y, NEW_WHT, ROLL_WIDTH); \n" \
 "linearCV.z = roll_white_fwd( linearCV.z, NEW_WHT, ROLL_WIDTH); \n" \
@@ -2961,61 +2867,58 @@ const char* kernelSource =  \
 "float3 outputCV = pow_f3( linearCV, 1.0f / DISPGAMMA); \n" \
 "return outputCV; \n" \
 "} \n" \
-"float3 ODT_P3D60_48nits( float3 oces) \n" \
-"{ \n" \
+"float3 ODT_P3D60_48nits( float3 oces) { \n" \
 "const Chromaticities DISPLAY_PRI = P3D60_PRI; \n" \
 "const mat3 XYZ_2_DISPLAY_PRI_MAT = XYZtoRGB( DISPLAY_PRI); \n" \
 "const float DISPGAMMA = 2.6f; \n" \
-"float3 rgbPre = mult_f3_f33( oces, AP0_2_AP1_MAT_B); \n" \
+"float3 rgbPre = mult_f3_f33( oces, AP0_2_AP1_MAT); \n" \
 "float3 rgbPost; \n" \
 "rgbPost.x = segmented_spline_c9_fwd( rgbPre.x, ODT_48nits()); \n" \
 "rgbPost.y = segmented_spline_c9_fwd( rgbPre.y, ODT_48nits()); \n" \
 "rgbPost.z = segmented_spline_c9_fwd( rgbPre.z, ODT_48nits()); \n" \
 "float3 linearCV; \n" \
-"linearCV.x = Y_2_linCV( rgbPost.x, 48.0f, pow(10.0f, log10(0.02f))); \n" \
-"linearCV.y = Y_2_linCV( rgbPost.y, 48.0f, pow(10.0f, log10(0.02f))); \n" \
-"linearCV.z = Y_2_linCV( rgbPost.z, 48.0f, pow(10.0f, log10(0.02f))); \n" \
+"linearCV.x = Y_2_linCV( rgbPost.x, 48.0f, exp10(log10(0.02f))); \n" \
+"linearCV.y = Y_2_linCV( rgbPost.y, 48.0f, exp10(log10(0.02f))); \n" \
+"linearCV.z = Y_2_linCV( rgbPost.z, 48.0f, exp10(log10(0.02f))); \n" \
 "float3 XYZ = mult_f3_f33( linearCV, RGBtoXYZ( AP1)); \n" \
 "linearCV = mult_f3_f33( XYZ, XYZ_2_DISPLAY_PRI_MAT); \n" \
 "linearCV = clamp_f3( linearCV, 0.0f, 1.0f); \n" \
 "float3 outputCV = pow_f3( linearCV, 1.0f / DISPGAMMA); \n" \
 "return outputCV; \n" \
 "} \n" \
-"float3 ODT_P3D65_48nits( float3 oces) \n" \
-"{ \n" \
+"float3 ODT_P3D65_48nits( float3 oces) { \n" \
 "const Chromaticities DISPLAY_PRI = P3D65_PRI; \n" \
 "const mat3 XYZ_2_DISPLAY_PRI_MAT = XYZtoRGB( DISPLAY_PRI); \n" \
 "const float DISPGAMMA = 2.6f; \n" \
-"float3 rgbPre = mult_f3_f33( oces, AP0_2_AP1_MAT_B); \n" \
+"float3 rgbPre = mult_f3_f33( oces, AP0_2_AP1_MAT); \n" \
 "float3 rgbPost; \n" \
 "rgbPost.x = segmented_spline_c9_fwd( rgbPre.x, ODT_48nits()); \n" \
 "rgbPost.y = segmented_spline_c9_fwd( rgbPre.y, ODT_48nits()); \n" \
 "rgbPost.z = segmented_spline_c9_fwd( rgbPre.z, ODT_48nits()); \n" \
 "float3 linearCV; \n" \
-"linearCV.x = Y_2_linCV( rgbPost.x, 48.0f, pow(10.0f, log10(0.02f))); \n" \
-"linearCV.y = Y_2_linCV( rgbPost.y, 48.0f, pow(10.0f, log10(0.02f))); \n" \
-"linearCV.z = Y_2_linCV( rgbPost.z, 48.0f, pow(10.0f, log10(0.02f))); \n" \
+"linearCV.x = Y_2_linCV( rgbPost.x, 48.0f, exp10(log10(0.02f))); \n" \
+"linearCV.y = Y_2_linCV( rgbPost.y, 48.0f, exp10(log10(0.02f))); \n" \
+"linearCV.z = Y_2_linCV( rgbPost.z, 48.0f, exp10(log10(0.02f))); \n" \
 "float3 XYZ = mult_f3_f33( linearCV, RGBtoXYZ( AP1)); \n" \
 "linearCV = mult_f3_f33( XYZ, XYZ_2_DISPLAY_PRI_MAT); \n" \
 "linearCV = clamp_f3( linearCV, 0.0f, 1.0f); \n" \
 "float3 outputCV = pow_f3( linearCV, 1.0f / DISPGAMMA); \n" \
 "return outputCV; \n" \
 "} \n" \
-"float3 ODT_P3D65_D60sim_48nits( float3 oces) \n" \
-"{ \n" \
+"float3 ODT_P3D65_D60sim_48nits( float3 oces) { \n" \
 "const Chromaticities DISPLAY_PRI = P3D65_PRI; \n" \
 "const mat3 XYZ_2_DISPLAY_PRI_MAT = XYZtoRGB(DISPLAY_PRI); \n" \
 "const float DISPGAMMA = 2.6f; \n" \
 "const float SCALE = 0.964f; \n" \
-"float3 rgbPre = mult_f3_f33( oces, AP0_2_AP1_MAT_B); \n" \
+"float3 rgbPre = mult_f3_f33( oces, AP0_2_AP1_MAT); \n" \
 "float3 rgbPost; \n" \
 "rgbPost.x = segmented_spline_c9_fwd( rgbPre.x, ODT_48nits()); \n" \
 "rgbPost.y = segmented_spline_c9_fwd( rgbPre.y, ODT_48nits()); \n" \
 "rgbPost.z = segmented_spline_c9_fwd( rgbPre.z, ODT_48nits()); \n" \
 "float3 linearCV; \n" \
-"linearCV.x = Y_2_linCV( rgbPost.x, 48.0f, pow(10.0f, log10(0.02f))); \n" \
-"linearCV.y = Y_2_linCV( rgbPost.y, 48.0f, pow(10.0f, log10(0.02f))); \n" \
-"linearCV.z = Y_2_linCV( rgbPost.z, 48.0f, pow(10.0f, log10(0.02f))); \n" \
+"linearCV.x = Y_2_linCV( rgbPost.x, 48.0f, exp10(log10(0.02f))); \n" \
+"linearCV.y = Y_2_linCV( rgbPost.y, 48.0f, exp10(log10(0.02f))); \n" \
+"linearCV.z = Y_2_linCV( rgbPost.z, 48.0f, exp10(log10(0.02f))); \n" \
 "linearCV.x = fmin( linearCV.x, 1.0f) * SCALE; \n" \
 "linearCV.y = fmin( linearCV.y, 1.0f) * SCALE; \n" \
 "linearCV.z = fmin( linearCV.z, 1.0f) * SCALE; \n" \
@@ -3025,21 +2928,20 @@ const char* kernelSource =  \
 "float3 outputCV = pow_f3( linearCV, 1.0f / DISPGAMMA); \n" \
 "return outputCV; \n" \
 "} \n" \
-"float3 ODT_P3D65_Rec709limited_48nits( float3 oces) \n" \
-"{ \n" \
+"float3 ODT_P3D65_Rec709limited_48nits( float3 oces) { \n" \
 "const Chromaticities DISPLAY_PRI = P3D65_PRI; \n" \
 "const mat3 XYZ_2_DISPLAY_PRI_MAT = XYZtoRGB(DISPLAY_PRI); \n" \
 "const Chromaticities LIMITING_PRI = REC709_PRI; \n" \
 "const float DISPGAMMA = 2.6f; \n" \
-"float3 rgbPre = mult_f3_f33( oces, AP0_2_AP1_MAT_B); \n" \
+"float3 rgbPre = mult_f3_f33( oces, AP0_2_AP1_MAT); \n" \
 "float3 rgbPost; \n" \
 "rgbPost.x = segmented_spline_c9_fwd( rgbPre.x, ODT_48nits()); \n" \
 "rgbPost.y = segmented_spline_c9_fwd( rgbPre.y, ODT_48nits()); \n" \
 "rgbPost.z = segmented_spline_c9_fwd( rgbPre.z, ODT_48nits()); \n" \
 "float3 linearCV; \n" \
-"linearCV.x = Y_2_linCV( rgbPost.x, 48.0f, pow(10.0f, log10(0.02f))); \n" \
-"linearCV.y = Y_2_linCV( rgbPost.y, 48.0f, pow(10.0f, log10(0.02f))); \n" \
-"linearCV.z = Y_2_linCV( rgbPost.z, 48.0f, pow(10.0f, log10(0.02f))); \n" \
+"linearCV.x = Y_2_linCV( rgbPost.x, 48.0f, exp10(log10(0.02f))); \n" \
+"linearCV.y = Y_2_linCV( rgbPost.y, 48.0f, exp10(log10(0.02f))); \n" \
+"linearCV.z = Y_2_linCV( rgbPost.z, 48.0f, exp10(log10(0.02f))); \n" \
 "float3 XYZ = mult_f3_f33( linearCV, RGBtoXYZ( AP1)); \n" \
 "XYZ = mult_f3_f33( XYZ, calculate_cat_matrix( AP0.white, REC709_PRI.white)); \n" \
 "XYZ = limit_to_primaries( XYZ, LIMITING_PRI); \n" \
@@ -3048,73 +2950,70 @@ const char* kernelSource =  \
 "float3 outputCV = pow_f3( linearCV, 1.0f / DISPGAMMA); \n" \
 "return outputCV; \n" \
 "} \n" \
-"float3 ODT_DCDM( float3 oces) \n" \
-"{ \n" \
-"float3 rgbPre = mult_f3_f33( oces, AP0_2_AP1_MAT_B); \n" \
+"float3 ODT_DCDM( float3 oces) { \n" \
+"float3 rgbPre = mult_f3_f33( oces, AP0_2_AP1_MAT); \n" \
 "float3 rgbPost; \n" \
 "rgbPost.x = segmented_spline_c9_fwd( rgbPre.x, ODT_48nits()); \n" \
 "rgbPost.y = segmented_spline_c9_fwd( rgbPre.y, ODT_48nits()); \n" \
 "rgbPost.z = segmented_spline_c9_fwd( rgbPre.z, ODT_48nits()); \n" \
 "float3 linearCV; \n" \
-"linearCV.x = Y_2_linCV( rgbPost.x, 48.0f, pow(10.0f, log10(0.02f))); \n" \
-"linearCV.y = Y_2_linCV( rgbPost.y, 48.0f, pow(10.0f, log10(0.02f))); \n" \
-"linearCV.z = Y_2_linCV( rgbPost.z, 48.0f, pow(10.0f, log10(0.02f))); \n" \
+"linearCV.x = Y_2_linCV( rgbPost.x, 48.0f, exp10(log10(0.02f))); \n" \
+"linearCV.y = Y_2_linCV( rgbPost.y, 48.0f, exp10(log10(0.02f))); \n" \
+"linearCV.z = Y_2_linCV( rgbPost.z, 48.0f, exp10(log10(0.02f))); \n" \
 "float3 XYZ = mult_f3_f33( linearCV, RGBtoXYZ( AP1)); \n" \
 "XYZ = max_f3_f( XYZ, 0.0f); \n" \
 "float3 outputCV = dcdm_encode( XYZ); \n" \
 "return outputCV; \n" \
 "} \n" \
-"float3 ODT_DCDM_P3D60limited( float3 oces) \n" \
-"{ \n" \
+"float3 ODT_DCDM_P3D60limited( float3 oces) { \n" \
 "const Chromaticities LIMITING_PRI = P3D60_PRI; \n" \
-"float3 rgbPre = mult_f3_f33( oces, AP0_2_AP1_MAT_B); \n" \
+"float3 rgbPre = mult_f3_f33( oces, AP0_2_AP1_MAT); \n" \
 "float3 rgbPost; \n" \
 "rgbPost.x = segmented_spline_c9_fwd( rgbPre.x, ODT_48nits()); \n" \
 "rgbPost.y = segmented_spline_c9_fwd( rgbPre.y, ODT_48nits()); \n" \
 "rgbPost.z = segmented_spline_c9_fwd( rgbPre.z, ODT_48nits()); \n" \
 "float3 linearCV; \n" \
-"linearCV.x = Y_2_linCV( rgbPost.x, 48.0f, pow(10.0f, log10(0.02f))); \n" \
-"linearCV.y = Y_2_linCV( rgbPost.y, 48.0f, pow(10.0f, log10(0.02f))); \n" \
-"linearCV.z = Y_2_linCV( rgbPost.z, 48.0f, pow(10.0f, log10(0.02f))); \n" \
+"linearCV.x = Y_2_linCV( rgbPost.x, 48.0f, exp10(log10(0.02f))); \n" \
+"linearCV.y = Y_2_linCV( rgbPost.y, 48.0f, exp10(log10(0.02f))); \n" \
+"linearCV.z = Y_2_linCV( rgbPost.z, 48.0f, exp10(log10(0.02f))); \n" \
 "float3 XYZ = mult_f3_f33( linearCV, RGBtoXYZ( AP1)); \n" \
 "XYZ = limit_to_primaries( XYZ, LIMITING_PRI); \n" \
 "float3 outputCV = dcdm_encode( XYZ); \n" \
 "return outputCV; \n" \
 "} \n" \
-"float3 ODT_DCDM_P3D65limited( float3 oces) \n" \
-"{ \n" \
+"float3 ODT_DCDM_P3D65limited( float3 oces) { \n" \
 "const Chromaticities LIMITING_PRI = P3D65_PRI; \n" \
-"float3 rgbPre = mult_f3_f33( oces, AP0_2_AP1_MAT_B); \n" \
+"float3 rgbPre = mult_f3_f33( oces, AP0_2_AP1_MAT); \n" \
 "float3 rgbPost; \n" \
 "rgbPost.x = segmented_spline_c9_fwd( rgbPre.x, ODT_48nits()); \n" \
 "rgbPost.y = segmented_spline_c9_fwd( rgbPre.y, ODT_48nits()); \n" \
 "rgbPost.z = segmented_spline_c9_fwd( rgbPre.z, ODT_48nits()); \n" \
 "float3 linearCV; \n" \
-"linearCV.x = Y_2_linCV( rgbPost.x, 48.0f, pow(10.0f, log10(0.02f))); \n" \
-"linearCV.y = Y_2_linCV( rgbPost.y, 48.0f, pow(10.0f, log10(0.02f))); \n" \
-"linearCV.z = Y_2_linCV( rgbPost.z, 48.0f, pow(10.0f, log10(0.02f))); \n" \
+"linearCV.x = Y_2_linCV( rgbPost.x, 48.0f, exp10(log10(0.02f))); \n" \
+"linearCV.y = Y_2_linCV( rgbPost.y, 48.0f, exp10(log10(0.02f))); \n" \
+"linearCV.z = Y_2_linCV( rgbPost.z, 48.0f, exp10(log10(0.02f))); \n" \
 "float3 XYZ = mult_f3_f33( linearCV, RGBtoXYZ( AP1)); \n" \
 "XYZ = limit_to_primaries( XYZ, LIMITING_PRI); \n" \
 "float3 outputCV = dcdm_encode( XYZ); \n" \
 "return outputCV; \n" \
 "} \n" \
-"float3 ODT_RGBmonitor_100nits_dim( float3 oces) \n" \
-"{ \n" \
+"float3 ODT_RGBmonitor_100nits_dim( float3 oces) { \n" \
 "Chromaticities DISPLAY_PRI = REC709_PRI; \n" \
 "mat3 XYZ_2_DISPLAY_PRI_MAT = XYZtoRGB(DISPLAY_PRI); \n" \
 "float DISPGAMMA = 2.4f; \n" \
 "float OFFSET = 0.055f; \n" \
-"float3 rgbPre = mult_f3_f33( oces, AP0_2_AP1_MAT_B); \n" \
+"float3 rgbPre = mult_f3_f33( oces, AP0_2_AP1_MAT); \n" \
 "float3 rgbPost; \n" \
 "rgbPost.x = segmented_spline_c9_fwd( rgbPre.x, ODT_48nits()); \n" \
 "rgbPost.y = segmented_spline_c9_fwd( rgbPre.y, ODT_48nits()); \n" \
 "rgbPost.z = segmented_spline_c9_fwd( rgbPre.z, ODT_48nits()); \n" \
 "float3 linearCV; \n" \
-"linearCV.x = Y_2_linCV( rgbPost.x, 48.0f, pow(10.0f, log10(0.02f))); \n" \
-"linearCV.y = Y_2_linCV( rgbPost.y, 48.0f, pow(10.0f, log10(0.02f))); \n" \
-"linearCV.z = Y_2_linCV( rgbPost.z, 48.0f, pow(10.0f, log10(0.02f))); \n" \
+"linearCV.x = Y_2_linCV( rgbPost.x, 48.0f, exp10(log10(0.02f))); \n" \
+"linearCV.y = Y_2_linCV( rgbPost.y, 48.0f, exp10(log10(0.02f))); \n" \
+"linearCV.z = Y_2_linCV( rgbPost.z, 48.0f, exp10(log10(0.02f))); \n" \
 "linearCV = darkSurround_to_dimSurround( linearCV); \n" \
-"linearCV = mult_f3_f33( linearCV, calc_sat_adjust_matrix( ODT_SAT_FACTOR, make_float3(RGBtoXYZ( AP1).c0.y, RGBtoXYZ( AP1).c1.y, RGBtoXYZ( AP1).c2.y))); \n" \
+"linearCV = mult_f3_f33( linearCV, calc_sat_adjust_matrix( ODT_SAT_FACTOR,  \n" \
+"make_float3(RGBtoXYZ( AP1).c0.y, RGBtoXYZ( AP1).c1.y, RGBtoXYZ( AP1).c2.y))); \n" \
 "float3 XYZ = mult_f3_f33( linearCV, RGBtoXYZ( AP1)); \n" \
 "XYZ = mult_f3_f33( XYZ, calculate_cat_matrix( AP0.white, REC709_PRI.white)); \n" \
 "linearCV = mult_f3_f33( XYZ, XYZ_2_DISPLAY_PRI_MAT); \n" \
@@ -3125,27 +3024,27 @@ const char* kernelSource =  \
 "outputCV.z = moncurve_r( linearCV.z, DISPGAMMA, OFFSET); \n" \
 "return outputCV; \n" \
 "} \n" \
-"float3 ODT_RGBmonitor_D60sim_100nits_dim( float3 oces) \n" \
-"{ \n" \
+"float3 ODT_RGBmonitor_D60sim_100nits_dim( float3 oces) { \n" \
 "Chromaticities DISPLAY_PRI = REC709_PRI; \n" \
 "mat3 XYZ_2_DISPLAY_PRI_MAT = XYZtoRGB(DISPLAY_PRI); \n" \
 "float DISPGAMMA = 2.4f; \n" \
 "float OFFSET = 0.055f; \n" \
 "float SCALE = 0.955f; \n" \
-"float3 rgbPre = mult_f3_f33( oces, AP0_2_AP1_MAT_B); \n" \
+"float3 rgbPre = mult_f3_f33( oces, AP0_2_AP1_MAT); \n" \
 "float3 rgbPost; \n" \
 "rgbPost.x = segmented_spline_c9_fwd( rgbPre.x, ODT_48nits()); \n" \
 "rgbPost.y = segmented_spline_c9_fwd( rgbPre.y, ODT_48nits()); \n" \
 "rgbPost.z = segmented_spline_c9_fwd( rgbPre.z, ODT_48nits()); \n" \
 "float3 linearCV; \n" \
-"linearCV.x = Y_2_linCV( rgbPost.x, 48.0f, pow(10.0f, log10(0.02f))); \n" \
-"linearCV.y = Y_2_linCV( rgbPost.y, 48.0f, pow(10.0f, log10(0.02f))); \n" \
-"linearCV.z = Y_2_linCV( rgbPost.z, 48.0f, pow(10.0f, log10(0.02f))); \n" \
+"linearCV.x = Y_2_linCV( rgbPost.x, 48.0f, exp10(log10(0.02f))); \n" \
+"linearCV.y = Y_2_linCV( rgbPost.y, 48.0f, exp10(log10(0.02f))); \n" \
+"linearCV.z = Y_2_linCV( rgbPost.z, 48.0f, exp10(log10(0.02f))); \n" \
 "linearCV.x = fmin( linearCV.x, 1.0f) * SCALE; \n" \
 "linearCV.y = fmin( linearCV.y, 1.0f) * SCALE; \n" \
 "linearCV.z = fmin( linearCV.z, 1.0f) * SCALE; \n" \
 "linearCV = darkSurround_to_dimSurround( linearCV); \n" \
-"linearCV = mult_f3_f33( linearCV, calc_sat_adjust_matrix( ODT_SAT_FACTOR, make_float3(RGBtoXYZ( AP1).c0.y, RGBtoXYZ( AP1).c1.y, RGBtoXYZ( AP1).c2.y))); \n" \
+"linearCV = mult_f3_f33( linearCV, calc_sat_adjust_matrix( ODT_SAT_FACTOR,  \n" \
+"make_float3(RGBtoXYZ( AP1).c0.y, RGBtoXYZ( AP1).c1.y, RGBtoXYZ( AP1).c2.y))); \n" \
 "float3 XYZ = mult_f3_f33( linearCV, RGBtoXYZ( AP1)); \n" \
 "linearCV = mult_f3_f33( XYZ, XYZ_2_DISPLAY_PRI_MAT); \n" \
 "linearCV = clamp_f3( linearCV, 0.0f, 1.0f); \n" \
@@ -3155,8 +3054,7 @@ const char* kernelSource =  \
 "outputCV.z = moncurve_r( linearCV.z, DISPGAMMA, OFFSET); \n" \
 "return outputCV; \n" \
 "} \n" \
-"float3 InvODT_Rec709_100nits_dim( float3 outputCV) \n" \
-"{ \n" \
+"float3 InvODT_Rec709_100nits_dim( float3 outputCV) { \n" \
 "Chromaticities DISPLAY_PRI = REC709_PRI; \n" \
 "mat3 DISPLAY_PRI_2_XYZ_MAT = RGBtoXYZ(DISPLAY_PRI); \n" \
 "float DISPGAMMA = 2.4f; \n" \
@@ -3173,21 +3071,21 @@ const char* kernelSource =  \
 "float3 XYZ = mult_f3_f33( linearCV, DISPLAY_PRI_2_XYZ_MAT); \n" \
 "XYZ = mult_f3_f33( XYZ, invert_f33( calculate_cat_matrix( AP0.white, REC709_PRI.white))); \n" \
 "linearCV = mult_f3_f33( XYZ, XYZtoRGB( AP1)); \n" \
-"linearCV = mult_f3_f33( linearCV, invert_f33( calc_sat_adjust_matrix( ODT_SAT_FACTOR, make_float3(RGBtoXYZ( AP1).c0.y, RGBtoXYZ( AP1).c1.y, RGBtoXYZ( AP1).c2.y)))); \n" \
+"linearCV = mult_f3_f33( linearCV, invert_f33( calc_sat_adjust_matrix( ODT_SAT_FACTOR,  \n" \
+"make_float3(RGBtoXYZ( AP1).c0.y, RGBtoXYZ( AP1).c1.y, RGBtoXYZ( AP1).c2.y)))); \n" \
 "linearCV = dimSurround_to_darkSurround( linearCV); \n" \
 "float3 rgbPre; \n" \
-"rgbPre.x = linCV_2_Y( linearCV.x, 48.0f, pow(10.0f, log10(0.02f))); \n" \
-"rgbPre.y = linCV_2_Y( linearCV.y, 48.0f, pow(10.0f, log10(0.02f))); \n" \
-"rgbPre.z = linCV_2_Y( linearCV.z, 48.0f, pow(10.0f, log10(0.02f))); \n" \
+"rgbPre.x = linCV_2_Y( linearCV.x, 48.0f, exp10(log10(0.02f))); \n" \
+"rgbPre.y = linCV_2_Y( linearCV.y, 48.0f, exp10(log10(0.02f))); \n" \
+"rgbPre.z = linCV_2_Y( linearCV.z, 48.0f, exp10(log10(0.02f))); \n" \
 "float3 rgbPost; \n" \
 "rgbPost.x = segmented_spline_c9_rev( rgbPre.x, ODT_48nits()); \n" \
 "rgbPost.y = segmented_spline_c9_rev( rgbPre.y, ODT_48nits()); \n" \
 "rgbPost.z = segmented_spline_c9_rev( rgbPre.z, ODT_48nits()); \n" \
-"float3 oces = mult_f3_f33( rgbPost, AP1_2_AP0_MAT_B); \n" \
+"float3 oces = mult_f3_f33( rgbPost, AP1_2_AP0_MAT); \n" \
 "return oces; \n" \
 "} \n" \
-"float3 InvODT_Rec709_D60sim_100nits_dim( float3 outputCV) \n" \
-"{ \n" \
+"float3 InvODT_Rec709_D60sim_100nits_dim( float3 outputCV) { \n" \
 "const Chromaticities DISPLAY_PRI = REC709_PRI; \n" \
 "const mat3 DISPLAY_PRI_2_XYZ_MAT = RGBtoXYZ(DISPLAY_PRI); \n" \
 "const float DISPGAMMA = 2.4f; \n" \
@@ -3204,24 +3102,24 @@ const char* kernelSource =  \
 "linearCV.z = bt1886_f( outputCV.z, DISPGAMMA, L_W, L_B); \n" \
 "float3 XYZ = mult_f3_f33( linearCV, DISPLAY_PRI_2_XYZ_MAT); \n" \
 "linearCV = mult_f3_f33( XYZ, XYZtoRGB( AP1)); \n" \
-"linearCV = mult_f3_f33( linearCV, invert_f33( calc_sat_adjust_matrix( ODT_SAT_FACTOR, make_float3(RGBtoXYZ( AP1).c0.y, RGBtoXYZ( AP1).c1.y, RGBtoXYZ( AP1).c2.y)))); \n" \
+"linearCV = mult_f3_f33( linearCV, invert_f33( calc_sat_adjust_matrix( ODT_SAT_FACTOR,  \n" \
+"make_float3(RGBtoXYZ( AP1).c0.y, RGBtoXYZ( AP1).c1.y, RGBtoXYZ( AP1).c2.y)))); \n" \
 "linearCV = dimSurround_to_darkSurround( linearCV); \n" \
 "linearCV.x = linearCV.x / SCALE; \n" \
 "linearCV.y = linearCV.y / SCALE; \n" \
 "linearCV.z = linearCV.z / SCALE; \n" \
 "float3 rgbPre; \n" \
-"rgbPre.x = linCV_2_Y( linearCV.x, 48.0f, pow(10.0f, log10(0.02f))); \n" \
-"rgbPre.y = linCV_2_Y( linearCV.y, 48.0f, pow(10.0f, log10(0.02f))); \n" \
-"rgbPre.z = linCV_2_Y( linearCV.z, 48.0f, pow(10.0f, log10(0.02f))); \n" \
+"rgbPre.x = linCV_2_Y( linearCV.x, 48.0f, exp10(log10(0.02f))); \n" \
+"rgbPre.y = linCV_2_Y( linearCV.y, 48.0f, exp10(log10(0.02f))); \n" \
+"rgbPre.z = linCV_2_Y( linearCV.z, 48.0f, exp10(log10(0.02f))); \n" \
 "float3 rgbPost; \n" \
 "rgbPost.x = segmented_spline_c9_rev( rgbPre.x, ODT_48nits()); \n" \
 "rgbPost.y = segmented_spline_c9_rev( rgbPre.y, ODT_48nits()); \n" \
 "rgbPost.z = segmented_spline_c9_rev( rgbPre.z, ODT_48nits()); \n" \
-"float3 oces = mult_f3_f33( rgbPost, AP1_2_AP0_MAT_B); \n" \
+"float3 oces = mult_f3_f33( rgbPost, AP1_2_AP0_MAT); \n" \
 "return oces; \n" \
 "} \n" \
-"float3 InvODT_Rec2020_100nits_dim( float3 outputCV) \n" \
-"{ \n" \
+"float3 InvODT_Rec2020_100nits_dim( float3 outputCV) { \n" \
 "Chromaticities DISPLAY_PRI = REC2020_PRI; \n" \
 "mat3 DISPLAY_PRI_2_XYZ_MAT = RGBtoXYZ(DISPLAY_PRI); \n" \
 "float DISPGAMMA = 2.4f; \n" \
@@ -3238,21 +3136,21 @@ const char* kernelSource =  \
 "float3 XYZ = mult_f3_f33( linearCV, DISPLAY_PRI_2_XYZ_MAT); \n" \
 "XYZ = mult_f3_f33( XYZ, invert_f33( calculate_cat_matrix( AP0.white, REC709_PRI.white))); \n" \
 "linearCV = mult_f3_f33( XYZ, XYZtoRGB( AP1)); \n" \
-"linearCV = mult_f3_f33( linearCV, invert_f33( calc_sat_adjust_matrix( ODT_SAT_FACTOR, make_float3(RGBtoXYZ( AP1).c0.y, RGBtoXYZ( AP1).c1.y, RGBtoXYZ( AP1).c2.y)))); \n" \
+"linearCV = mult_f3_f33( linearCV, invert_f33( calc_sat_adjust_matrix( ODT_SAT_FACTOR,  \n" \
+"make_float3(RGBtoXYZ( AP1).c0.y, RGBtoXYZ( AP1).c1.y, RGBtoXYZ( AP1).c2.y)))); \n" \
 "linearCV = dimSurround_to_darkSurround( linearCV); \n" \
 "float3 rgbPre; \n" \
-"rgbPre.x = linCV_2_Y( linearCV.x, 48.0f, pow(10.0f, log10(0.02f))); \n" \
-"rgbPre.y = linCV_2_Y( linearCV.y, 48.0f, pow(10.0f, log10(0.02f))); \n" \
-"rgbPre.z = linCV_2_Y( linearCV.z, 48.0f, pow(10.0f, log10(0.02f))); \n" \
+"rgbPre.x = linCV_2_Y( linearCV.x, 48.0f, exp10(log10(0.02f))); \n" \
+"rgbPre.y = linCV_2_Y( linearCV.y, 48.0f, exp10(log10(0.02f))); \n" \
+"rgbPre.z = linCV_2_Y( linearCV.z, 48.0f, exp10(log10(0.02f))); \n" \
 "float3 rgbPost; \n" \
 "rgbPost.x = segmented_spline_c9_rev( rgbPre.x, ODT_48nits()); \n" \
 "rgbPost.y = segmented_spline_c9_rev( rgbPre.y, ODT_48nits()); \n" \
 "rgbPost.z = segmented_spline_c9_rev( rgbPre.z, ODT_48nits()); \n" \
-"float3 oces = mult_f3_f33( rgbPost, AP1_2_AP0_MAT_B); \n" \
+"float3 oces = mult_f3_f33( rgbPost, AP1_2_AP0_MAT); \n" \
 "return oces; \n" \
 "} \n" \
-"float3 InvODT_Rec2020_ST2084_1000nits( float3 outputCV) \n" \
-"{ \n" \
+"float3 InvODT_Rec2020_ST2084_1000nits( float3 outputCV) { \n" \
 "Chromaticities DISPLAY_PRI = REC2020_PRI; \n" \
 "mat3 DISPLAY_PRI_2_XYZ_MAT = RGBtoXYZ(DISPLAY_PRI); \n" \
 "float3 rgb = ST2084_2_Y_f3( outputCV); \n" \
@@ -3264,11 +3162,10 @@ const char* kernelSource =  \
 "rgbPost.x = segmented_spline_c9_rev( rgbPre.x, ODT_1000nits()); \n" \
 "rgbPost.y = segmented_spline_c9_rev( rgbPre.y, ODT_1000nits()); \n" \
 "rgbPost.z = segmented_spline_c9_rev( rgbPre.z, ODT_1000nits()); \n" \
-"float3 oces = mult_f3_f33( rgbPost, AP1_2_AP0_MAT_B); \n" \
+"float3 oces = mult_f3_f33( rgbPost, AP1_2_AP0_MAT); \n" \
 "return oces; \n" \
 "} \n" \
-"float3 InvODT_sRGB_D60sim_100nits_dim( float3 outputCV) \n" \
-"{ \n" \
+"float3 InvODT_sRGB_D60sim_100nits_dim( float3 outputCV) { \n" \
 "const Chromaticities DISPLAY_PRI = REC709_PRI; \n" \
 "const mat3 DISPLAY_PRI_2_XYZ_MAT = RGBtoXYZ(DISPLAY_PRI); \n" \
 "const float DISPGAMMA = 2.4f; \n" \
@@ -3280,24 +3177,24 @@ const char* kernelSource =  \
 "linearCV.z = moncurve_f( outputCV.z, DISPGAMMA, OFFSET); \n" \
 "float3 XYZ = mult_f3_f33( linearCV, DISPLAY_PRI_2_XYZ_MAT); \n" \
 "linearCV = mult_f3_f33( XYZ, XYZtoRGB( AP1)); \n" \
-"linearCV = mult_f3_f33( linearCV, invert_f33( calc_sat_adjust_matrix( ODT_SAT_FACTOR, make_float3(RGBtoXYZ( AP1).c0.y, RGBtoXYZ( AP1).c1.y, RGBtoXYZ( AP1).c2.y)))); \n" \
+"linearCV = mult_f3_f33( linearCV, invert_f33( calc_sat_adjust_matrix( ODT_SAT_FACTOR,  \n" \
+"make_float3(RGBtoXYZ( AP1).c0.y, RGBtoXYZ( AP1).c1.y, RGBtoXYZ( AP1).c2.y)))); \n" \
 "linearCV = dimSurround_to_darkSurround( linearCV); \n" \
 "linearCV.x = linearCV.x / SCALE; \n" \
 "linearCV.y = linearCV.y / SCALE; \n" \
 "linearCV.z = linearCV.z / SCALE; \n" \
 "float3 rgbPre; \n" \
-"rgbPre.x = linCV_2_Y( linearCV.x, 48.0f, pow(10.0f, log10(0.02f))); \n" \
-"rgbPre.y = linCV_2_Y( linearCV.y, 48.0f, pow(10.0f, log10(0.02f))); \n" \
-"rgbPre.z = linCV_2_Y( linearCV.z, 48.0f, pow(10.0f, log10(0.02f))); \n" \
+"rgbPre.x = linCV_2_Y( linearCV.x, 48.0f, exp10(log10(0.02f))); \n" \
+"rgbPre.y = linCV_2_Y( linearCV.y, 48.0f, exp10(log10(0.02f))); \n" \
+"rgbPre.z = linCV_2_Y( linearCV.z, 48.0f, exp10(log10(0.02f))); \n" \
 "float3 rgbPost; \n" \
 "rgbPost.x = segmented_spline_c9_rev( rgbPre.x, ODT_48nits()); \n" \
 "rgbPost.y = segmented_spline_c9_rev( rgbPre.y, ODT_48nits()); \n" \
 "rgbPost.z = segmented_spline_c9_rev( rgbPre.z, ODT_48nits()); \n" \
-"float3 oces = mult_f3_f33( rgbPost, AP1_2_AP0_MAT_B); \n" \
+"float3 oces = mult_f3_f33( rgbPost, AP1_2_AP0_MAT); \n" \
 "return oces; \n" \
 "} \n" \
-"float3 InvODT_sRGB_100nits_dim( float3 outputCV) \n" \
-"{ \n" \
+"float3 InvODT_sRGB_100nits_dim( float3 outputCV) { \n" \
 "const Chromaticities DISPLAY_PRI = REC709_PRI; \n" \
 "const mat3 DISPLAY_PRI_2_XYZ_MAT = RGBtoXYZ(DISPLAY_PRI); \n" \
 "const float DISPGAMMA = 2.4f; \n" \
@@ -3309,21 +3206,21 @@ const char* kernelSource =  \
 "float3 XYZ = mult_f3_f33( linearCV, DISPLAY_PRI_2_XYZ_MAT); \n" \
 "XYZ = mult_f3_f33( XYZ, invert_f33( calculate_cat_matrix( AP0.white, REC709_PRI.white))); \n" \
 "linearCV = mult_f3_f33( XYZ, XYZtoRGB( AP1)); \n" \
-"linearCV = mult_f3_f33( linearCV, invert_f33( calc_sat_adjust_matrix( ODT_SAT_FACTOR, make_float3(RGBtoXYZ( AP1).c0.y, RGBtoXYZ( AP1).c1.y, RGBtoXYZ( AP1).c2.y)))); \n" \
+"linearCV = mult_f3_f33( linearCV, invert_f33( calc_sat_adjust_matrix( ODT_SAT_FACTOR,  \n" \
+"make_float3(RGBtoXYZ( AP1).c0.y, RGBtoXYZ( AP1).c1.y, RGBtoXYZ( AP1).c2.y)))); \n" \
 "linearCV = dimSurround_to_darkSurround( linearCV); \n" \
 "float3 rgbPre; \n" \
-"rgbPre.x = linCV_2_Y( linearCV.x, 48.0f, pow(10.0f, log10(0.02f))); \n" \
-"rgbPre.y = linCV_2_Y( linearCV.y, 48.0f, pow(10.0f, log10(0.02f))); \n" \
-"rgbPre.z = linCV_2_Y( linearCV.z, 48.0f, pow(10.0f, log10(0.02f))); \n" \
+"rgbPre.x = linCV_2_Y( linearCV.x, 48.0f, exp10(log10(0.02f))); \n" \
+"rgbPre.y = linCV_2_Y( linearCV.y, 48.0f, exp10(log10(0.02f))); \n" \
+"rgbPre.z = linCV_2_Y( linearCV.z, 48.0f, exp10(log10(0.02f))); \n" \
 "float3 rgbPost; \n" \
 "rgbPost.x = segmented_spline_c9_rev( rgbPre.x, ODT_48nits()); \n" \
 "rgbPost.y = segmented_spline_c9_rev( rgbPre.y, ODT_48nits()); \n" \
 "rgbPost.z = segmented_spline_c9_rev( rgbPre.z, ODT_48nits()); \n" \
-"float3 oces = mult_f3_f33( rgbPost, AP1_2_AP0_MAT_B); \n" \
+"float3 oces = mult_f3_f33( rgbPost, AP1_2_AP0_MAT); \n" \
 "return oces; \n" \
 "} \n" \
-"float3 InvODT_P3DCI_48nits( float3 outputCV) \n" \
-"{ \n" \
+"float3 InvODT_P3DCI_48nits( float3 outputCV) { \n" \
 "const Chromaticities DISPLAY_PRI = P3DCI_PRI; \n" \
 "const mat3 DISPLAY_PRI_2_XYZ_MAT = RGBtoXYZ(DISPLAY_PRI); \n" \
 "const float DISPGAMMA = 2.6f; \n" \
@@ -3337,18 +3234,17 @@ const char* kernelSource =  \
 "linearCV.y = roll_white_rev( linearCV.y / SCALE, NEW_WHT, ROLL_WIDTH); \n" \
 "linearCV.z = roll_white_rev( linearCV.z / SCALE, NEW_WHT, ROLL_WIDTH); \n" \
 "float3 rgbPre; \n" \
-"rgbPre.x = linCV_2_Y( linearCV.x, 48.0f, pow(10.0f, log10(0.02f))); \n" \
-"rgbPre.y = linCV_2_Y( linearCV.y, 48.0f, pow(10.0f, log10(0.02f))); \n" \
-"rgbPre.z = linCV_2_Y( linearCV.z, 48.0f, pow(10.0f, log10(0.02f))); \n" \
+"rgbPre.x = linCV_2_Y( linearCV.x, 48.0f, exp10(log10(0.02f))); \n" \
+"rgbPre.y = linCV_2_Y( linearCV.y, 48.0f, exp10(log10(0.02f))); \n" \
+"rgbPre.z = linCV_2_Y( linearCV.z, 48.0f, exp10(log10(0.02f))); \n" \
 "float3 rgbPost; \n" \
 "rgbPost.x = segmented_spline_c9_rev( rgbPre.x, ODT_48nits()); \n" \
 "rgbPost.y = segmented_spline_c9_rev( rgbPre.y, ODT_48nits()); \n" \
 "rgbPost.z = segmented_spline_c9_rev( rgbPre.z, ODT_48nits()); \n" \
-"float3 oces = mult_f3_f33( rgbPost, AP1_2_AP0_MAT_B); \n" \
+"float3 oces = mult_f3_f33( rgbPost, AP1_2_AP0_MAT); \n" \
 "return oces; \n" \
 "} \n" \
-"float3 InvODT_P3DCI_D60sim_48nits( float3 outputCV) \n" \
-"{ \n" \
+"float3 InvODT_P3DCI_D60sim_48nits( float3 outputCV) { \n" \
 "const Chromaticities DISPLAY_PRI = P3DCI_PRI; \n" \
 "const mat3 DISPLAY_PRI_2_XYZ_MAT = RGBtoXYZ(DISPLAY_PRI); \n" \
 "const float DISPGAMMA = 2.6f; \n" \
@@ -3362,18 +3258,17 @@ const char* kernelSource =  \
 "linearCV.y = roll_white_rev( linearCV.y / SCALE, NEW_WHT, ROLL_WIDTH); \n" \
 "linearCV.z = roll_white_rev( linearCV.z / SCALE, NEW_WHT, ROLL_WIDTH); \n" \
 "float3 rgbPre; \n" \
-"rgbPre.x = linCV_2_Y( linearCV.x, 48.0f, pow(10.0f, log10(0.02f))); \n" \
-"rgbPre.y = linCV_2_Y( linearCV.y, 48.0f, pow(10.0f, log10(0.02f))); \n" \
-"rgbPre.z = linCV_2_Y( linearCV.z, 48.0f, pow(10.0f, log10(0.02f))); \n" \
+"rgbPre.x = linCV_2_Y( linearCV.x, 48.0f, exp10(log10(0.02f))); \n" \
+"rgbPre.y = linCV_2_Y( linearCV.y, 48.0f, exp10(log10(0.02f))); \n" \
+"rgbPre.z = linCV_2_Y( linearCV.z, 48.0f, exp10(log10(0.02f))); \n" \
 "float3 rgbPost; \n" \
 "rgbPost.x = segmented_spline_c9_rev( rgbPre.x, ODT_48nits()); \n" \
 "rgbPost.y = segmented_spline_c9_rev( rgbPre.y, ODT_48nits()); \n" \
 "rgbPost.z = segmented_spline_c9_rev( rgbPre.z, ODT_48nits()); \n" \
-"float3 oces = mult_f3_f33( rgbPost, AP1_2_AP0_MAT_B); \n" \
+"float3 oces = mult_f3_f33( rgbPost, AP1_2_AP0_MAT); \n" \
 "return oces; \n" \
 "} \n" \
-"float3 InvODT_P3DCI_D65sim_48nits( float3 outputCV) \n" \
-"{ \n" \
+"float3 InvODT_P3DCI_D65sim_48nits( float3 outputCV) { \n" \
 "const Chromaticities DISPLAY_PRI = P3DCI_PRI; \n" \
 "const mat3 DISPLAY_PRI_2_XYZ_MAT = RGBtoXYZ(DISPLAY_PRI); \n" \
 "const float DISPGAMMA = 2.6f; \n" \
@@ -3387,18 +3282,17 @@ const char* kernelSource =  \
 "linearCV.y = roll_white_rev( linearCV.y / SCALE, NEW_WHT, ROLL_WIDTH); \n" \
 "linearCV.z = roll_white_rev( linearCV.z / SCALE, NEW_WHT, ROLL_WIDTH); \n" \
 "float3 rgbPre; \n" \
-"rgbPre.x = linCV_2_Y( linearCV.x, 48.0f, pow(10.0f, log10(0.02f))); \n" \
-"rgbPre.y = linCV_2_Y( linearCV.y, 48.0f, pow(10.0f, log10(0.02f))); \n" \
-"rgbPre.z = linCV_2_Y( linearCV.z, 48.0f, pow(10.0f, log10(0.02f))); \n" \
+"rgbPre.x = linCV_2_Y( linearCV.x, 48.0f, exp10(log10(0.02f))); \n" \
+"rgbPre.y = linCV_2_Y( linearCV.y, 48.0f, exp10(log10(0.02f))); \n" \
+"rgbPre.z = linCV_2_Y( linearCV.z, 48.0f, exp10(log10(0.02f))); \n" \
 "float3 rgbPost; \n" \
 "rgbPost.x = segmented_spline_c9_rev( rgbPre.x, ODT_48nits()); \n" \
 "rgbPost.y = segmented_spline_c9_rev( rgbPre.y, ODT_48nits()); \n" \
 "rgbPost.z = segmented_spline_c9_rev( rgbPre.z, ODT_48nits()); \n" \
-"float3 oces = mult_f3_f33( rgbPost, AP1_2_AP0_MAT_B); \n" \
+"float3 oces = mult_f3_f33( rgbPost, AP1_2_AP0_MAT); \n" \
 "return oces; \n" \
 "} \n" \
-"float3 InvODT_P3D60_48nits( float3 outputCV) \n" \
-"{ \n" \
+"float3 InvODT_P3D60_48nits( float3 outputCV) { \n" \
 "const Chromaticities DISPLAY_PRI = P3D60_PRI; \n" \
 "const mat3 DISPLAY_PRI_2_XYZ_MAT = RGBtoXYZ( DISPLAY_PRI); \n" \
 "const float DISPGAMMA = 2.6f; \n" \
@@ -3406,18 +3300,17 @@ const char* kernelSource =  \
 "float3 XYZ = mult_f3_f33( linearCV, DISPLAY_PRI_2_XYZ_MAT); \n" \
 "linearCV = mult_f3_f33( XYZ, XYZtoRGB( AP1)); \n" \
 "float3 rgbPre; \n" \
-"rgbPre.x = linCV_2_Y( linearCV.x, 48.0f, pow(10.0f, log10(0.02f))); \n" \
-"rgbPre.y = linCV_2_Y( linearCV.y, 48.0f, pow(10.0f, log10(0.02f))); \n" \
-"rgbPre.z = linCV_2_Y( linearCV.z, 48.0f, pow(10.0f, log10(0.02f))); \n" \
+"rgbPre.x = linCV_2_Y( linearCV.x, 48.0f, exp10(log10(0.02f))); \n" \
+"rgbPre.y = linCV_2_Y( linearCV.y, 48.0f, exp10(log10(0.02f))); \n" \
+"rgbPre.z = linCV_2_Y( linearCV.z, 48.0f, exp10(log10(0.02f))); \n" \
 "float3 rgbPost; \n" \
 "rgbPost.x = segmented_spline_c9_rev( rgbPre.x, ODT_48nits()); \n" \
 "rgbPost.y = segmented_spline_c9_rev( rgbPre.y, ODT_48nits()); \n" \
 "rgbPost.z = segmented_spline_c9_rev( rgbPre.z, ODT_48nits()); \n" \
-"float3 oces = mult_f3_f33( rgbPost, AP1_2_AP0_MAT_B); \n" \
+"float3 oces = mult_f3_f33( rgbPost, AP1_2_AP0_MAT); \n" \
 "return oces; \n" \
 "} \n" \
-"float3 InvODT_P3D65_48nits( float3 outputCV) \n" \
-"{ \n" \
+"float3 InvODT_P3D65_48nits( float3 outputCV) { \n" \
 "const Chromaticities DISPLAY_PRI = P3D65_PRI; \n" \
 "const mat3 DISPLAY_PRI_2_XYZ_MAT = RGBtoXYZ( DISPLAY_PRI); \n" \
 "const float DISPGAMMA = 2.6f; \n" \
@@ -3425,18 +3318,17 @@ const char* kernelSource =  \
 "float3 XYZ = mult_f3_f33( linearCV, DISPLAY_PRI_2_XYZ_MAT); \n" \
 "linearCV = mult_f3_f33( XYZ, XYZtoRGB( AP1)); \n" \
 "float3 rgbPre; \n" \
-"rgbPre.x = linCV_2_Y( linearCV.x, 48.0f, pow(10.0f, log10(0.02f))); \n" \
-"rgbPre.y = linCV_2_Y( linearCV.y, 48.0f, pow(10.0f, log10(0.02f))); \n" \
-"rgbPre.z = linCV_2_Y( linearCV.z, 48.0f, pow(10.0f, log10(0.02f))); \n" \
+"rgbPre.x = linCV_2_Y( linearCV.x, 48.0f, exp10(log10(0.02f))); \n" \
+"rgbPre.y = linCV_2_Y( linearCV.y, 48.0f, exp10(log10(0.02f))); \n" \
+"rgbPre.z = linCV_2_Y( linearCV.z, 48.0f, exp10(log10(0.02f))); \n" \
 "float3 rgbPost; \n" \
 "rgbPost.x = segmented_spline_c9_rev( rgbPre.x, ODT_48nits()); \n" \
 "rgbPost.y = segmented_spline_c9_rev( rgbPre.y, ODT_48nits()); \n" \
 "rgbPost.z = segmented_spline_c9_rev( rgbPre.z, ODT_48nits()); \n" \
-"float3 oces = mult_f3_f33( rgbPost, AP1_2_AP0_MAT_B); \n" \
+"float3 oces = mult_f3_f33( rgbPost, AP1_2_AP0_MAT); \n" \
 "return oces; \n" \
 "} \n" \
-"float3 InvODT_P3D65_D60sim_48nits( float3 outputCV) \n" \
-"{ \n" \
+"float3 InvODT_P3D65_D60sim_48nits( float3 outputCV) { \n" \
 "const Chromaticities DISPLAY_PRI = P3D65_PRI; \n" \
 "const mat3 DISPLAY_PRI_2_XYZ_MAT = RGBtoXYZ( DISPLAY_PRI); \n" \
 "const float DISPGAMMA = 2.6f; \n" \
@@ -3448,49 +3340,46 @@ const char* kernelSource =  \
 "linearCV.y = linearCV.y / SCALE; \n" \
 "linearCV.z = linearCV.z / SCALE; \n" \
 "float3 rgbPre; \n" \
-"rgbPre.x = linCV_2_Y( linearCV.x, 48.0f, pow(10.0f, log10(0.02f))); \n" \
-"rgbPre.y = linCV_2_Y( linearCV.y, 48.0f, pow(10.0f, log10(0.02f))); \n" \
-"rgbPre.z = linCV_2_Y( linearCV.z, 48.0f, pow(10.0f, log10(0.02f))); \n" \
+"rgbPre.x = linCV_2_Y( linearCV.x, 48.0f, exp10(log10(0.02f))); \n" \
+"rgbPre.y = linCV_2_Y( linearCV.y, 48.0f, exp10(log10(0.02f))); \n" \
+"rgbPre.z = linCV_2_Y( linearCV.z, 48.0f, exp10(log10(0.02f))); \n" \
 "float3 rgbPost; \n" \
 "rgbPost.x = segmented_spline_c9_rev( rgbPre.x, ODT_48nits()); \n" \
 "rgbPost.y = segmented_spline_c9_rev( rgbPre.y, ODT_48nits()); \n" \
 "rgbPost.z = segmented_spline_c9_rev( rgbPre.z, ODT_48nits()); \n" \
-"float3 oces = mult_f3_f33( rgbPost, AP1_2_AP0_MAT_B); \n" \
+"float3 oces = mult_f3_f33( rgbPost, AP1_2_AP0_MAT); \n" \
 "return oces; \n" \
 "} \n" \
-"float3 InvODT_DCDM( float3 outputCV) \n" \
-"{ \n" \
+"float3 InvODT_DCDM( float3 outputCV) { \n" \
 "float3 XYZ = dcdm_decode( outputCV); \n" \
 "float3 linearCV = mult_f3_f33( XYZ, XYZtoRGB( AP1)); \n" \
 "float3 rgbPre; \n" \
-"rgbPre.x = linCV_2_Y( linearCV.x, 48.0f, pow(10.0f, log10(0.02f))); \n" \
-"rgbPre.y = linCV_2_Y( linearCV.y, 48.0f, pow(10.0f, log10(0.02f))); \n" \
-"rgbPre.z = linCV_2_Y( linearCV.z, 48.0f, pow(10.0f, log10(0.02f))); \n" \
+"rgbPre.x = linCV_2_Y( linearCV.x, 48.0f, exp10(log10(0.02f))); \n" \
+"rgbPre.y = linCV_2_Y( linearCV.y, 48.0f, exp10(log10(0.02f))); \n" \
+"rgbPre.z = linCV_2_Y( linearCV.z, 48.0f, exp10(log10(0.02f))); \n" \
 "float3 rgbPost; \n" \
 "rgbPost.x = segmented_spline_c9_rev( rgbPre.x, ODT_48nits()); \n" \
 "rgbPost.y = segmented_spline_c9_rev( rgbPre.y, ODT_48nits()); \n" \
 "rgbPost.z = segmented_spline_c9_rev( rgbPre.z, ODT_48nits()); \n" \
-"float3 oces = mult_f3_f33( rgbPost, AP1_2_AP0_MAT_B); \n" \
+"float3 oces = mult_f3_f33( rgbPost, AP1_2_AP0_MAT); \n" \
 "return oces; \n" \
 "} \n" \
-"float3 InvODT_DCDM_P3D65limited( float3 outputCV) \n" \
-"{ \n" \
+"float3 InvODT_DCDM_P3D65limited( float3 outputCV) { \n" \
 "float3 XYZ = dcdm_decode( outputCV); \n" \
 "XYZ = mult_f3_f33( XYZ, invert_f33(calculate_cat_matrix( AP0.white, REC709_PRI.white))); \n" \
 "float3 linearCV = mult_f3_f33( XYZ, XYZtoRGB( AP1)); \n" \
 "float3 rgbPre; \n" \
-"rgbPre.x = linCV_2_Y( linearCV.x, 48.0f, pow(10.0f, log10(0.02f))); \n" \
-"rgbPre.y = linCV_2_Y( linearCV.y, 48.0f, pow(10.0f, log10(0.02f))); \n" \
-"rgbPre.z = linCV_2_Y( linearCV.z, 48.0f, pow(10.0f, log10(0.02f))); \n" \
+"rgbPre.x = linCV_2_Y( linearCV.x, 48.0f, exp10(log10(0.02f))); \n" \
+"rgbPre.y = linCV_2_Y( linearCV.y, 48.0f, exp10(log10(0.02f))); \n" \
+"rgbPre.z = linCV_2_Y( linearCV.z, 48.0f, exp10(log10(0.02f))); \n" \
 "float3 rgbPost; \n" \
 "rgbPost.x = segmented_spline_c9_rev( rgbPre.x, ODT_48nits()); \n" \
 "rgbPost.y = segmented_spline_c9_rev( rgbPre.y, ODT_48nits()); \n" \
 "rgbPost.z = segmented_spline_c9_rev( rgbPre.z, ODT_48nits()); \n" \
-"float3 oces = mult_f3_f33( rgbPost, AP1_2_AP0_MAT_B); \n" \
+"float3 oces = mult_f3_f33( rgbPost, AP1_2_AP0_MAT); \n" \
 "return oces; \n" \
 "} \n" \
-"float3 InvODT_RGBmonitor_100nits_dim( float3 outputCV) \n" \
-"{ \n" \
+"float3 InvODT_RGBmonitor_100nits_dim( float3 outputCV) { \n" \
 "Chromaticities DISPLAY_PRI = REC709_PRI; \n" \
 "mat3 DISPLAY_PRI_2_XYZ_MAT = RGBtoXYZ(DISPLAY_PRI); \n" \
 "float DISPGAMMA = 2.4f; \n" \
@@ -3502,21 +3391,21 @@ const char* kernelSource =  \
 "float3 XYZ = mult_f3_f33( linearCV, DISPLAY_PRI_2_XYZ_MAT); \n" \
 "XYZ = mult_f3_f33( XYZ, invert_f33( calculate_cat_matrix( AP0.white, REC709_PRI.white))); \n" \
 "linearCV = mult_f3_f33( XYZ, XYZtoRGB( AP1)); \n" \
-"linearCV = mult_f3_f33( linearCV, invert_f33( calc_sat_adjust_matrix( ODT_SAT_FACTOR, make_float3(RGBtoXYZ( AP1).c0.y, RGBtoXYZ( AP1).c1.y, RGBtoXYZ( AP1).c2.y)))); \n" \
+"linearCV = mult_f3_f33( linearCV, invert_f33( calc_sat_adjust_matrix( ODT_SAT_FACTOR,  \n" \
+"make_float3(RGBtoXYZ( AP1).c0.y, RGBtoXYZ( AP1).c1.y, RGBtoXYZ( AP1).c2.y)))); \n" \
 "linearCV = dimSurround_to_darkSurround( linearCV); \n" \
 "float3 rgbPre; \n" \
-"rgbPre.x = linCV_2_Y( linearCV.x, 48.0f, pow(10.0f, log10(0.02f))); \n" \
-"rgbPre.y = linCV_2_Y( linearCV.y, 48.0f, pow(10.0f, log10(0.02f))); \n" \
-"rgbPre.z = linCV_2_Y( linearCV.z, 48.0f, pow(10.0f, log10(0.02f))); \n" \
+"rgbPre.x = linCV_2_Y( linearCV.x, 48.0f, exp10(log10(0.02f))); \n" \
+"rgbPre.y = linCV_2_Y( linearCV.y, 48.0f, exp10(log10(0.02f))); \n" \
+"rgbPre.z = linCV_2_Y( linearCV.z, 48.0f, exp10(log10(0.02f))); \n" \
 "float3 rgbPost; \n" \
 "rgbPost.x = segmented_spline_c9_rev( rgbPre.x, ODT_48nits()); \n" \
 "rgbPost.y = segmented_spline_c9_rev( rgbPre.y, ODT_48nits()); \n" \
 "rgbPost.z = segmented_spline_c9_rev( rgbPre.z, ODT_48nits()); \n" \
-"float3 oces = mult_f3_f33( rgbPost, AP1_2_AP0_MAT_B); \n" \
+"float3 oces = mult_f3_f33( rgbPost, AP1_2_AP0_MAT); \n" \
 "return oces; \n" \
 "} \n" \
-"float3 InvODT_RGBmonitor_D60sim_100nits_dim( float3 outputCV) \n" \
-"{ \n" \
+"float3 InvODT_RGBmonitor_D60sim_100nits_dim( float3 outputCV) { \n" \
 "Chromaticities DISPLAY_PRI = REC709_PRI; \n" \
 "mat3 DISPLAY_PRI_2_XYZ_MAT = RGBtoXYZ(DISPLAY_PRI); \n" \
 "float DISPGAMMA = 2.4f; \n" \
@@ -3528,24 +3417,24 @@ const char* kernelSource =  \
 "linearCV.z = moncurve_f( outputCV.z, DISPGAMMA, OFFSET); \n" \
 "float3 XYZ = mult_f3_f33( linearCV, DISPLAY_PRI_2_XYZ_MAT); \n" \
 "linearCV = mult_f3_f33( XYZ, XYZtoRGB( AP1)); \n" \
-"linearCV = mult_f3_f33( linearCV, invert_f33( calc_sat_adjust_matrix( ODT_SAT_FACTOR, make_float3(RGBtoXYZ( AP1).c0.y, RGBtoXYZ( AP1).c1.y, RGBtoXYZ( AP1).c2.y)))); \n" \
+"linearCV = mult_f3_f33( linearCV, invert_f33( calc_sat_adjust_matrix( ODT_SAT_FACTOR,  \n" \
+"make_float3(RGBtoXYZ( AP1).c0.y, RGBtoXYZ( AP1).c1.y, RGBtoXYZ( AP1).c2.y)))); \n" \
 "linearCV = dimSurround_to_darkSurround( linearCV); \n" \
 "linearCV.x = linearCV.x / SCALE; \n" \
 "linearCV.y = linearCV.y / SCALE; \n" \
 "linearCV.z = linearCV.z / SCALE; \n" \
 "float3 rgbPre; \n" \
-"rgbPre.x = linCV_2_Y( linearCV.x, 48.0f, pow(10.0f, log10(0.02f))); \n" \
-"rgbPre.y = linCV_2_Y( linearCV.y, 48.0f, pow(10.0f, log10(0.02f))); \n" \
-"rgbPre.z = linCV_2_Y( linearCV.z, 48.0f, pow(10.0f, log10(0.02f))); \n" \
+"rgbPre.x = linCV_2_Y( linearCV.x, 48.0f, exp10(log10(0.02f))); \n" \
+"rgbPre.y = linCV_2_Y( linearCV.y, 48.0f, exp10(log10(0.02f))); \n" \
+"rgbPre.z = linCV_2_Y( linearCV.z, 48.0f, exp10(log10(0.02f))); \n" \
 "float3 rgbPost; \n" \
 "rgbPost.x = segmented_spline_c9_rev( rgbPre.x, ODT_48nits()); \n" \
 "rgbPost.y = segmented_spline_c9_rev( rgbPre.y, ODT_48nits()); \n" \
 "rgbPost.z = segmented_spline_c9_rev( rgbPre.z, ODT_48nits()); \n" \
-"float3 oces = mult_f3_f33( rgbPost, AP1_2_AP0_MAT_B); \n" \
+"float3 oces = mult_f3_f33( rgbPost, AP1_2_AP0_MAT); \n" \
 "return oces; \n" \
 "} \n" \
-"float3 RRTODT_P3D65_108nits_7_2nits_ST2084( float3 aces) \n" \
-"{ \n" \
+"float3 RRTODT_P3D65_108nits_7_2nits_ST2084( float3 aces) { \n" \
 "float Y_MIN = 0.0001f; \n" \
 "float Y_MID = 7.2f; \n" \
 "float Y_MAX = 108.0f; \n" \
@@ -3560,8 +3449,52 @@ const char* kernelSource =  \
 "LIMITING_PRI, EOTF, SURROUND, STRETCH_BLACK, D60_SIM, LEGAL_RANGE ); \n" \
 "return cv; \n" \
 "} \n" \
-"float3 RRTODT_Rec2020_1000nits_15nits_HLG( float3 aces) \n" \
-"{ \n" \
+"float3 RRTODT_P3D65_1000nits_15nits_ST2084( float3 aces) { \n" \
+"const float Y_MIN = 0.0001; \n" \
+"const float Y_MID = 15.0; \n" \
+"const float Y_MAX = 1000.0; \n" \
+"const Chromaticities DISPLAY_PRI = P3D65_PRI; \n" \
+"const Chromaticities LIMITING_PRI = P3D65_PRI; \n" \
+"const int EOTF = 0; \n" \
+"const int SURROUND = 0; \n" \
+"const bool STRETCH_BLACK = true; \n" \
+"const bool D60_SIM = false;                        \n" \
+"const bool LEGAL_RANGE = false; \n" \
+"float3 cv = outputTransform( aces, Y_MIN, Y_MID, Y_MAX, DISPLAY_PRI, \n" \
+"LIMITING_PRI, EOTF, SURROUND, STRETCH_BLACK, D60_SIM, LEGAL_RANGE ); \n" \
+"return cv; \n" \
+"} \n" \
+"float3 RRTODT_P3D65_2000nits_15nits_ST2084( float3 aces) { \n" \
+"const float Y_MIN = 0.0001; \n" \
+"const float Y_MID = 15.0; \n" \
+"const float Y_MAX = 2000.0; \n" \
+"const Chromaticities DISPLAY_PRI = P3D65_PRI; \n" \
+"const Chromaticities LIMITING_PRI = P3D65_PRI; \n" \
+"const int EOTF = 0; \n" \
+"const int SURROUND = 0; \n" \
+"const bool STRETCH_BLACK = true; \n" \
+"const bool D60_SIM = false;                        \n" \
+"const bool LEGAL_RANGE = false; \n" \
+"float3 cv = outputTransform( aces, Y_MIN, Y_MID, Y_MAX, DISPLAY_PRI, \n" \
+"LIMITING_PRI, EOTF, SURROUND, STRETCH_BLACK, D60_SIM, LEGAL_RANGE ); \n" \
+"return cv; \n" \
+"} \n" \
+"float3 RRTODT_P3D65_4000nits_15nits_ST2084( float3 aces) { \n" \
+"const float Y_MIN = 0.0001; \n" \
+"const float Y_MID = 15.0; \n" \
+"const float Y_MAX = 4000.0; \n" \
+"const Chromaticities DISPLAY_PRI = P3D65_PRI; \n" \
+"const Chromaticities LIMITING_PRI = P3D65_PRI; \n" \
+"const int EOTF = 0; \n" \
+"const int SURROUND = 0; \n" \
+"const bool STRETCH_BLACK = true; \n" \
+"const bool D60_SIM = false;                        \n" \
+"const bool LEGAL_RANGE = false; \n" \
+"float3 cv = outputTransform( aces, Y_MIN, Y_MID, Y_MAX, DISPLAY_PRI, \n" \
+"LIMITING_PRI, EOTF, SURROUND, STRETCH_BLACK, D60_SIM, LEGAL_RANGE ); \n" \
+"return cv; \n" \
+"} \n" \
+"float3 RRTODT_Rec2020_1000nits_15nits_HLG( float3 aces) { \n" \
 "float Y_MIN = 0.0001f; \n" \
 "float Y_MID = 15.0f; \n" \
 "float Y_MAX = 1000.0f; \n" \
@@ -3576,8 +3509,7 @@ const char* kernelSource =  \
 "LIMITING_PRI, EOTF, SURROUND, STRETCH_BLACK, D60_SIM, LEGAL_RANGE ); \n" \
 "return cv; \n" \
 "} \n" \
-"float3 RRTODT_Rec2020_1000nits_15nits_ST2084( float3 aces) \n" \
-"{ \n" \
+"float3 RRTODT_Rec2020_1000nits_15nits_ST2084( float3 aces) { \n" \
 "float Y_MIN = 0.0001f; \n" \
 "float Y_MID = 15.0f; \n" \
 "float Y_MAX = 1000.0f; \n" \
@@ -3592,8 +3524,7 @@ const char* kernelSource =  \
 "LIMITING_PRI, EOTF, SURROUND, STRETCH_BLACK, D60_SIM, LEGAL_RANGE ); \n" \
 "return cv; \n" \
 "} \n" \
-"float3 RRTODT_Rec2020_2000nits_15nits_ST2084( float3 aces) \n" \
-"{ \n" \
+"float3 RRTODT_Rec2020_2000nits_15nits_ST2084( float3 aces) { \n" \
 "float Y_MIN = 0.0001f; \n" \
 "float Y_MID = 15.0f; \n" \
 "float Y_MAX = 2000.0f; \n" \
@@ -3608,8 +3539,7 @@ const char* kernelSource =  \
 "LIMITING_PRI, EOTF, SURROUND, STRETCH_BLACK, D60_SIM, LEGAL_RANGE ); \n" \
 "return cv; \n" \
 "} \n" \
-"float3 RRTODT_Rec2020_4000nits_15nits_ST2084( float3 aces) \n" \
-"{ \n" \
+"float3 RRTODT_Rec2020_4000nits_15nits_ST2084( float3 aces) { \n" \
 "float Y_MIN = 0.0001f; \n" \
 "float Y_MID = 15.0f; \n" \
 "float Y_MAX = 4000.0f; \n" \
@@ -3624,8 +3554,7 @@ const char* kernelSource =  \
 "LIMITING_PRI, EOTF, SURROUND, STRETCH_BLACK, D60_SIM, LEGAL_RANGE ); \n" \
 "return cv; \n" \
 "} \n" \
-"float3 RRTODT_Rec709_100nits_10nits_BT1886( float3 aces) \n" \
-"{ \n" \
+"float3 RRTODT_Rec709_100nits_10nits_BT1886( float3 aces) { \n" \
 "float Y_MIN = 0.0001f; \n" \
 "float Y_MID = 10.0f; \n" \
 "float Y_MAX = 100.0f; \n" \
@@ -3640,8 +3569,7 @@ const char* kernelSource =  \
 "LIMITING_PRI, EOTF, SURROUND, STRETCH_BLACK, D60_SIM, LEGAL_RANGE ); \n" \
 "return cv; \n" \
 "} \n" \
-"float3 RRTODT_Rec709_100nits_10nits_sRGB( float3 aces) \n" \
-"{ \n" \
+"float3 RRTODT_Rec709_100nits_10nits_sRGB( float3 aces) { \n" \
 "float Y_MIN = 0.0001f; \n" \
 "float Y_MID = 10.0f; \n" \
 "float Y_MAX = 100.0f; \n" \
@@ -3656,8 +3584,7 @@ const char* kernelSource =  \
 "LIMITING_PRI, EOTF, SURROUND, STRETCH_BLACK, D60_SIM, LEGAL_RANGE ); \n" \
 "return cv; \n" \
 "} \n" \
-"float3 InvRRTODT_P3D65_108nits_7_2nits_ST2084( float3 aces) \n" \
-"{ \n" \
+"float3 InvRRTODT_P3D65_108nits_7_2nits_ST2084( float3 aces) { \n" \
 "float Y_MIN = 0.0001f; \n" \
 "float Y_MID = 7.2f; \n" \
 "float Y_MAX = 108.0f; \n" \
@@ -3672,8 +3599,52 @@ const char* kernelSource =  \
 "LIMITING_PRI, EOTF, SURROUND, STRETCH_BLACK, D60_SIM, LEGAL_RANGE ); \n" \
 "return cv; \n" \
 "} \n" \
-"float3 InvRRTODT_Rec2020_1000nits_15nits_HLG( float3 cv) \n" \
-"{ \n" \
+"float3 InvRRTODT_P3D65_1000nits_15nits_ST2084( float3 aces) { \n" \
+"float Y_MIN = 0.0001f; \n" \
+"float Y_MID = 15.0f; \n" \
+"float Y_MAX = 1000.0f; \n" \
+"Chromaticities DISPLAY_PRI = P3D65_PRI; \n" \
+"Chromaticities LIMITING_PRI = P3D65_PRI; \n" \
+"int EOTF = 0; \n" \
+"int SURROUND = 0; \n" \
+"bool STRETCH_BLACK = true; \n" \
+"bool D60_SIM = false; \n" \
+"bool LEGAL_RANGE = false; \n" \
+"float3 cv = invOutputTransform( aces, Y_MIN, Y_MID, Y_MAX, DISPLAY_PRI, \n" \
+"LIMITING_PRI, EOTF, SURROUND, STRETCH_BLACK, D60_SIM, LEGAL_RANGE ); \n" \
+"return cv; \n" \
+"} \n" \
+"float3 InvRRTODT_P3D65_2000nits_15nits_ST2084( float3 aces) { \n" \
+"float Y_MIN = 0.0001f; \n" \
+"float Y_MID = 15.0f; \n" \
+"float Y_MAX = 2000.0f; \n" \
+"Chromaticities DISPLAY_PRI = P3D65_PRI; \n" \
+"Chromaticities LIMITING_PRI = P3D65_PRI; \n" \
+"int EOTF = 0; \n" \
+"int SURROUND = 0; \n" \
+"bool STRETCH_BLACK = true; \n" \
+"bool D60_SIM = false; \n" \
+"bool LEGAL_RANGE = false; \n" \
+"float3 cv = invOutputTransform( aces, Y_MIN, Y_MID, Y_MAX, DISPLAY_PRI, \n" \
+"LIMITING_PRI, EOTF, SURROUND, STRETCH_BLACK, D60_SIM, LEGAL_RANGE ); \n" \
+"return cv; \n" \
+"} \n" \
+"float3 InvRRTODT_P3D65_4000nits_15nits_ST2084( float3 aces) { \n" \
+"float Y_MIN = 0.0001f; \n" \
+"float Y_MID = 15.0f; \n" \
+"float Y_MAX = 4000.0f; \n" \
+"Chromaticities DISPLAY_PRI = P3D65_PRI; \n" \
+"Chromaticities LIMITING_PRI = P3D65_PRI; \n" \
+"int EOTF = 0; \n" \
+"int SURROUND = 0; \n" \
+"bool STRETCH_BLACK = true; \n" \
+"bool D60_SIM = false; \n" \
+"bool LEGAL_RANGE = false; \n" \
+"float3 cv = invOutputTransform( aces, Y_MIN, Y_MID, Y_MAX, DISPLAY_PRI, \n" \
+"LIMITING_PRI, EOTF, SURROUND, STRETCH_BLACK, D60_SIM, LEGAL_RANGE ); \n" \
+"return cv; \n" \
+"} \n" \
+"float3 InvRRTODT_Rec2020_1000nits_15nits_HLG( float3 cv) { \n" \
 "float Y_MIN = 0.0001f; \n" \
 "float Y_MID = 15.0f; \n" \
 "float Y_MAX = 1000.0f; \n" \
@@ -3688,8 +3659,7 @@ const char* kernelSource =  \
 "LIMITING_PRI, EOTF, SURROUND, STRETCH_BLACK, D60_SIM, LEGAL_RANGE ); \n" \
 "return aces; \n" \
 "} \n" \
-"float3 InvRRTODT_Rec2020_1000nits_15nits_ST2084( float3 cv) \n" \
-"{ \n" \
+"float3 InvRRTODT_Rec2020_1000nits_15nits_ST2084( float3 cv) { \n" \
 "float Y_MIN = 0.0001f; \n" \
 "float Y_MID = 15.0f; \n" \
 "float Y_MAX = 1000.0f; \n" \
@@ -3704,8 +3674,7 @@ const char* kernelSource =  \
 "LIMITING_PRI, EOTF, SURROUND, STRETCH_BLACK, D60_SIM, LEGAL_RANGE ); \n" \
 "return aces; \n" \
 "} \n" \
-"float3 InvRRTODT_Rec2020_2000nits_15nits_ST2084( float3 cv) \n" \
-"{ \n" \
+"float3 InvRRTODT_Rec2020_2000nits_15nits_ST2084( float3 cv) { \n" \
 "float Y_MIN = 0.0001f; \n" \
 "float Y_MID = 15.0f; \n" \
 "float Y_MAX = 2000.0f; \n" \
@@ -3720,8 +3689,7 @@ const char* kernelSource =  \
 "LIMITING_PRI, EOTF, SURROUND, STRETCH_BLACK, D60_SIM, LEGAL_RANGE ); \n" \
 "return aces; \n" \
 "} \n" \
-"float3 InvRRTODT_Rec2020_4000nits_15nits_ST2084( float3 cv) \n" \
-"{ \n" \
+"float3 InvRRTODT_Rec2020_4000nits_15nits_ST2084( float3 cv) { \n" \
 "float Y_MIN = 0.0001f; \n" \
 "float Y_MID = 15.0f; \n" \
 "float Y_MAX = 4000.0f; \n" \
@@ -3736,8 +3704,7 @@ const char* kernelSource =  \
 "LIMITING_PRI, EOTF, SURROUND, STRETCH_BLACK, D60_SIM, LEGAL_RANGE ); \n" \
 "return aces; \n" \
 "} \n" \
-"float3 InvRRTODT_Rec709_100nits_10nits_BT1886( float3 aces) \n" \
-"{ \n" \
+"float3 InvRRTODT_Rec709_100nits_10nits_BT1886( float3 aces) { \n" \
 "float Y_MIN = 0.0001f; \n" \
 "float Y_MID = 10.0f; \n" \
 "float Y_MAX = 100.0f; \n" \
@@ -3752,8 +3719,7 @@ const char* kernelSource =  \
 "LIMITING_PRI, EOTF, SURROUND, STRETCH_BLACK, D60_SIM, LEGAL_RANGE ); \n" \
 "return cv; \n" \
 "} \n" \
-"float3 InvRRTODT_Rec709_100nits_10nits_sRGB( float3 aces) \n" \
-"{ \n" \
+"float3 InvRRTODT_Rec709_100nits_10nits_sRGB( float3 aces) { \n" \
 "float Y_MIN = 0.0001f; \n" \
 "float Y_MID = 10.0f; \n" \
 "float Y_MAX = 100.0f; \n" \
@@ -3767,170 +3733,208 @@ const char* kernelSource =  \
 "float3 cv = invOutputTransform( aces, Y_MIN, Y_MID, Y_MAX, DISPLAY_PRI, \n" \
 "LIMITING_PRI, EOTF, SURROUND, STRETCH_BLACK, D60_SIM, LEGAL_RANGE ); \n" \
 "return cv; \n" \
-"} \n" \
-"float3 IDT_sRGB( float3 rgb) \n" \
-"{ \n" \
-"float3 aces; \n" \
-"aces = InvODT_sRGB_100nits_dim(rgb); \n" \
-"aces = segmented_spline_c5_rev_f3( aces); \n" \
-"aces = max_f3_f(aces, 0.0f); \n" \
-"return aces; \n" \
-"} \n" \
-"float3 IDT_Rec709( float3 rgb) \n" \
-"{ \n" \
-"float3 aces; \n" \
-"aces = InvODT_Rec709_100nits_dim(rgb); \n" \
-"aces = segmented_spline_c5_rev_f3( aces); \n" \
-"aces = max_f3_f(aces, 0.0f); \n" \
-"return aces; \n" \
 "} \n" \
 "kernel void k_Simple( const device float* p_Input [[buffer (0)]], device float* p_Output [[buffer (1)]], constant int& p_Width [[buffer (2)]],  \n" \
 "constant int& p_Height [[buffer (3)]], uint2 id [[ thread_position_in_grid ]]) {                                 				    \n" \
-"if (id.x < p_Width && id.y < p_Height) \n" \
-"{ \n" \
+"if (id.x < p_Width && id.y < p_Height) { \n" \
 "const int index = (id.y * p_Width + id.x) * 4; \n" \
 "p_Output[index] = p_Input[index];  \n" \
 "p_Output[index + 1] = p_Input[index + 1];  \n" \
 "p_Output[index + 2] = p_Input[index + 2];  \n" \
 "p_Output[index + 3] = p_Input[index + 3];  \n" \
 "}} \n" \
-"kernel void k_IDT( device float* p_Input [[buffer (1)]], constant int& p_Width [[buffer (2)]], constant int& p_Height [[buffer (3)]],  \n" \
-"constant int& p_IDT [[buffer (5)]], uint2 id [[ thread_position_in_grid ]]) { \n" \
-"if (id.x < p_Width && id.y < p_Height) \n" \
-"{ \n" \
+"kernel void k_CSCIN( device float* p_Input [[buffer (1)]], constant int& p_Width [[buffer (2)]], constant int& p_Height [[buffer (3)]],  \n" \
+"constant int& p_CSCIN [[buffer (4)]], uint2 id [[ thread_position_in_grid ]]) { \n" \
+"if (id.x < p_Width && id.y < p_Height) { \n" \
 "const int index = (id.y * p_Width + id.x) * 4; \n" \
 "float3 aces; \n" \
 "aces.x = p_Input[index]; \n" \
 "aces.y = p_Input[index + 1]; \n" \
 "aces.z = p_Input[index + 2]; \n" \
-"if (p_IDT == 1) \n" \
-"aces = ACEScc_to_ACES(aces); \n" \
-"if (p_IDT == 2) \n" \
-"aces = ACEScct_to_ACES(aces); \n" \
-"if (p_IDT == 3) \n" \
-"aces = IDT_Alexa_v3_logC_EI800(aces); \n" \
-"if (p_IDT == 4) \n" \
-"aces = IDT_Alexa_v3_raw_EI800_CCT6500(aces); \n" \
-"if (p_IDT == 5) \n" \
-"aces = ADX_to_ACES(aces); \n" \
-"if (p_IDT == 6) \n" \
-"aces = IDT_Panasonic_V35(aces); \n" \
-"if (p_IDT == 7) \n" \
-"aces = IDT_REDWideGamutRGB_Log3G10(aces); \n" \
-"if (p_IDT == 8) \n" \
-"aces = IDT_Canon_C100_A_D55(aces); \n" \
-"if (p_IDT == 9) \n" \
-"aces = IDT_Canon_C100_A_Tng(aces); \n" \
-"if (p_IDT == 10) \n" \
-"aces = IDT_Canon_C100mk2_A_D55(aces); \n" \
-"if (p_IDT == 11) \n" \
-"aces = IDT_Canon_C100mk2_A_Tng(aces); \n" \
-"if (p_IDT == 12) \n" \
-"aces = IDT_Canon_C300_A_D55(aces); \n" \
-"if (p_IDT == 13) \n" \
-"aces = IDT_Canon_C300_A_Tng(aces); \n" \
-"if (p_IDT == 14) \n" \
-"aces = IDT_Canon_C500_A_D55(aces); \n" \
-"if (p_IDT == 15) \n" \
-"aces = IDT_Canon_C500_A_Tng(aces); \n" \
-"if (p_IDT == 16) \n" \
-"aces = IDT_Canon_C500_B_D55(aces); \n" \
-"if (p_IDT == 17) \n" \
-"aces = IDT_Canon_C500_B_Tng(aces); \n" \
-"if (p_IDT == 18) \n" \
-"aces = IDT_Canon_C500_CinemaGamut_A_D55(aces); \n" \
-"if (p_IDT == 19) \n" \
-"aces = IDT_Canon_C500_CinemaGamut_A_Tng(aces); \n" \
-"if (p_IDT == 20) \n" \
-"aces = IDT_Canon_C500_DCI_P3_A_D55(aces); \n" \
-"if (p_IDT == 21) \n" \
-"aces = IDT_Canon_C500_DCI_P3_A_Tng(aces); \n" \
-"if (p_IDT == 22) \n" \
-"aces = IDT_Canon_C300mk2_CanonLog_BT2020_D_D55(aces); \n" \
-"if (p_IDT == 23) \n" \
-"aces = IDT_Canon_C300mk2_CanonLog_BT2020_D_Tng(aces); \n" \
-"if (p_IDT == 24) \n" \
-"aces = IDT_Canon_C300mk2_CanonLog_CinemaGamut_C_D55(aces); \n" \
-"if (p_IDT == 25) \n" \
-"aces = IDT_Canon_C300mk2_CanonLog_CinemaGamut_C_Tng(aces); \n" \
-"if (p_IDT == 26) \n" \
-"aces = IDT_Canon_C300mk2_CanonLog2_BT2020_B_D55(aces); \n" \
-"if (p_IDT == 27) \n" \
-"aces = IDT_Canon_C300mk2_CanonLog2_BT2020_B_Tng(aces); \n" \
-"if (p_IDT == 28) \n" \
-"aces = IDT_Canon_C300mk2_CanonLog2_CinemaGamut_A_D55(aces); \n" \
-"if (p_IDT == 29) \n" \
-"aces = IDT_Canon_C300mk2_CanonLog2_CinemaGamut_A_Tng(aces); \n" \
-"if (p_IDT == 30) \n" \
-"aces = IDT_Canon_C300mk2_CanonLog3_BT2020_F_D55(aces); \n" \
-"if (p_IDT == 31) \n" \
-"aces = IDT_Canon_C300mk2_CanonLog3_BT2020_F_Tng(aces); \n" \
-"if (p_IDT == 32) \n" \
-"aces = IDT_Canon_C300mk2_CanonLog3_CinemaGamut_E_D55(aces); \n" \
-"if (p_IDT == 33) \n" \
-"aces = IDT_Canon_C300mk2_CanonLog3_CinemaGamut_E_Tng(aces); \n" \
-"if (p_IDT == 34) \n" \
-"aces = IDT_Sony_SLog1_SGamut(aces); \n" \
-"if (p_IDT == 35) \n" \
-"aces = IDT_Sony_SLog2_SGamut_Daylight(aces); \n" \
-"if (p_IDT == 36) \n" \
-"aces = IDT_Sony_SLog2_SGamut_Tungsten(aces); \n" \
-"if (p_IDT == 37) \n" \
-"aces = IDT_Sony_SLog3_SGamut3(aces); \n" \
-"if (p_IDT == 38) \n" \
-"aces = IDT_Sony_SLog3_SGamut3Cine(aces); \n" \
-"if (p_IDT == 39) \n" \
-"aces = IDT_Rec709(aces); \n" \
-"if (p_IDT == 40) \n" \
-"aces = IDT_sRGB(aces); \n" \
+"switch (p_CSCIN){ \n" \
+"case 0: \n" \
+"{} \n" \
+"break; \n" \
+"case 1: \n" \
+"{aces = ACEScc_to_ACES(aces);} \n" \
+"break; \n" \
+"case 2: \n" \
+"{aces = ACEScct_to_ACES(aces);} \n" \
+"break; \n" \
+"case 3: \n" \
+"{aces = ACEScg_to_ACES(aces);} \n" \
+"break; \n" \
+"case 4: \n" \
+"{aces = ACESproxy_to_ACES(aces);} \n" \
+"break; \n" \
+"case 5: \n" \
+"{aces = ADX_to_ACES(aces);} \n" \
+"break; \n" \
+"case 6: \n" \
+"{aces = ICpCt_to_ACES(aces);} \n" \
+"break; \n" \
+"case 7: \n" \
+"{aces = LogC_EI800_AWG_to_ACES(aces);} \n" \
+"break; \n" \
+"case 8: \n" \
+"{aces = Log3G10_RWG_to_ACES(aces);} \n" \
+"break; \n" \
+"case 9: \n" \
+"{aces = SLog3_SG3_to_ACES(aces);} \n" \
+"break; \n" \
+"case 10: \n" \
+"{aces = SLog3_SG3C_to_ACES(aces);} \n" \
+"} \n" \
+"p_Input[index] = aces.x;  \n" \
+"p_Input[index + 1] = aces.y; \n" \
+"p_Input[index + 2] = aces.z; \n" \
+"}} \n" \
+"kernel void k_IDT( device float* p_Input [[buffer (1)]], constant int& p_Width [[buffer (2)]], constant int& p_Height [[buffer (3)]],  \n" \
+"constant int& p_IDT [[buffer (5)]], uint2 id [[ thread_position_in_grid ]]) { \n" \
+"if (id.x < p_Width && id.y < p_Height) { \n" \
+"const int index = (id.y * p_Width + id.x) * 4; \n" \
+"float3 aces; \n" \
+"aces.x = p_Input[index]; \n" \
+"aces.y = p_Input[index + 1]; \n" \
+"aces.z = p_Input[index + 2]; \n" \
+"switch (p_IDT){ \n" \
+"case 0: \n" \
+"{} \n" \
+"break; \n" \
+"case 1: \n" \
+"{aces = IDT_Alexa_v3_raw_EI800_CCT6500(aces);} \n" \
+"break; \n" \
+"case 2: \n" \
+"{aces = IDT_Panasonic_V35(aces);} \n" \
+"break; \n" \
+"case 3: \n" \
+"{aces = IDT_Canon_C100_A_D55(aces);} \n" \
+"break; \n" \
+"case 4: \n" \
+"{aces = IDT_Canon_C100_A_Tng(aces);} \n" \
+"break; \n" \
+"case 5: \n" \
+"{aces = IDT_Canon_C100mk2_A_D55(aces);} \n" \
+"break; \n" \
+"case 6: \n" \
+"{aces = IDT_Canon_C100mk2_A_Tng(aces);} \n" \
+"break; \n" \
+"case 7: \n" \
+"{aces = IDT_Canon_C300_A_D55(aces);} \n" \
+"break; \n" \
+"case 8: \n" \
+"{aces = IDT_Canon_C300_A_Tng(aces);} \n" \
+"break; \n" \
+"case 9: \n" \
+"{aces = IDT_Canon_C500_A_D55(aces);} \n" \
+"break; \n" \
+"case 10: \n" \
+"{aces = IDT_Canon_C500_A_Tng(aces);} \n" \
+"break; \n" \
+"case 11: \n" \
+"{aces = IDT_Canon_C500_B_D55(aces);} \n" \
+"break; \n" \
+"case 12: \n" \
+"{aces = IDT_Canon_C500_B_Tng(aces);} \n" \
+"break; \n" \
+"case 13: \n" \
+"{aces = IDT_Canon_C500_CinemaGamut_A_D55(aces);} \n" \
+"break; \n" \
+"case 14: \n" \
+"{aces = IDT_Canon_C500_CinemaGamut_A_Tng(aces);} \n" \
+"break; \n" \
+"case 15: \n" \
+"{aces = IDT_Canon_C500_DCI_P3_A_D55(aces);} \n" \
+"break; \n" \
+"case 16: \n" \
+"{aces = IDT_Canon_C500_DCI_P3_A_Tng(aces);} \n" \
+"break; \n" \
+"case 17: \n" \
+"{aces = IDT_Canon_C300mk2_CanonLog_BT2020_D_D55(aces);} \n" \
+"break; \n" \
+"case 18: \n" \
+"{aces = IDT_Canon_C300mk2_CanonLog_BT2020_D_Tng(aces);} \n" \
+"break; \n" \
+"case 19: \n" \
+"{aces = IDT_Canon_C300mk2_CanonLog_CinemaGamut_C_D55(aces);} \n" \
+"break; \n" \
+"case 20: \n" \
+"{aces = IDT_Canon_C300mk2_CanonLog_CinemaGamut_C_Tng(aces);} \n" \
+"break; \n" \
+"case 21: \n" \
+"{aces = IDT_Canon_C300mk2_CanonLog2_BT2020_B_D55(aces);} \n" \
+"break; \n" \
+"case 22: \n" \
+"{aces = IDT_Canon_C300mk2_CanonLog2_BT2020_B_Tng(aces);} \n" \
+"break; \n" \
+"case 23: \n" \
+"{aces = IDT_Canon_C300mk2_CanonLog2_CinemaGamut_A_D55(aces);} \n" \
+"break; \n" \
+"case 24: \n" \
+"{aces = IDT_Canon_C300mk2_CanonLog2_CinemaGamut_A_Tng(aces);} \n" \
+"break; \n" \
+"case 25: \n" \
+"{aces = IDT_Canon_C300mk2_CanonLog3_BT2020_F_D55(aces);} \n" \
+"break; \n" \
+"case 26: \n" \
+"{aces = IDT_Canon_C300mk2_CanonLog3_BT2020_F_Tng(aces);} \n" \
+"break; \n" \
+"case 27: \n" \
+"{aces = IDT_Canon_C300mk2_CanonLog3_CinemaGamut_E_D55(aces);} \n" \
+"break; \n" \
+"case 28: \n" \
+"{aces = IDT_Canon_C300mk2_CanonLog3_CinemaGamut_E_Tng(aces);} \n" \
+"break; \n" \
+"case 29: \n" \
+"{aces = IDT_Sony_SLog1_SGamut(aces);} \n" \
+"break; \n" \
+"case 30: \n" \
+"{aces = IDT_Sony_SLog2_SGamut_Daylight(aces);} \n" \
+"break; \n" \
+"case 31: \n" \
+"{aces = IDT_Sony_SLog2_SGamut_Tungsten(aces);} \n" \
+"break; \n" \
+"case 32: \n" \
+"{aces = IDT_Sony_Venice_SGamut3(aces);} \n" \
+"break; \n" \
+"case 33: \n" \
+"{aces = IDT_Sony_Venice_SGamut3Cine(aces);} \n" \
+"break; \n" \
+"case 34: \n" \
+"{aces = IDT_Rec709(aces);} \n" \
+"break; \n" \
+"case 35: \n" \
+"{aces = IDT_sRGB(aces);} \n" \
+"} \n" \
 "p_Input[index] = aces.x;  \n" \
 "p_Input[index + 1] = aces.y; \n" \
 "p_Input[index + 2] = aces.z; \n" \
 "}} \n" \
 "kernel void k_Exposure( device float* p_Input [[buffer (1)]], constant int& p_Width [[buffer (2)]],  \n" \
-"constant int& p_Height [[buffer (3)]], constant float& p_Exposure [[buffer (4)]], uint2 id [[ thread_position_in_grid ]]) {                                 				    \n" \
-"if (id.x < p_Width && id.y < p_Height) \n" \
-"{ \n" \
+"constant int& p_Height [[buffer (3)]], constant float& p_Exposure [[buffer (6)]], uint2 id [[ thread_position_in_grid ]]) {                                 				    \n" \
+"if (id.x < p_Width && id.y < p_Height) { \n" \
 "const int index = (id.y * p_Width + id.x) * 4; \n" \
 "p_Input[index] = p_Input[index] * exp2(p_Exposure); \n" \
 "p_Input[index + 1] = p_Input[index + 1] * exp2(p_Exposure); \n" \
 "p_Input[index + 2] = p_Input[index + 2] * exp2(p_Exposure); \n" \
 "}} \n" \
-"kernel void k_ACESIN( device float* p_Input [[buffer (1)]], constant int& p_Width [[buffer (2)]], constant int& p_Height [[buffer (3)]],  \n" \
-"constant int& p_ACESIN [[buffer (6)]], uint2 id [[ thread_position_in_grid ]]) { \n" \
-"if (id.x < p_Width && id.y < p_Height) \n" \
-"{ \n" \
-"const int index = (id.y * p_Width + id.x) * 4; \n" \
-"float3 aces; \n" \
-"aces.x = p_Input[index]; \n" \
-"aces.y = p_Input[index + 1]; \n" \
-"aces.z = p_Input[index + 2]; \n" \
-"if (p_ACESIN == 1) \n" \
-"aces = ACES_to_ACEScc(aces); \n" \
-"if (p_ACESIN == 2) \n" \
-"aces = ACES_to_ACEScct(aces); \n" \
-"if (p_ACESIN == 3) \n" \
-"aces = ACES_to_ACEScg(aces); \n" \
-"if (p_ACESIN == 4) \n" \
-"aces = ACES_to_ACESproxy(aces); \n" \
-"p_Input[index] = aces.x;  \n" \
-"p_Input[index + 1] = aces.y; \n" \
-"p_Input[index + 2] = aces.z; \n" \
-"}} \n" \
 "kernel void k_LMT( device float* p_Input [[buffer (1)]], constant int& p_Width [[buffer (2)]], constant int& p_Height [[buffer (3)]],  \n" \
 "constant int& p_LMT [[buffer (7)]], constant float* p_LMTScale [[buffer (13)]], uint2 id [[ thread_position_in_grid ]]) { \n" \
-"if (id.x < p_Width && id.y < p_Height) \n" \
-"{ \n" \
+"if (id.x < p_Width && id.y < p_Height) { \n" \
 "const int index = (id.y * p_Width + id.x) * 4; \n" \
 "float3 aces; \n" \
 "aces.x = p_Input[index]; \n" \
 "aces.y = p_Input[index + 1]; \n" \
 "aces.z = p_Input[index + 2]; \n" \
-"if (p_LMT == 1) { \n" \
+"switch (p_LMT){ \n" \
+"case 0: \n" \
+"{} \n" \
+"break; \n" \
+"case 1: \n" \
+"{ \n" \
 "if(p_LMTScale[0] != 1.0f) \n" \
 "aces = scale_C(aces, p_LMTScale[0]); \n" \
-"if(!(p_LMTScale[1] == 1.0f && p_LMTScale[2] == 0.0f && p_LMTScale[3] == 1.0f)) \n" \
-"{ \n" \
+"if(!(p_LMTScale[1] == 1.0f && p_LMTScale[2] == 0.0f && p_LMTScale[3] == 1.0f)) { \n" \
 "float3 SLOPE = {p_LMTScale[1], p_LMTScale[1], p_LMTScale[1]}; \n" \
 "float3 OFFSET = {p_LMTScale[2], p_LMTScale[2], p_LMTScale[2]}; \n" \
 "float3 POWER = {p_LMTScale[3], p_LMTScale[3], p_LMTScale[3]}; \n" \
@@ -3951,11 +3955,15 @@ const char* kernelSource =  \
 "if(p_LMTScale[23] != 1.0f) \n" \
 "aces = scale_C_at_H(aces, p_LMTScale[21], p_LMTScale[22], p_LMTScale[23]); \n" \
 "} \n" \
-"if (p_LMT == 2) \n" \
-"aces = LMT_BlueLightArtifactFix(aces); \n" \
-"if (p_LMT == 3) \n" \
-"aces = LMT_PFE(aces); \n" \
-"if (p_LMT == 4) { \n" \
+"break; \n" \
+"case 2: \n" \
+"{aces = LMT_BlueLightArtifactFix(aces);} \n" \
+"break; \n" \
+"case 3: \n" \
+"{aces = LMT_PFE(aces);} \n" \
+"break; \n" \
+"case 4: \n" \
+"{ \n" \
 "if(p_LMTScale[0] != 1.0f) \n" \
 "aces = scale_C(aces, p_LMTScale[0]); \n" \
 "float3 SLOPE = {p_LMTScale[1], p_LMTScale[1], p_LMTScale[1] * 0.94f}; \n" \
@@ -3977,37 +3985,62 @@ const char* kernelSource =  \
 "if(p_LMTScale[23] != 1.0f) \n" \
 "aces = scale_C_at_H(aces, p_LMTScale[21], p_LMTScale[22], p_LMTScale[23]); \n" \
 "} \n" \
-"if (p_LMT == 5) \n" \
-"aces = LMT_Bleach(aces); \n" \
+"break; \n" \
+"case 5: \n" \
+"{aces = LMT_Bleach(aces);}} \n" \
 "p_Input[index] = aces.x;  \n" \
 "p_Input[index + 1] = aces.y; \n" \
 "p_Input[index + 2] = aces.z; \n" \
 "}} \n" \
-"kernel void k_ACESOUT( device float* p_Input [[buffer (1)]], constant int& p_Width [[buffer (2)]], constant int& p_Height [[buffer (3)]],  \n" \
-"constant int& p_ACESOUT [[buffer (8)]], uint2 id [[ thread_position_in_grid ]]) { \n" \
-"if (id.x < p_Width && id.y < p_Height) \n" \
-"{ \n" \
+"kernel void k_CSCOUT( device float* p_Input [[buffer (1)]], constant int& p_Width [[buffer (2)]], constant int& p_Height [[buffer (3)]],  \n" \
+"constant int& p_CSCOUT [[buffer (8)]], uint2 id [[ thread_position_in_grid ]]) { \n" \
+"if (id.x < p_Width && id.y < p_Height) { \n" \
 "const int index = (id.y * p_Width + id.x) * 4; \n" \
 "float3 aces; \n" \
 "aces.x = p_Input[index]; \n" \
 "aces.y = p_Input[index + 1]; \n" \
 "aces.z = p_Input[index + 2]; \n" \
-"if (p_ACESOUT == 1) \n" \
-"aces = ACEScc_to_ACES(aces); \n" \
-"if (p_ACESOUT == 2) \n" \
-"aces = ACEScct_to_ACES(aces); \n" \
-"if (p_ACESOUT == 3) \n" \
-"aces = ACEScg_to_ACES(aces); \n" \
-"if (p_ACESOUT == 4) \n" \
-"aces = ACESproxy_to_ACES(aces); \n" \
+"switch (p_CSCOUT){ \n" \
+"case 0: \n" \
+"{} \n" \
+"break; \n" \
+"case 1: \n" \
+"{aces = ACES_to_ACEScc(aces);} \n" \
+"break; \n" \
+"case 2: \n" \
+"{aces = ACES_to_ACEScct(aces);} \n" \
+"break; \n" \
+"case 3: \n" \
+"{aces = ACES_to_ACEScg(aces);} \n" \
+"break; \n" \
+"case 4: \n" \
+"{aces = ACES_to_ACESproxy(aces);} \n" \
+"break; \n" \
+"case 5: \n" \
+"{aces = ACES_to_ADX(aces);} \n" \
+"break; \n" \
+"case 6: \n" \
+"{aces = ACES_to_ICpCt(aces);} \n" \
+"break; \n" \
+"case 7: \n" \
+"{aces = ACES_to_LogC_EI800_AWG(aces);} \n" \
+"break; \n" \
+"case 8: \n" \
+"{aces = ACES_to_Log3G10_RWG(aces);} \n" \
+"break; \n" \
+"case 9: \n" \
+"{aces = ACES_to_SLog3_SG3(aces);} \n" \
+"break; \n" \
+"case 10: \n" \
+"{aces = ACES_to_SLog3_SG3C(aces);} \n" \
+"} \n" \
 "p_Input[index] = aces.x;  \n" \
 "p_Input[index + 1] = aces.y; \n" \
 "p_Input[index + 2] = aces.z; \n" \
 "}} \n" \
 "kernel void k_RRT( device float* p_Input [[buffer (1)]], constant int& p_Width [[buffer (2)]], constant int& p_Height [[buffer (3)]], \n" \
 "constant int& p_RRT [[buffer (9)]], uint2 id [[ thread_position_in_grid ]]) { \n" \
-"if (id.x < p_Width && id.y < p_Height) \n" \
-"{ \n" \
+"if (id.x < p_Width && id.y < p_Height) { \n" \
 "const int index = (id.y * p_Width + id.x) * 4; \n" \
 "float3 aces; \n" \
 "aces.x = p_Input[index]; \n" \
@@ -4020,8 +4053,7 @@ const char* kernelSource =  \
 "}} \n" \
 "kernel void k_InvRRT( device float* p_Input [[buffer (1)]], constant int& p_Width [[buffer (2)]], constant int& p_Height [[buffer (3)]], \n" \
 "constant int& p_InvRRT [[buffer (10)]], uint2 id [[ thread_position_in_grid ]]) { \n" \
-"if (id.x < p_Width && id.y < p_Height) \n" \
-"{ \n" \
+"if (id.x < p_Width && id.y < p_Height) { \n" \
 "const int index = (id.y * p_Width + id.x) * 4; \n" \
 "float3 aces; \n" \
 "aces.x = p_Input[index]; \n" \
@@ -4036,14 +4068,18 @@ const char* kernelSource =  \
 "constant int& p_ODT [[buffer (11)]], constant float* p_Lum [[buffer (14)]], constant int& p_DISPLAY [[buffer (15)]],  \n" \
 "constant int& p_LIMIT [[buffer (16)]], constant int& p_EOTF [[buffer (17)]], constant int& p_SURROUND [[buffer (18)]],  \n" \
 "constant int* p_Switch [[buffer (19)]], uint2 id [[ thread_position_in_grid ]]) { \n" \
-"if (id.x < p_Width && id.y < p_Height) \n" \
-"{ \n" \
+"if (id.x < p_Width && id.y < p_Height) { \n" \
 "const int index = (id.y * p_Width + id.x) * 4; \n" \
 "float3 aces; \n" \
 "aces.x = p_Input[index]; \n" \
 "aces.y = p_Input[index + 1]; \n" \
 "aces.z = p_Input[index + 2]; \n" \
-"if (p_ODT == 1) { \n" \
+"switch (p_ODT){ \n" \
+"case 0: \n" \
+"{} \n" \
+"break; \n" \
+"case 1: \n" \
+"{ \n" \
 "float Y_MIN = p_Lum[0] * 0.0001f; \n" \
 "float Y_MID = p_Lum[1]; \n" \
 "float Y_MAX = p_Lum[2]; \n" \
@@ -4056,66 +4092,97 @@ const char* kernelSource =  \
 "bool LEGAL_RANGE = p_Switch[2] == 1; \n" \
 "aces = outputTransform( aces, Y_MIN, Y_MID, Y_MAX, DISPLAY_PRI, LIMITING_PRI, EOTF, SURROUND, STRETCH_BLACK, D60_SIM, LEGAL_RANGE ); \n" \
 "} \n" \
-"if (p_ODT == 2) \n" \
-"aces = ACES_to_ACEScc(aces); \n" \
-"if (p_ODT == 3) \n" \
-"aces = ACES_to_ACEScct(aces); \n" \
-"if (p_ODT == 4) \n" \
-"aces = ACES_to_ADX(aces); \n" \
-"if (p_ODT == 5) \n" \
-"aces = ODT_Rec709_100nits_dim(aces); \n" \
-"if (p_ODT == 6) \n" \
-"aces = ODT_Rec709_D60sim_100nits_dim(aces); \n" \
-"if (p_ODT == 7) \n" \
-"aces = ODT_sRGB_100nits_dim(aces); \n" \
-"if (p_ODT == 8) \n" \
-"aces = ODT_sRGB_D60sim_100nits_dim(aces); \n" \
-"if (p_ODT == 9) \n" \
-"aces = ODT_Rec2020_100nits_dim(aces); \n" \
-"if (p_ODT == 10) \n" \
-"aces = ODT_Rec2020_Rec709limited_100nits_dim(aces); \n" \
-"if (p_ODT == 11) \n" \
-"aces = ODT_Rec2020_P3D65limited_100nits_dim(aces); \n" \
-"if (p_ODT == 12) \n" \
-"aces = ODT_Rec2020_ST2084_1000nits(aces); \n" \
-"if (p_ODT == 13) \n" \
-"aces = ODT_P3DCI_48nits(aces); \n" \
-"if (p_ODT == 14) \n" \
-"aces = ODT_P3DCI_D60sim_48nits(aces); \n" \
-"if (p_ODT == 15) \n" \
-"aces = ODT_P3DCI_D65sim_48nits(aces); \n" \
-"if (p_ODT == 16) \n" \
-"aces = ODT_P3D60_48nits(aces); \n" \
-"if (p_ODT == 17) \n" \
-"aces = ODT_P3D65_48nits(aces); \n" \
-"if (p_ODT == 18) \n" \
-"aces = ODT_P3D65_D60sim_48nits(aces); \n" \
-"if (p_ODT == 19) \n" \
-"aces = ODT_P3D65_Rec709limited_48nits(aces); \n" \
-"if (p_ODT == 20) \n" \
-"aces = ODT_DCDM(aces); \n" \
-"if (p_ODT == 21) \n" \
-"aces = ODT_DCDM_P3D60limited(aces); \n" \
-"if (p_ODT == 22) \n" \
-"aces = ODT_DCDM_P3D65limited(aces); \n" \
-"if (p_ODT == 23) \n" \
-"aces = ODT_RGBmonitor_100nits_dim(aces); \n" \
-"if (p_ODT == 24) \n" \
-"aces = ODT_RGBmonitor_D60sim_100nits_dim(aces); \n" \
-"if (p_ODT == 25) \n" \
-"aces = RRTODT_P3D65_108nits_7_2nits_ST2084(aces); \n" \
-"if (p_ODT == 26) \n" \
-"aces = RRTODT_Rec2020_1000nits_15nits_HLG(aces); \n" \
-"if (p_ODT == 27) \n" \
-"aces = RRTODT_Rec2020_1000nits_15nits_ST2084(aces); \n" \
-"if (p_ODT == 28) \n" \
-"aces = RRTODT_Rec2020_2000nits_15nits_ST2084(aces); \n" \
-"if (p_ODT == 29) \n" \
-"aces = RRTODT_Rec2020_4000nits_15nits_ST2084(aces); \n" \
-"if (p_ODT == 30) \n" \
-"aces = RRTODT_Rec709_100nits_10nits_BT1886(aces); \n" \
-"if (p_ODT == 31) \n" \
-"aces = RRTODT_Rec709_100nits_10nits_sRGB(aces); \n" \
+"break; \n" \
+"case 2: \n" \
+"{aces = ODT_Rec709_100nits_dim(aces);} \n" \
+"break; \n" \
+"case 3: \n" \
+"{aces = ODT_Rec709_D60sim_100nits_dim(aces);} \n" \
+"break; \n" \
+"case 4: \n" \
+"{aces = ODT_sRGB_100nits_dim(aces);} \n" \
+"break; \n" \
+"case 5: \n" \
+"{aces = ODT_sRGB_D60sim_100nits_dim(aces);} \n" \
+"break; \n" \
+"case 6: \n" \
+"{aces = ODT_Rec2020_100nits_dim(aces);} \n" \
+"break; \n" \
+"case 7: \n" \
+"{aces = ODT_Rec2020_Rec709limited_100nits_dim(aces);} \n" \
+"break; \n" \
+"case 8: \n" \
+"{aces = ODT_Rec2020_P3D65limited_100nits_dim(aces);} \n" \
+"break; \n" \
+"case 9: \n" \
+"{aces = ODT_Rec2020_ST2084_1000nits(aces);} \n" \
+"break; \n" \
+"case 10: \n" \
+"{aces = ODT_P3DCI_48nits(aces);} \n" \
+"break; \n" \
+"case 11: \n" \
+"{aces = ODT_P3DCI_D60sim_48nits(aces);} \n" \
+"break; \n" \
+"case 12: \n" \
+"{aces = ODT_P3DCI_D65sim_48nits(aces);} \n" \
+"break; \n" \
+"case 13: \n" \
+"{aces = ODT_P3D60_48nits(aces);} \n" \
+"break; \n" \
+"case 14: \n" \
+"{aces = ODT_P3D65_48nits(aces);} \n" \
+"break; \n" \
+"case 15: \n" \
+"{aces = ODT_P3D65_D60sim_48nits(aces);} \n" \
+"break; \n" \
+"case 16: \n" \
+"{aces = ODT_P3D65_Rec709limited_48nits(aces);} \n" \
+"break; \n" \
+"case 17: \n" \
+"{aces = ODT_DCDM(aces);} \n" \
+"break; \n" \
+"case 18: \n" \
+"{aces = ODT_DCDM_P3D60limited(aces);} \n" \
+"break; \n" \
+"case 19: \n" \
+"{aces = ODT_DCDM_P3D65limited(aces);} \n" \
+"break; \n" \
+"case 20: \n" \
+"{aces = ODT_RGBmonitor_100nits_dim(aces);} \n" \
+"break; \n" \
+"case 21: \n" \
+"{aces = ODT_RGBmonitor_D60sim_100nits_dim(aces);} \n" \
+"break; \n" \
+"case 22: \n" \
+"{aces = RRTODT_Rec709_100nits_10nits_BT1886(aces);} \n" \
+"break; \n" \
+"case 23: \n" \
+"{aces = RRTODT_Rec709_100nits_10nits_sRGB(aces);} \n" \
+"break; \n" \
+"case 24: \n" \
+"{aces = RRTODT_P3D65_108nits_7_2nits_ST2084(aces);} \n" \
+"break; \n" \
+"case 25: \n" \
+"{aces = RRTODT_P3D65_1000nits_15nits_ST2084(aces);} \n" \
+"break; \n" \
+"case 26: \n" \
+"{aces = RRTODT_P3D65_2000nits_15nits_ST2084(aces);} \n" \
+"break; \n" \
+"case 27: \n" \
+"{aces = RRTODT_P3D65_4000nits_15nits_ST2084(aces);} \n" \
+"break; \n" \
+"case 28: \n" \
+"{aces = RRTODT_Rec2020_1000nits_15nits_HLG(aces);} \n" \
+"break; \n" \
+"case 29: \n" \
+"{aces = RRTODT_Rec2020_1000nits_15nits_ST2084(aces);} \n" \
+"break; \n" \
+"case 30: \n" \
+"{aces = RRTODT_Rec2020_2000nits_15nits_ST2084(aces);} \n" \
+"break; \n" \
+"case 31: \n" \
+"{aces = RRTODT_Rec2020_4000nits_15nits_ST2084(aces);} \n" \
+"} \n" \
 "p_Input[index] = aces.x;  \n" \
 "p_Input[index + 1] = aces.y; \n" \
 "p_Input[index + 2] = aces.z; \n" \
@@ -4124,14 +4191,18 @@ const char* kernelSource =  \
 "constant int& p_InvODT [[buffer (12)]], constant float* p_Lum [[buffer (14)]], constant int& p_DISPLAY [[buffer (15)]],  \n" \
 "constant int& p_LIMIT [[buffer (16)]], constant int& p_EOTF [[buffer (17)]], constant int& p_SURROUND [[buffer (18)]],  \n" \
 "constant int* p_Switch [[buffer (19)]], uint2 id [[ thread_position_in_grid ]]) { \n" \
-"if (id.x < p_Width && id.y < p_Height) \n" \
-"{ \n" \
+"if (id.x < p_Width && id.y < p_Height) { \n" \
 "const int index = (id.y * p_Width + id.x) * 4; \n" \
 "float3 aces; \n" \
 "aces.x = p_Input[index]; \n" \
 "aces.y = p_Input[index + 1]; \n" \
 "aces.z = p_Input[index + 2]; \n" \
-"if (p_InvODT == 1) { \n" \
+"switch (p_InvODT){ \n" \
+"case 0: \n" \
+"{} \n" \
+"break; \n" \
+"case 1: \n" \
+"{ \n" \
 "float Y_MIN = p_Lum[0] * 0.0001f; \n" \
 "float Y_MID = p_Lum[1]; \n" \
 "float Y_MAX = p_Lum[2]; \n" \
@@ -4144,52 +4215,85 @@ const char* kernelSource =  \
 "bool LEGAL_RANGE = p_Switch[2] == 1; \n" \
 "aces = invOutputTransform( aces, Y_MIN, Y_MID, Y_MAX, DISPLAY_PRI, LIMITING_PRI, EOTF, SURROUND, STRETCH_BLACK, D60_SIM, LEGAL_RANGE ); \n" \
 "} \n" \
-"if (p_InvODT == 2) \n" \
-"aces = InvODT_Rec709_100nits_dim(aces); \n" \
-"if (p_InvODT == 3) \n" \
-"aces = InvODT_Rec709_D60sim_100nits_dim(aces); \n" \
-"if (p_InvODT == 4) \n" \
-"aces = InvODT_sRGB_100nits_dim(aces); \n" \
-"if (p_InvODT == 5) \n" \
-"aces = InvODT_sRGB_D60sim_100nits_dim(aces); \n" \
-"if (p_InvODT == 6) \n" \
-"aces = InvODT_Rec2020_100nits_dim(aces); \n" \
-"if (p_InvODT == 7) \n" \
-"aces = InvODT_Rec2020_ST2084_1000nits(aces); \n" \
-"if (p_InvODT == 8) \n" \
-"aces = InvODT_P3DCI_48nits(aces); \n" \
-"if (p_InvODT == 9) \n" \
-"aces = InvODT_P3DCI_D60sim_48nits(aces); \n" \
-"if (p_InvODT == 10) \n" \
-"aces = InvODT_P3DCI_D65sim_48nits(aces); \n" \
-"if (p_InvODT == 11) \n" \
-"aces = InvODT_P3D60_48nits(aces); \n" \
-"if (p_InvODT == 12) \n" \
-"aces = InvODT_P3D65_48nits(aces); \n" \
-"if (p_InvODT == 13) \n" \
-"aces = InvODT_P3D65_D60sim_48nits(aces); \n" \
-"if (p_InvODT == 14) \n" \
-"aces = InvODT_DCDM(aces); \n" \
-"if (p_InvODT == 15) \n" \
-"aces = InvODT_DCDM_P3D65limited(aces); \n" \
-"if (p_InvODT == 16) \n" \
-"aces = InvODT_RGBmonitor_100nits_dim(aces); \n" \
-"if (p_InvODT == 17) \n" \
-"aces = InvODT_RGBmonitor_D60sim_100nits_dim(aces); \n" \
-"if (p_InvODT == 18) \n" \
-"aces = InvRRTODT_P3D65_108nits_7_2nits_ST2084(aces); \n" \
-"if (p_InvODT == 19) \n" \
-"aces = InvRRTODT_Rec2020_1000nits_15nits_HLG(aces); \n" \
-"if (p_InvODT == 20) \n" \
-"aces = InvRRTODT_Rec2020_1000nits_15nits_ST2084(aces); \n" \
-"if (p_InvODT == 21) \n" \
-"aces = InvRRTODT_Rec2020_2000nits_15nits_ST2084(aces); \n" \
-"if (p_InvODT == 22) \n" \
-"aces = InvRRTODT_Rec2020_4000nits_15nits_ST2084(aces); \n" \
-"if (p_InvODT == 23) \n" \
-"aces = InvRRTODT_Rec709_100nits_10nits_BT1886(aces); \n" \
-"if (p_InvODT == 24) \n" \
-"aces = InvRRTODT_Rec709_100nits_10nits_sRGB(aces); \n" \
+"break; \n" \
+"case 2: \n" \
+"{aces = InvODT_Rec709_100nits_dim(aces);} \n" \
+"break; \n" \
+"case 3: \n" \
+"{aces = InvODT_Rec709_D60sim_100nits_dim(aces);} \n" \
+"break; \n" \
+"case 4: \n" \
+"{aces = InvODT_sRGB_100nits_dim(aces);} \n" \
+"break; \n" \
+"case 5: \n" \
+"{aces = InvODT_sRGB_D60sim_100nits_dim(aces);} \n" \
+"break; \n" \
+"case 6: \n" \
+"{aces = InvODT_Rec2020_100nits_dim(aces);} \n" \
+"break; \n" \
+"case 7: \n" \
+"{aces = InvODT_Rec2020_ST2084_1000nits(aces);} \n" \
+"break; \n" \
+"case 8: \n" \
+"{aces = InvODT_P3DCI_48nits(aces);} \n" \
+"break; \n" \
+"case 9: \n" \
+"{aces = InvODT_P3DCI_D60sim_48nits(aces);} \n" \
+"break; \n" \
+"case 10: \n" \
+"{aces = InvODT_P3DCI_D65sim_48nits(aces);} \n" \
+"break; \n" \
+"case 11: \n" \
+"{aces = InvODT_P3D60_48nits(aces);} \n" \
+"break; \n" \
+"case 12: \n" \
+"{aces = InvODT_P3D65_48nits(aces);} \n" \
+"break; \n" \
+"case 13: \n" \
+"{aces = InvODT_P3D65_D60sim_48nits(aces);} \n" \
+"break; \n" \
+"case 14: \n" \
+"{aces = InvODT_DCDM(aces);} \n" \
+"break; \n" \
+"case 15: \n" \
+"{aces = InvODT_DCDM_P3D65limited(aces);} \n" \
+"break; \n" \
+"case 16: \n" \
+"{aces = InvODT_RGBmonitor_100nits_dim(aces);} \n" \
+"break; \n" \
+"case 17: \n" \
+"{aces = InvODT_RGBmonitor_D60sim_100nits_dim(aces);} \n" \
+"break; \n" \
+"case 18: \n" \
+"{aces = InvRRTODT_Rec709_100nits_10nits_BT1886(aces);} \n" \
+"break; \n" \
+"case 19: \n" \
+"{aces = InvRRTODT_Rec709_100nits_10nits_sRGB(aces);} \n" \
+"break; \n" \
+"case 20: \n" \
+"{aces = InvRRTODT_P3D65_108nits_7_2nits_ST2084(aces);} \n" \
+"break; \n" \
+"case 21: \n" \
+"{aces = InvRRTODT_P3D65_1000nits_15nits_ST2084(aces);} \n" \
+"break; \n" \
+"case 22: \n" \
+"{aces = InvRRTODT_P3D65_2000nits_15nits_ST2084(aces);} \n" \
+"break; \n" \
+"case 23: \n" \
+"{aces = InvRRTODT_P3D65_4000nits_15nits_ST2084(aces);} \n" \
+"break; \n" \
+"case 24: \n" \
+"{aces = InvRRTODT_Rec2020_1000nits_15nits_HLG(aces);} \n" \
+"break; \n" \
+"case 25: \n" \
+"{aces = InvRRTODT_Rec2020_1000nits_15nits_ST2084(aces);} \n" \
+"break; \n" \
+"case 26: \n" \
+"{aces = InvRRTODT_Rec2020_2000nits_15nits_ST2084(aces);} \n" \
+"break; \n" \
+"case 27: \n" \
+"{aces = InvRRTODT_Rec2020_4000nits_15nits_ST2084(aces);} \n" \
+"} \n" \
 "p_Input[index] = aces.x;  \n" \
 "p_Input[index + 1] = aces.y; \n" \
 "p_Input[index + 2] = aces.z; \n" \
@@ -4201,16 +4305,15 @@ typedef std::unordered_map<id<MTLCommandQueue>, id<MTLComputePipelineState>> Pip
 PipelineQueueMap s_PipelineQueueMap;
 
 void RunMetalKernel(void* p_CmdQ, const float* p_Input, float* p_Output, int p_Width, int p_Height, 
-int p_Direction, int p_IDT, int p_ACESIN, int p_LMT, int p_ACESOUT, int p_RRT, 
+int p_Direction, int p_CSCIN, int p_IDT, int p_LMT, int p_CSCOUT, int p_RRT, 
 int p_InvRRT, int p_ODT, int p_InvODT, float p_Exposure, float *p_LMTScale, float *p_Lum, 
-int p_DISPLAY, int p_LIMIT, int p_EOTF, int p_SURROUND, int *p_Switch)
-{
+int p_DISPLAY, int p_LIMIT, int p_EOTF, int p_SURROUND, int *p_Switch) {
 const char* Simple 		   		= "k_Simple";
+const char* CSCIN 		   		= "k_CSCIN";
 const char* IDT 		   		= "k_IDT";
 const char* Exposure 		   	= "k_Exposure";
-const char* ACESIN 		   		= "k_ACESIN";
 const char* LMT 		   		= "k_LMT";
-const char* ACESOUT 		   	= "k_ACESOUT";
+const char* CSCOUT	 		   	= "k_CSCOUT";
 const char* RRT 		   		= "k_RRT";
 const char* InvRRT 		   		= "k_InvRRT";
 const char* ODT 		   		= "k_ODT";
@@ -4222,11 +4325,11 @@ id<MTLLibrary>                 	metalLibrary;
 id<MTLFunction>                	kernelFunction;
 id<MTLComputePipelineState>    	pipelineState;
 id<MTLComputePipelineState>     _Simple;
+id<MTLComputePipelineState>     _CSCIN;
 id<MTLComputePipelineState>     _IDT;
 id<MTLComputePipelineState>     _Exposure;
-id<MTLComputePipelineState>     _ACESIN;
 id<MTLComputePipelineState>     _LMT;
-id<MTLComputePipelineState>     _ACESOUT;
+id<MTLComputePipelineState>     _CSCOUT;
 id<MTLComputePipelineState>     _RRT;
 id<MTLComputePipelineState>     _InvRRT;
 id<MTLComputePipelineState>     _ODT;
@@ -4264,6 +4367,19 @@ fprintf(stderr, "Unable to compile, %s\n", err.localizedDescription.UTF8String);
 return;
 }
 
+if (!(kernelFunction  		= [metalLibrary newFunctionWithName:[NSString stringWithUTF8String:CSCIN]])) {
+fprintf(stderr, "Failed to retrieve kernel\n");
+[metalLibrary release];
+return;
+}
+
+if (!(_CSCIN	   			= [device newComputePipelineStateWithFunction:kernelFunction error:&err])) {
+fprintf(stderr, "Unable to compile, %s\n", err.localizedDescription.UTF8String);
+[metalLibrary release];
+[kernelFunction release];
+return;
+}
+
 if (!(kernelFunction  		= [metalLibrary newFunctionWithName:[NSString stringWithUTF8String:IDT]])) {
 fprintf(stderr, "Failed to retrieve kernel\n");
 [metalLibrary release];
@@ -4290,19 +4406,6 @@ fprintf(stderr, "Unable to compile, %s\n", err.localizedDescription.UTF8String);
 return;
 }
 
-if (!(kernelFunction  		= [metalLibrary newFunctionWithName:[NSString stringWithUTF8String:ACESIN]])) {
-fprintf(stderr, "Failed to retrieve kernel\n");
-[metalLibrary release];
-return;
-}
-
-if (!(_ACESIN   			= [device newComputePipelineStateWithFunction:kernelFunction error:&err])) {
-fprintf(stderr, "Unable to compile, %s\n", err.localizedDescription.UTF8String);
-[metalLibrary release];
-[kernelFunction release];
-return;
-}
-
 if (!(kernelFunction  		= [metalLibrary newFunctionWithName:[NSString stringWithUTF8String:LMT]])) {
 fprintf(stderr, "Failed to retrieve kernel\n");
 [metalLibrary release];
@@ -4316,13 +4419,13 @@ fprintf(stderr, "Unable to compile, %s\n", err.localizedDescription.UTF8String);
 return;
 }
 
-if (!(kernelFunction  		= [metalLibrary newFunctionWithName:[NSString stringWithUTF8String:ACESOUT]])) {
+if (!(kernelFunction  		= [metalLibrary newFunctionWithName:[NSString stringWithUTF8String:CSCOUT]])) {
 fprintf(stderr, "Failed to retrieve kernel\n");
 [metalLibrary release];
 return;
 }
 
-if (!(_ACESOUT   			= [device newComputePipelineStateWithFunction:kernelFunction error:&err])) {
+if (!(_CSCOUT   			= [device newComputePipelineStateWithFunction:kernelFunction error:&err])) {
 fprintf(stderr, "Unable to compile, %s\n", err.localizedDescription.UTF8String);
 [metalLibrary release];
 [kernelFunction release];
@@ -4388,9 +4491,13 @@ id<MTLBuffer> srcDeviceBuf = reinterpret_cast<id<MTLBuffer> >(const_cast<float *
 id<MTLBuffer> dstDeviceBuf = reinterpret_cast<id<MTLBuffer> >(p_Output);
 
 id<MTLCommandBuffer> commandBuffer = [queue commandBuffer];
+
 commandBuffer.label = [NSString stringWithFormat:@"RunMetalKernel"];
+
 id<MTLComputeCommandEncoder> computeEncoder = [commandBuffer computeCommandEncoder];
+
 [computeEncoder setComputePipelineState:_Simple];
+
 int exeWidth = [_Simple threadExecutionWidth];
 
 MTLSize threadGroupCount = MTLSizeMake(exeWidth, 1, 1);
@@ -4400,11 +4507,11 @@ MTLSize threadGroups     = MTLSizeMake((p_Width + exeWidth - 1)/exeWidth, p_Heig
 [computeEncoder setBuffer:dstDeviceBuf offset: 0 atIndex: 1];
 [computeEncoder setBytes:&p_Width length:sizeof(int) atIndex:2];
 [computeEncoder setBytes:&p_Height length:sizeof(int) atIndex:3];
-[computeEncoder setBytes:&p_Exposure length:sizeof(float) atIndex:4];
+[computeEncoder setBytes:&p_CSCIN length:sizeof(int) atIndex:4];
 [computeEncoder setBytes:&p_IDT length:sizeof(int) atIndex:5];
-[computeEncoder setBytes:&p_ACESIN length:sizeof(int) atIndex:6];
+[computeEncoder setBytes:&p_Exposure length:sizeof(float) atIndex:6];
 [computeEncoder setBytes:&p_LMT length:sizeof(int) atIndex:7];
-[computeEncoder setBytes:&p_ACESOUT length:sizeof(int) atIndex:8];
+[computeEncoder setBytes:&p_CSCOUT length:sizeof(int) atIndex:8];
 [computeEncoder setBytes:&p_RRT length:sizeof(int) atIndex:9];
 [computeEncoder setBytes:&p_InvRRT length:sizeof(int) atIndex:10];
 [computeEncoder setBytes:&p_ODT length:sizeof(int) atIndex:11];
@@ -4421,6 +4528,11 @@ MTLSize threadGroups     = MTLSizeMake((p_Width + exeWidth - 1)/exeWidth, p_Heig
 
 if (p_Direction == 0) {
 
+if (p_CSCIN != 0) {
+[computeEncoder setComputePipelineState:_CSCIN];
+[computeEncoder dispatchThreadgroups:threadGroups threadsPerThreadgroup: threadGroupCount];
+}
+
 if (p_IDT != 0) {
 [computeEncoder setComputePipelineState:_IDT];
 [computeEncoder dispatchThreadgroups:threadGroups threadsPerThreadgroup: threadGroupCount];
@@ -4431,22 +4543,17 @@ if (p_Exposure != 0.0f) {
 [computeEncoder dispatchThreadgroups:threadGroups threadsPerThreadgroup: threadGroupCount];
 }
 
-if (p_ACESIN != 0) {
-[computeEncoder setComputePipelineState:_ACESIN];
-[computeEncoder dispatchThreadgroups:threadGroups threadsPerThreadgroup: threadGroupCount];
-}
-
 if (p_LMT != 0) {
 [computeEncoder setComputePipelineState:_LMT];
 [computeEncoder dispatchThreadgroups:threadGroups threadsPerThreadgroup: threadGroupCount];
 }
 
-if (p_ACESOUT != 0) {
-[computeEncoder setComputePipelineState:_ACESOUT];
+if (p_CSCOUT != 0) {
+[computeEncoder setComputePipelineState:_CSCOUT];
 [computeEncoder dispatchThreadgroups:threadGroups threadsPerThreadgroup: threadGroupCount];
 }
 
-if (p_RRT == 1 && (p_ODT == 0 || (p_ODT > 4 && p_ODT < 25))) {
+if (p_RRT == 1 && p_ODT < 22) {
 [computeEncoder setComputePipelineState:_RRT];
 [computeEncoder dispatchThreadgroups:threadGroups threadsPerThreadgroup: threadGroupCount];
 }
@@ -4463,7 +4570,7 @@ if (p_InvODT != 0) {
 [computeEncoder dispatchThreadgroups:threadGroups threadsPerThreadgroup: threadGroupCount];
 }
 
-if (p_InvRRT == 1 && (p_InvODT != 1 && p_InvODT < 18)) {
+if (p_InvRRT == 1 && p_InvODT < 18) {
 [computeEncoder setComputePipelineState:_InvRRT];
 [computeEncoder dispatchThreadgroups:threadGroups threadsPerThreadgroup: threadGroupCount];
 }}

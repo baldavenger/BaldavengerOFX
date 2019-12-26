@@ -26,23 +26,23 @@ using std::string;
 #define kPluginScript2 "/home/resolve/LUT/"
 #endif
 
-#define kPluginName "ACES 1.1"
+#define kPluginName "ACES 1.2"
 #define kPluginGrouping "BaldavengerOFX"
 #define kPluginDescription \
 "------------------------------------------------------------------------------------------------------------------ \n" \
-"ACES 1.1"
+"ACES 1.2"
 
 #define kPluginIdentifier "BaldavengerOFX.ACES"
-#define kPluginVersionMajor 2
-#define kPluginVersionMinor 3
+#define kPluginVersionMajor 3
+#define kPluginVersionMinor 0
 
 #define kSupportsTiles false
 #define kSupportsMultiResolution false
 #define kSupportsMultipleClipPARs false
 
-#define kParamInput "Input"
+#define kParamInput "h_Input"
 #define kParamInputLabel "Process"
-#define kParamInputHint "Standard or Inverse"
+#define kParamInputHint "ACES Standard or Inverse"
 #define kParamInputOptionStandard "Standard"
 #define kParamInputOptionStandardHint "Standard"
 #define kParamInputOptionInverse "Inverse"
@@ -54,25 +54,56 @@ eInputStandard,
 eInputInverse,
 };
 
-#define kParamIDT "IDT"
+#define kParamCSCIN "h_CSCIN"
+#define kParamCSCINLabel "ACES CSC in"
+#define kParamCSCINHint "Convert to ACES from "
+#define kParamCSCINOptionBypass "Bypass"
+#define kParamCSCINOptionBypassHint "Bypass"
+#define kParamCSCINOptionACEScc "ACEScc"
+#define kParamCSCINOptionACESccHint "ACEScc to ACES"
+#define kParamCSCINOptionACEScct "ACEScct"
+#define kParamCSCINOptionACEScctHint "ACEScct to ACES"
+#define kParamCSCINOptionACEScg "ACEScg"
+#define kParamCSCINOptionACEScgHint "ACEScg to ACES"
+#define kParamCSCINOptionACESproxy "ACESproxy"
+#define kParamCSCINOptionACESproxyHint "ACESproxy to ACES"
+#define kParamCSCINOptionADX "ADX"
+#define kParamCSCINOptionADXHint "ADX to ACES"
+#define kParamCSCINOptionICPCT "ICpCt"
+#define kParamCSCINOptionICPCTHint "ICpCt to ACES"
+#define kParamCSCINOptionLOGCAWG "LogC AlexaWG"
+#define kParamCSCINOptionLOGCAWGHint "LogC AlexaWideGamut to ACES"
+#define kParamCSCINOptionLOG3G10RWG "Log3G10 RedWG"
+#define kParamCSCINOptionLOG3G10RWGHint "Log3G10 RedWideGamut to ACES"
+#define kParamCSCINOptionSLOG3SG3 "Sony SLog3 SGamut3"
+#define kParamCSCINOptionSLOG3SG3Hint "Slog3 SGamut3 to ACES"
+#define kParamCSCINOptionSLOG3SG3C "Sony SLog3 SGamut3Cine"
+#define kParamCSCINOptionSLOG3SG3CHint "Slog3 SGamut3Cine to ACES"
+
+enum CSCINEnum
+{
+eCSCINBypass,
+eCSCINACEScc,
+eCSCINACEScct,
+eCSCINACEScg,
+eCSCINACESproxy,
+eCSCINADX,
+eCSCINICPCT,
+eCSCINLOGCAWG,
+eCSCINLOG3G10RWG,
+eCSCINSLOG3SG3,
+eCSCINSLOG3SG3C,
+};
+
+#define kParamIDT "k_IDT"
 #define kParamIDTLabel "IDT"
-#define kParamIDTHint "IDT"
+#define kParamIDTHint "ACES IDT"
 #define kParamIDTOptionBypass "Bypass"
 #define kParamIDTOptionBypassHint "Bypass"
-#define kParamIDTOptionACEScc "ACEScc"
-#define kParamIDTOptionACESccHint "ACEScc to ACES"
-#define kParamIDTOptionACEScct "ACEScct"
-#define kParamIDTOptionACEScctHint "ACEScct to ACES"
-#define kParamIDTOptionAlexaLogC800 "Alexa LogC EI800"
-#define kParamIDTOptionAlexaLogC800Hint "Alexa LogC EI800 to ACES"
 #define kParamIDTOptionAlexaRaw800 "Alexa Raw EI800"
 #define kParamIDTOptionAlexaRaw800Hint "Alexa Raw EI800 to ACES"
-#define kParamIDTOptionADX "ADX"
-#define kParamIDTOptionADXHint "ADX to ACES"
 #define kParamIDTOptionPanasonicV35 "Panasonic V35 VLog"
 #define kParamIDTOptionPanasonicV35Hint "Panasonic V35 VLog"
-#define kParamIDTOptionREDWideGamutRGBLog3G10 "Log3G10 REDWideGamutRGB"
-#define kParamIDTOptionREDWideGamutRGBLog3G10Hint "Log3G10 REDWideGamutRGB"
 
 #define kParamIDTOptionCanonC100AD55 "Canon C100 A D55"
 #define kParamIDTOptionCanonC100AD55Hint "Canon CLog C100 A D55"
@@ -136,10 +167,11 @@ eInputInverse,
 #define kParamIDTOptionSonySLog2SGamutDaylightHint "Sony SLog2 SGamut Daylight"
 #define kParamIDTOptionSonySLog2SGamutTungsten "Sony SLog2 SGamut Tungsten"
 #define kParamIDTOptionSonySLog2SGamutTungstenHint "Sony SLog2 SGamut Tungsten"
-#define kParamIDTOptionSonySLog3SGamut3 "Sony SLog3 SGamut3"
-#define kParamIDTOptionSonySLog3SGamut3Hint "Sony SLog3 SGamut3"
-#define kParamIDTOptionSonySLog3SGamut3Cine "Sony SLog3 SGamut3Cine"
-#define kParamIDTOptionSonySLog3SGamut3CineHint "Sony SLog3 SGamut3Cine"
+
+#define kParamIDTOptionSonyVeniceSGamut3 "Sony Venice SGamut3"
+#define kParamIDTOptionSonyVeniceSGamut3Hint "Sony Venice SGamut3"
+#define kParamIDTOptionSonyVeniceSGamut3Cine "Sony Venice SGamut3Cine"
+#define kParamIDTOptionSonyVeniceSGamut3CineHint "Sony Venice SGamut3Cine"
 
 #define kParamIDTOptionRec709 "Rec709"
 #define kParamIDTOptionRec709Hint "Rec709"
@@ -149,13 +181,8 @@ eInputInverse,
 enum IDTEnum
 {
 eIDTBypass,
-eIDTACEScc,
-eIDTACEScct,
-eIDTAlexaLogC800,
 eIDTAlexaRaw800,
-eIDTADX,
 eIDTPanasonicV35,
-eIDTREDWideGamutRGBLog3G10,
 eIDTCanonC100AD55,
 eIDTCanonC100ATNG,
 eIDTCanonC100mk2AD55,
@@ -185,38 +212,15 @@ eIDTCanonC300mk2CanonLog3CinemaGamutETNG,
 eIDTSonySLog1SGamut,
 eIDTSonySLog2SGamutDaylight,
 eIDTSonySLog2SGamutTungsten,
-eIDTSonySLog3SGamut3,
-eIDTSonySLog3SGamut3Cine,
+eIDTSonyVeniceSGamut3,
+eIDTSonyVeniceSGamut3Cine,
 eIDTRec709,
 eIDTSRGB,
 };
 
-#define kParamACESIN "ACESIN"
-#define kParamACESINLabel "ACES to"
-#define kParamACESINHint "Convert from ACES to"
-#define kParamACESINOptionBypass "Bypass"
-#define kParamACESINOptionBypassHint "Bypass"
-#define kParamACESINOptionACEScc "ACEScc"
-#define kParamACESINOptionACESccHint "ACEScc"
-#define kParamACESINOptionACEScct "ACEScct"
-#define kParamACESINOptionACEScctHint "ACEScct"
-#define kParamACESINOptionACEScg "ACEScg"
-#define kParamACESINOptionACEScgHint "ACEScg"
-#define kParamACESINOptionACESproxy "ACESproxy"
-#define kParamACESINOptionACESproxyHint "ACESproxy"
-
-enum ACESINEnum
-{
-eACESINBypass,
-eACESINACEScc,
-eACESINACEScct,
-eACESINACEScg,
-eACESINACESproxy,
-};
-
-#define kParamLMT "LMT"
+#define kParamLMT "h_LMT"
 #define kParamLMTLabel "LMT"
-#define kParamLMTHint "LMT"
+#define kParamLMTHint "ACES LMT"
 #define kParamLMTOptionBypass "Bypass"
 #define kParamLMTOptionBypassHint "Bypass"
 #define kParamLMTOptionCustom "Custom"
@@ -240,32 +244,50 @@ eLMTPFECustom,
 eLMTBleach,
 };
 
-#define kParamACESOUT "ACESOUT"
-#define kParamACESOUTLabel "ACES from"
-#define kParamACESOUTHint "Convert to ACES from "
-#define kParamACESOUTOptionBypass "Bypass"
-#define kParamACESOUTOptionBypassHint "Bypass"
-#define kParamACESOUTOptionACEScc "ACEScc"
-#define kParamACESOUTOptionACESccHint "ACEScc"
-#define kParamACESOUTOptionACEScct "ACEScct"
-#define kParamACESOUTOptionACEScctHint "ACEScct"
-#define kParamACESOUTOptionACEScg "ACEScg"
-#define kParamACESOUTOptionACEScgHint "ACEScg"
-#define kParamACESOUTOptionACESproxy "ACESproxy"
-#define kParamACESOUTOptionACESproxyHint "ACESproxy"
+#define kParamCSCOUT "h_CSCOUT"
+#define kParamCSCOUTLabel "ACES CSC out"
+#define kParamCSCOUTHint "Convert from ACES to"
+#define kParamCSCOUTOptionBypass "Bypass"
+#define kParamCSCOUTOptionBypassHint "Bypass"
+#define kParamCSCOUTOptionACEScc "ACEScc"
+#define kParamCSCOUTOptionACESccHint "ACES to ACEScc"
+#define kParamCSCOUTOptionACEScct "ACEScct"
+#define kParamCSCOUTOptionACEScctHint "ACES to ACEScct"
+#define kParamCSCOUTOptionACEScg "ACEScg"
+#define kParamCSCOUTOptionACEScgHint "ACES to ACEScg"
+#define kParamCSCOUTOptionACESproxy "ACESproxy"
+#define kParamCSCOUTOptionACESproxyHint "ACES to ACESproxy"
+#define kParamCSCOUTOptionADX "ADX"
+#define kParamCSCOUTOptionADXHint "ACES to ADX"
+#define kParamCSCOUTOptionICPCT "ICpCt"
+#define kParamCSCOUTOptionICPCTHint "ACES to ICpCt"
+#define kParamCSCOUTOptionLOGCAWG "LogC AlexaWG"
+#define kParamCSCOUTOptionLOGCAWGHint "ACES to LogC AlexaWideGamut"
+#define kParamCSCOUTOptionLOG3G10RWG "Log3G10 RedWG"
+#define kParamCSCOUTOptionLOG3G10RWGHint "ACES to Log3G10 RedWideGamut"
+#define kParamCSCOUTOptionSLOG3SG3 "Sony SLog3 SGamut3"
+#define kParamCSCOUTOptionSLOG3SG3Hint "ACES to Slog3 SGamut3"
+#define kParamCSCOUTOptionSLOG3SG3C "Sony SLog3 SGamut3Cine"
+#define kParamCSCOUTOptionSLOG3SG3CHint "ACES to Slog3 SGamut3Cine"
 
-enum ACESOUTEnum
+enum CSCOUTEnum
 {
-eACESOUTBypass,
-eACESOUTACEScc,
-eACESOUTACEScct,
-eACESOUTACEScg,
-eACESOUTACESproxy,
+eCSCOUTBypass,
+eCSCOUTACEScc,
+eCSCOUTACEScct,
+eCSCOUTACEScg,
+eCSCOUTACESproxy,
+eCSCOUTADX,
+eCSCOUTICPCT,
+eCSCOUTLOGCAWG,
+eCSCOUTLOG3G10RWG,
+eCSCOUTSLOG3SG3,
+eCSCOUTSLOG3SG3C,
 };
 
-#define kParamRRT "RRT"
+#define kParamRRT "h_RRT"
 #define kParamRRTLabel "RRT"
-#define kParamRRTHint "RRT"
+#define kParamRRTHint "ACES RRT"
 #define kParamRRTOptionBypass "Bypass"
 #define kParamRRTOptionBypassHint "Bypass"
 #define kParamRRTOptionEnabled "Enabled"
@@ -277,9 +299,9 @@ eRRTBypass,
 eRRTEnabled,
 };
 
-#define kParamInvRRT "InvRRT"
+#define kParamInvRRT "h_InvRRT"
 #define kParamInvRRTLabel "Inverse RRT"
-#define kParamInvRRTHint "Inverse RRT"
+#define kParamInvRRTHint "ACES Inverse RRT"
 #define kParamInvRRTOptionBypass "Bypass"
 #define kParamInvRRTOptionBypassHint "Bypass"
 #define kParamInvRRTOptionEnabled "Enabled"
@@ -291,19 +313,13 @@ eInvRRTBypass,
 eInvRRTEnabled,
 };
 
-#define kParamODT "ODT"
+#define kParamODT "h_ODT"
 #define kParamODTLabel "ODT"
-#define kParamODTHint "ODT"
+#define kParamODTHint "ACES ODT"
 #define kParamODTOptionBypass "Bypass"
 #define kParamODTOptionBypassHint "Bypass"
 #define kParamODTOptionCustom "Custom"
 #define kParamODTOptionCustomHint "Custom ODT"
-#define kParamODTOptionACEScc "ACEScc"
-#define kParamODTOptionACESccHint "ACES to ACEScc"
-#define kParamODTOptionACEScct "ACEScct"
-#define kParamODTOptionACEScctHint "ACES to ACEScct"
-#define kParamODTOptionADX "ADX"
-#define kParamODTOptionADXHint "ADX"
 #define kParamODTOptionRec709_100dim "Rec709 100nits Dim"
 #define kParamODTOptionRec709_100dimHint "Rec.709 100nits Dim"
 #define kParamODTOptionRec709_D60sim_100dim "Rec709 D60sim 100nits Dim"
@@ -344,8 +360,19 @@ eInvRRTEnabled,
 #define kParamODTOptionRGBmonitor_100dimHint "RGB monitor 100nits Dim"
 #define kParamODTOptionRGBmonitor_D60sim_100dim "RGB monitor D60sim 100nits Dim"
 #define kParamODTOptionRGBmonitor_D60sim_100dimHint "RGB monitor D60sim 100nits Dim"
+
+#define kParamODTOptionRRTODT_Rec709_100nits_10nits_BT1886 "RRTODT Rec709 100nits 10nits BT1886"
+#define kParamODTOptionRRTODT_Rec709_100nits_10nits_BT1886Hint "RRTODT Rec.709 100nits 10nits BT1886"
+#define kParamODTOptionRRTODT_Rec709_100nits_10nits_sRGB "RRTODT Rec709 100nits 10nits sRGB"
+#define kParamODTOptionRRTODT_Rec709_100nits_10nits_sRGBHint "RRTODT Rec.709 100nits 10nits sRGB"
 #define kParamODTOptionRRTODT_P3D65_108nits_7_2nits_ST2084 "RRTODT P3D65 108nits 7.2nits ST2084"
 #define kParamODTOptionRRTODT_P3D65_108nits_7_2nits_ST2084Hint "RRTODT P3D65 108nits 7.2nits ST2084"
+#define kParamODTOptionRRTODT_P3D65_1000nits_15nits_ST2084 "RRTODT P3D65 1000nits 15nits ST2084"
+#define kParamODTOptionRRTODT_P3D65_1000nits_15nits_ST2084Hint "RRTODT P3D65 1000nits 15nits ST2084"
+#define kParamODTOptionRRTODT_P3D65_2000nits_15nits_ST2084 "RRTODT P3D65 2000nits 15nits ST2084"
+#define kParamODTOptionRRTODT_P3D65_2000nits_15nits_ST2084Hint "RRTODT P3D65 2000nits 15nits ST2084"
+#define kParamODTOptionRRTODT_P3D65_4000nits_15nits_ST2084 "RRTODT P3D65 4000nits 15nits ST2084"
+#define kParamODTOptionRRTODT_P3D65_4000nits_15nits_ST2084Hint "RRTODT P3D65 4000nits 15nits ST2084"
 #define kParamODTOptionRRTODT_Rec2020_1000nits_15nits_HLG "RRTODT Rec2020 1000nits 15nits HLG"
 #define kParamODTOptionRRTODT_Rec2020_1000nits_15nits_HLGHint "RRTODT Rec.2020 1000nits 15nits HLG"
 #define kParamODTOptionRRTODT_Rec2020_1000nits_15nits_ST2084 "RRTODT Rec2020 1000nits 15nits ST2084"
@@ -354,18 +381,12 @@ eInvRRTEnabled,
 #define kParamODTOptionRRTODT_Rec2020_2000nits_15nits_ST2084Hint "RRTODT Rec.2020 2000nits 15nits ST2084"
 #define kParamODTOptionRRTODT_Rec2020_4000nits_15nits_ST2084 "RRTODT Rec2020 4000nits 15nits ST2084"
 #define kParamODTOptionRRTODT_Rec2020_4000nits_15nits_ST2084Hint "RRTODT Rec.2020 4000nits 15nits ST2084"
-#define kParamODTOptionRRTODT_Rec709_100nits_10nits_BT1886 "RRTODT Rec709 100nits 10nits BT1886"
-#define kParamODTOptionRRTODT_Rec709_100nits_10nits_BT1886Hint "RRTODT Rec.709 100nits 10nits BT1886"
-#define kParamODTOptionRRTODT_Rec709_100nits_10nits_sRGB "RRTODT Rec709 100nits 10nits sRGB"
-#define kParamODTOptionRRTODT_Rec709_100nits_10nits_sRGBHint "RRTODT Rec.709 100nits 10nits sRGB"
+
 
 enum ODTEnum
 {
 eODTBypass,
 eODTCustom,
-eODTACEScc,
-eODTACEScct,
-eODTADX,
 eODTRec709_100dim,
 eODTRec709_D60sim_100dim,
 eODTSRGB_100dim,
@@ -386,18 +407,21 @@ eODTDCDM_P3D60limited,
 eODTDCDM_P3D65limited,
 eODTRGBmonitor_100dim,
 eODTRGBmonitor_D60sim_100dim,
+eODTRRTODT_Rec709_100nits_10nits_BT1886,
+eODTRRTODT_Rec709_100nits_10nits_sRGB,
 eODTRRTODT_P3D65_108nits_7_2nits_ST2084,
+eODTRRTODT_P3D65_1000nits_15nits_ST2084,
+eODTRRTODT_P3D65_2000nits_15nits_ST2084,
+eODTRRTODT_P3D65_4000nits_15nits_ST2084,
 eODTRRTODT_Rec2020_1000nits_15nits_HLG,
 eODTRRTODT_Rec2020_1000nits_15nits_ST2084,
 eODTRRTODT_Rec2020_2000nits_15nits_ST2084,
 eODTRRTODT_Rec2020_4000nits_15nits_ST2084,
-eODTRRTODT_Rec709_100nits_10nits_BT1886,
-eODTRRTODT_Rec709_100nits_10nits_sRGB,
 };
 
-#define kParamInvODT "InvODT"
+#define kParamInvODT "h_InvODT"
 #define kParamInvODTLabel "Inverse ODT"
-#define kParamInvODTHint "Inverse ODT"
+#define kParamInvODTHint "ACES Inverse ODT"
 #define kParamInvODTOptionBypass "Bypass"
 #define kParamInvODTOptionBypassHint "Bypass"
 #define kParamInvODTOptionCustom "Custom"
@@ -434,8 +458,19 @@ eODTRRTODT_Rec709_100nits_10nits_sRGB,
 #define kParamInvODTOptionRGBmonitor_100dimHint "RGB monitor 100nits Dim"
 #define kParamInvODTOptionRGBmonitor_D60sim_100dim "RGB monitor D60sim 100nits Dim"
 #define kParamInvODTOptionRGBmonitor_D60sim_100dimHint "RGB monitor D60sim 100nits Dim"
+
+#define kParamInvODTOptionRRTODT_Rec709_100nits_10nits_BT1886 "RRTODT Rec709 100nits 10nits BT1886"
+#define kParamInvODTOptionRRTODT_Rec709_100nits_10nits_BT1886Hint "RRTODT Rec.709 100nits 10nits BT1886"
+#define kParamInvODTOptionRRTODT_Rec709_100nits_10nits_sRGB "RRTODT Rec709 100nits 10nits sRGB"
+#define kParamInvODTOptionRRTODT_Rec709_100nits_10nits_sRGBHint "RRTODT Rec.709 100nits 10nits sRGB"
 #define kParamInvODTOptionRRTODT_P3D65_108nits_7_2nits_ST2084 "RRTODT P3D65 108nits 7.2nits ST2084"
 #define kParamInvODTOptionRRTODT_P3D65_108nits_7_2nits_ST2084Hint "RRTODT P3D65 108nits 7.2nits ST2084"
+#define kParamInvODTOptionRRTODT_P3D65_1000nits_15nits_ST2084 "RRTODT P3D65 1000nits 15nits ST2084"
+#define kParamInvODTOptionRRTODT_P3D65_1000nits_15nits_ST2084Hint "RRTODT P3D65 1000nits 15nits ST2084"
+#define kParamInvODTOptionRRTODT_P3D65_2000nits_15nits_ST2084 "RRTODT P3D65 2000nits 15nits ST2084"
+#define kParamInvODTOptionRRTODT_P3D65_2000nits_15nits_ST2084Hint "RRTODT P3D65 2000nits 15nits ST2084"
+#define kParamInvODTOptionRRTODT_P3D65_4000nits_15nits_ST2084 "RRTODT P3D65 4000nits 15nits ST2084"
+#define kParamInvODTOptionRRTODT_P3D65_4000nits_15nits_ST2084Hint "RRTODT P3D65 4000nits 15nits ST2084"
 #define kParamInvODTOptionRRTODT_Rec2020_1000nits_15nits_HLG "RRTODT Rec2020 1000nits 15nits HLG"
 #define kParamInvODTOptionRRTODT_Rec2020_1000nits_15nits_HLGHint "RRTODT Rec2020 1000nits 15nits HLG"
 #define kParamInvODTOptionRRTODT_Rec2020_1000nits_15nits_ST2084 "RRTODT Rec2020 1000nits 15nits ST2084"
@@ -444,10 +479,6 @@ eODTRRTODT_Rec709_100nits_10nits_sRGB,
 #define kParamInvODTOptionRRTODT_Rec2020_2000nits_15nits_ST2084Hint "RRTODT Rec2020 2000nits 15nits ST2084"
 #define kParamInvODTOptionRRTODT_Rec2020_4000nits_15nits_ST2084 "RRTODT Rec2020 4000nits 15nits ST2084"
 #define kParamInvODTOptionRRTODT_Rec2020_4000nits_15nits_ST2084Hint "RRTODT Rec2020 4000nits 15nits ST2084"
-#define kParamInvODTOptionRRTODT_Rec709_100nits_10nits_BT1886 "RRTODT Rec709 100nits 10nits BT1886"
-#define kParamInvODTOptionRRTODT_Rec709_100nits_10nits_BT1886Hint "RRTODT Rec.709 100nits 10nits BT1886"
-#define kParamInvODTOptionRRTODT_Rec709_100nits_10nits_sRGB "RRTODT Rec709 100nits 10nits sRGB"
-#define kParamInvODTOptionRRTODT_Rec709_100nits_10nits_sRGBHint "RRTODT Rec.709 100nits 10nits sRGB"
 
 enum InvODTEnum
 {
@@ -469,18 +500,21 @@ eInvODTDCDM,
 eInvODTDCDM_P3D65limited,
 eInvODTRGBmonitor_100dim,
 eInvODTRGBmonitor_D60sim_100dim,
+eInvODTRRTODT_Rec709_100nits_10nits_BT1886,
+eInvODTRRTODT_Rec709_100nits_10nits_sRGB,
 eInvODTRRTODT_P3D65_108nits_7_2nits_ST2084,
+eInvODTRRTODT_P3D65_1000nits_15nits_ST2084,
+eInvODTRRTODT_P3D65_2000nits_15nits_ST2084,
+eInvODTRRTODT_P3D65_4000nits_15nits_ST2084,
 eInvODTRRTODT_Rec2020_1000nits_15nits_HLG,
 eInvODTRRTODT_Rec2020_1000nits_15nits_ST2084,
 eInvODTRRTODT_Rec2020_2000nits_15nits_ST2084,
 eInvODTRRTODT_Rec2020_4000nits_15nits_ST2084,
-eInvODTRRTODT_Rec709_100nits_10nits_BT1886,
-eInvODTRRTODT_Rec709_100nits_10nits_sRGB,
 };
 
-#define kParamDISPLAY "DISPLAY"
+#define kParamDISPLAY "h_DISPLAY"
 #define kParamDISPLAYLabel "Display Primaries"
-#define kParamDISPLAYHint "display primaries"
+#define kParamDISPLAYHint "ACES display primaries"
 #define kParamDISPLAYOptionRec2020 "Rec2020"
 #define kParamDISPLAYOptionRec2020Hint "Rec.2020 primaries"
 #define kParamDISPLAYOptionP3D60 "P3D60"
@@ -501,9 +535,9 @@ eDISPLAYP3DCI,
 eDISPLAYRec709,
 };
 
-#define kParamLIMIT "LIMIT"
+#define kParamLIMIT "h_LIMIT"
 #define kParamLIMITLabel "Limiting Primaries"
-#define kParamLIMITHint "limiting primaries"
+#define kParamLIMITHint "ACES limiting primaries"
 #define kParamLIMITOptionRec2020 "Rec2020"
 #define kParamLIMITOptionRec2020Hint "Rec.2020 primaries"
 #define kParamLIMITOptionP3D60 "P3D60"
@@ -524,9 +558,9 @@ eLIMITP3DCI,
 eLIMITRec709,
 };
 
-#define kParamEOTF "EOTF"
+#define kParamEOTF "h_EOTF"
 #define kParamEOTFLabel "EOTF"
-#define kParamEOTFHint "EOTF"
+#define kParamEOTFHint "ACES EOTF"
 #define kParamEOTFOptionST2084 "ST2084"
 #define kParamEOTFOptionST2084Hint "ST-2084 PQ"
 #define kParamEOTFOptionBT1886 "BT1886"
@@ -550,9 +584,9 @@ eEOTFLINEAR,
 eEOTFHLG,
 };
 
-#define kParamSURROUND "SURROUND"
+#define kParamSURROUND "h_SURROUND"
 #define kParamSURROUNDLabel "Surround"
-#define kParamSURROUNDHint "Surround"
+#define kParamSURROUNDHint "ACES Surround"
 #define kParamSURROUNDOptionDark "Dark"
 #define kParamSURROUNDOptionDarkHint "Dark"
 #define kParamSURROUNDOptionDim "Dim"
@@ -567,9 +601,9 @@ eSURROUNDDim,
 eSURROUNDNormal,
 };
 
-static const string  kParamMathLUT   = "lut";
-static const string  kParamMathLUTLabel ="shaper expr";
-static const string  kParamMathLUTHint = "expression for 1D LUT shaper";
+static const string kParamMathLUT = "lut";
+static const string kParamMathLUTLabel = "shaper expr";
+static const string kParamMathLUTHint = "expression for 1D LUT shaper";
 
 #define kParamSHAPER "Shaper"
 #define kParamSHAPERLabel "1D Shaper"
@@ -617,17 +651,17 @@ virtual void processImagesCUDA();
 virtual void multiThreadProcessImages(OfxRectI p_ProcWindow);
 
 void setSrcImg(OFX::Image* p_SrcImg);
-void setScales(int p_Direction, int p_IDT, int p_ACESIN, int p_LMT, int p_ACESOUT, 
+void setScales(int p_Direction, int p_CSCIN, int p_IDT, int p_LMT, int p_CSCOUT, 
 int p_RRT, int p_InvRRT, int p_ODT, int p_InvODT, float p_Exposure, float *p_LMTScale, 
 float *p_Lum, int p_DISPLAY, int p_LIMIT, int p_EOTF, int p_SURROUND, int *p_SWitch);
 
 private:
 OFX::Image* _srcImg;
 int _direction;
+int _cscin;
 int _idt;
-int _acesin;
 int _lmt;
-int _acesout;
+int _cscout;
 int _rrt;
 int _invrrt;
 int _odt;
@@ -643,12 +677,10 @@ int _switch[3];
 };
 
 ACES::ACES(OFX::ImageEffect& p_Instance)
-: OFX::ImageProcessor(p_Instance)
-{
-}
+: OFX::ImageProcessor(p_Instance) {}
 
 extern void RunCudaKernel(const float* p_Input, float* p_Output, int p_Width, int p_Height, 
-int p_Direction, int p_IDT, int p_ACESIN, int p_LMT, int p_ACESOUT, int p_RRT, int p_InvRRT, 
+int p_Direction, int p_CSCIN, int p_IDT, int p_LMT, int p_CSCOUT, int p_RRT, int p_InvRRT, 
 int p_ODT, int p_InvODT, float p_Exposure, float* p_LMTScale, float *p_Lum, 
 int p_DISPLAY, int p_LIMIT, int p_EOTF, int p_SURROUND, int *p_Switch);
 
@@ -661,13 +693,13 @@ const int height = bounds.y2 - bounds.y1;
 float* input = static_cast<float*>(_srcImg->getPixelData());
 float* output = static_cast<float*>(_dstImg->getPixelData());
 
-RunCudaKernel(input, output, width, height, _direction, _idt, _acesin, _lmt, _acesout, _rrt, 
+RunCudaKernel(input, output, width, height, _direction, _cscin, _idt, _lmt, _cscout, _rrt, 
 _invrrt, _odt, _invodt, _exposure, _lmtscale, _lum, _display, _limit, _eotf, _surround, _switch);
 }
 /*
 #ifdef __APPLE__
 extern void RunMetalKernel(void* p_CmdQ, const float* p_Input, float* p_Output, int p_Width, int p_Height, 
-int p_Direction, int p_IDT, int p_ACESIN, int p_LMT, int p_ACESOUT, int p_RRT, int p_InvRRT, 
+int p_Direction, int p_CSCIN, int p_IDT, int p_LMT, int p_CSCOUT, int p_RRT, int p_InvRRT, 
 int p_ODT, int p_InvODT, float p_Exposure, float* p_LMTScale, float *p_Lum, 
 int p_DISPLAY, int p_LIMIT, int p_EOTF, int p_SURROUND, int *p_Switch);
 #endif
@@ -682,7 +714,7 @@ const int height = bounds.y2 - bounds.y1;
 float* input = static_cast<float*>(_srcImg->getPixelData());
 float* output = static_cast<float*>(_dstImg->getPixelData());
 
-RunMetalKernel(_pMetalCmdQ, input, output, width, height, _direction, _idt, _acesin, _lmt, _acesout, _rrt, 
+RunMetalKernel(_pMetalCmdQ, input, output, width, height, _direction, _cscin, _idt, _lmt, _cscout, _rrt, 
 _invrrt, _odt, _invodt, _exposure, _lmtscale, _lum, _display, _limit, _eotf, _surround, _switch);
 #endif
 }
@@ -697,247 +729,160 @@ float* srcPix = static_cast<float*>(_srcImg ? _srcImg->getPixelAddress(x, y) : 0
 if (srcPix) {
 float3 aces = make_float3(srcPix[0], srcPix[1], srcPix[2]);
 if (_direction == 0) {
-switch (_idt)
-{
+switch (_cscin){
 case 0:
-{
-}
+{}
 break;
 case 1:
-{
-aces = ACEScc_to_ACES(aces);
-}
+{aces = ACEScc_to_ACES(aces);}
 break;
 case 2:
-{
-aces = ACEScct_to_ACES(aces);
-}
+{aces = ACEScct_to_ACES(aces);}
 break;
 case 3:
-{
-aces = IDT_Alexa_v3_logC_EI800(aces);
-}
+{aces = ACEScg_to_ACES(aces);}
 break;
 case 4:
-{
-aces = IDT_Alexa_v3_raw_EI800_CCT6500(aces);
-}
+{aces = ACESproxy_to_ACES(aces);}
 break;
 case 5:
-{
-aces = ADX_to_ACES(aces);
-}
+{aces = ADX_to_ACES(aces);}
 break;
 case 6:
-{
-aces = IDT_Panasonic_V35(aces);
-}
+{aces = ICpCt_to_ACES(aces);}
 break;
 case 7:
-{
-aces = IDT_REDWideGamutRGB_Log3G10(aces);
-}
+{aces = LogC_EI800_AWG_to_ACES(aces);}
 break;
 case 8:
-{
-aces = IDT_Canon_C100_A_D55(aces);
-}
+{aces = Log3G10_RWG_to_ACES(aces);}
 break;
 case 9:
-{
-aces = IDT_Canon_C100_A_Tng(aces);
-}
+{aces = SLog3_SG3_to_ACES(aces);}
 break;
 case 10:
-{
-aces = IDT_Canon_C100mk2_A_D55(aces);
-}
+{aces = SLog3_SG3C_to_ACES(aces);}}
+
+switch (_idt){
+case 0:
+{}
+break;
+case 1:
+{aces = IDT_Alexa_v3_raw_EI800_CCT6500(aces);}
+break;
+case 2:
+{aces = IDT_Panasonic_V35(aces);}
+break;
+case 3:
+{aces = IDT_Canon_C100_A_D55(aces);}
+break;
+case 4:
+{aces = IDT_Canon_C100_A_Tng(aces);}
+break;
+case 5:
+{aces = IDT_Canon_C100mk2_A_D55(aces);}
+break;
+case 6:
+{aces = IDT_Canon_C100mk2_A_Tng(aces);}
+break;
+case 7:
+{aces = IDT_Canon_C300_A_D55(aces);}
+break;
+case 8:
+{aces = IDT_Canon_C300_A_Tng(aces);}
+break;
+case 9:
+{aces = IDT_Canon_C500_A_D55(aces);}
+break;
+case 10:
+{aces = IDT_Canon_C500_A_Tng(aces);}
 break;
 case 11:
-{
-aces = IDT_Canon_C100mk2_A_Tng(aces);
-}
+{aces = IDT_Canon_C500_B_D55(aces);}
 break;
 case 12:
-{
-aces = IDT_Canon_C300_A_D55(aces);
-}
+{aces = IDT_Canon_C500_B_Tng(aces);}
 break;
 case 13:
-{
-aces = IDT_Canon_C300_A_Tng(aces);
-}
+{aces = IDT_Canon_C500_CinemaGamut_A_D55(aces);}
 break;
 case 14:
-{
-aces = IDT_Canon_C500_A_D55(aces);
-}
+{aces = IDT_Canon_C500_CinemaGamut_A_Tng(aces);}
 break;
 case 15:
-{
-aces = IDT_Canon_C500_A_Tng(aces);
-}
+{aces = IDT_Canon_C500_DCI_P3_A_D55(aces);}
 break;
 case 16:
-{
-aces = IDT_Canon_C500_B_D55(aces);
-}
+{aces = IDT_Canon_C500_DCI_P3_A_Tng(aces);}
 break;
 case 17:
-{
-aces = IDT_Canon_C500_B_Tng(aces);
-}
+{aces = IDT_Canon_C300mk2_CanonLog_BT2020_D_D55(aces);}
 break;
 case 18:
-{
-aces = IDT_Canon_C500_CinemaGamut_A_D55(aces);
-}
+{aces = IDT_Canon_C300mk2_CanonLog_BT2020_D_Tng(aces);}
 break;
 case 19:
-{
-aces = IDT_Canon_C500_CinemaGamut_A_Tng(aces);
-}
+{aces = IDT_Canon_C300mk2_CanonLog_CinemaGamut_C_D55(aces);}
 break;
 case 20:
-{
-aces = IDT_Canon_C500_DCI_P3_A_D55(aces);
-}
+{aces = IDT_Canon_C300mk2_CanonLog_CinemaGamut_C_Tng(aces);}
 break;
 case 21:
-{
-aces = IDT_Canon_C500_DCI_P3_A_Tng(aces);
-}
+{aces = IDT_Canon_C300mk2_CanonLog2_BT2020_B_D55(aces);}
 break;
 case 22:
-{
-aces = IDT_Canon_C300mk2_CanonLog_BT2020_D_D55(aces);
-}
+{aces = IDT_Canon_C300mk2_CanonLog2_BT2020_B_Tng(aces);}
 break;
 case 23:
-{
-aces = IDT_Canon_C300mk2_CanonLog_BT2020_D_Tng(aces);
-}
+{aces = IDT_Canon_C300mk2_CanonLog2_CinemaGamut_A_D55(aces);}
 break;
 case 24:
-{
-aces = IDT_Canon_C300mk2_CanonLog_CinemaGamut_C_D55(aces);
-}
+{aces = IDT_Canon_C300mk2_CanonLog2_CinemaGamut_A_Tng(aces);}
 break;
 case 25:
-{
-aces = IDT_Canon_C300mk2_CanonLog_CinemaGamut_C_Tng(aces);
-}
+{aces = IDT_Canon_C300mk2_CanonLog3_BT2020_F_D55(aces);}
 break;
 case 26:
-{
-aces = IDT_Canon_C300mk2_CanonLog2_BT2020_B_D55(aces);
-}
+{aces = IDT_Canon_C300mk2_CanonLog3_BT2020_F_Tng(aces);}
 break;
 case 27:
-{
-aces = IDT_Canon_C300mk2_CanonLog2_BT2020_B_Tng(aces);
-}
+{aces = IDT_Canon_C300mk2_CanonLog3_CinemaGamut_E_D55(aces);}
 break;
 case 28:
-{
-aces = IDT_Canon_C300mk2_CanonLog2_CinemaGamut_A_D55(aces);
-}
+{aces = IDT_Canon_C300mk2_CanonLog3_CinemaGamut_E_Tng(aces);}
 break;
 case 29:
-{
-aces = IDT_Canon_C300mk2_CanonLog2_CinemaGamut_A_Tng(aces);
-}
+{aces = IDT_Sony_SLog1_SGamut(aces);}
 break;
 case 30:
-{
-aces = IDT_Canon_C300mk2_CanonLog3_BT2020_F_D55(aces);
-}
+{aces = IDT_Sony_SLog2_SGamut_Daylight(aces);}
 break;
 case 31:
-{
-aces = IDT_Canon_C300mk2_CanonLog3_BT2020_F_Tng(aces);
-}
+{aces = IDT_Sony_SLog2_SGamut_Tungsten(aces);}
 break;
 case 32:
-{
-aces = IDT_Canon_C300mk2_CanonLog3_CinemaGamut_E_D55(aces);
-}
+{aces = IDT_Sony_Venice_SGamut3(aces);}
 break;
 case 33:
-{
-aces = IDT_Canon_C300mk2_CanonLog3_CinemaGamut_E_Tng(aces);
-}
+{aces = IDT_Sony_Venice_SGamut3Cine(aces);}
 break;
 case 34:
-{
-aces = IDT_Sony_SLog1_SGamut(aces);
-}
+{aces = IDT_Rec709(aces);}
 break;
 case 35:
-{
-aces = IDT_Sony_SLog2_SGamut_Daylight(aces);
+{aces = IDT_sRGB(aces);}
 }
-break;
-case 36:
-{
-aces = IDT_Sony_SLog2_SGamut_Tungsten(aces);
-}
-break;
-case 37:
-{
-aces = IDT_Sony_SLog3_SGamut3(aces);
-}
-break;
-case 38:
-{
-aces = IDT_Sony_SLog3_SGamut3Cine(aces);
-}
-break;
-case 39:
-{
-aces = IDT_Rec709(aces);
-}
-break;
-case 40:
-{
-aces = IDT_sRGB(aces);
-}}
 
 if (_exposure != 0.0f) {
 aces.x *= exp2f(_exposure);
 aces.y *= exp2f(_exposure);
 aces.z *= exp2f(_exposure);
 }
-switch (_acesin)
-{
-case 0:
-{
-}
-break;
-case 1:
-{
-aces = ACES_to_ACEScc(aces);
-}
-break;
-case 2:
-{
-aces = ACES_to_ACEScct(aces);
-}
-break;
-case 3:
-{
-aces = ACES_to_ACEScg(aces);
-}
-break;
-case 4:
-{
-aces = ACES_to_ACESproxy(aces);
-}}
+
 switch (_lmt)
 {
 case 0:
-{
-}
+{}
 break;
 case 1:
 {
@@ -947,7 +892,7 @@ if(!(_lmtscale[1] == 1.0f && _lmtscale[2] == 0.0f && _lmtscale[3] == 1.0f)) {
 float3 SLOPE = {_lmtscale[1], _lmtscale[1], _lmtscale[1]};
 float3 OFFSET = {_lmtscale[2], _lmtscale[2], _lmtscale[2]};
 float3 POWER = {_lmtscale[3], _lmtscale[3], _lmtscale[3]};
-aces = ASCCDL_inACEScct(aces, SLOPE, OFFSET, POWER);
+aces = ASCCDL_inACEScct(aces, SLOPE, OFFSET, POWER, 1.0f);
 }
 if(_lmtscale[4] != 1.0f)
 aces = gamma_adjust_linear(aces, _lmtscale[4], _lmtscale[5]);
@@ -966,14 +911,10 @@ aces = scale_C_at_H(aces, _lmtscale[21], _lmtscale[22], _lmtscale[23]);
 }
 break;
 case 2:
-{
-aces = LMT_BlueLightArtifactFix(aces);
-}
+{aces = LMT_BlueLightArtifactFix(aces);}
 break;
 case 3:
-{
-aces = LMT_PFE(aces);
-}
+{aces = LMT_PFE(aces);}
 break;
 case 4:
 {
@@ -982,7 +923,7 @@ aces = scale_C(aces, _lmtscale[0]);
 float3 SLOPE = {_lmtscale[1], _lmtscale[1], _lmtscale[1] * 0.94f};
 float3 OFFSET = {_lmtscale[2], _lmtscale[2], _lmtscale[2] + 0.02f};
 float3 POWER = {_lmtscale[3], _lmtscale[3], _lmtscale[3]};
-aces = ASCCDL_inACEScct(aces, SLOPE, OFFSET, POWER);
+aces = ASCCDL_inACEScct(aces, SLOPE, OFFSET, POWER, 1.0f);
 if(_lmtscale[4] != 1.0f)
 aces = gamma_adjust_linear(aces, _lmtscale[4], _lmtscale[5]);
 if(_lmtscale[8] != 0.0f)
@@ -1000,43 +941,51 @@ aces = scale_C_at_H(aces, _lmtscale[21], _lmtscale[22], _lmtscale[23]);
 }
 break;
 case 5:
-{
-aces = LMT_Bleach(aces);
-}}
-switch (_acesout)
-{
-case 0:
-{
+{aces = LMT_Bleach(aces);}
 }
+
+switch (_cscout){
+case 0:
+{}
 break;
 case 1:
-{
-aces = ACEScc_to_ACES(aces);
-}
+{aces = ACES_to_ACEScc(aces);}
 break;
 case 2:
-{
-aces = ACEScct_to_ACES(aces);
-}
+{aces = ACES_to_ACEScct(aces);}
 break;
 case 3:
-{
-aces = ACEScg_to_ACES(aces);
-}
+{aces = ACES_to_ACEScg(aces);}
 break;
 case 4:
-{
-aces = ACESproxy_to_ACES(aces);
-}}
+{aces = ACES_to_ACESproxy(aces);}
+break;
+case 5:
+{aces = ACES_to_ADX(aces);}
+break;
+case 6:
+{aces = ACES_to_ICpCt(aces);}
+break;
+case 7:
+{aces = ACES_to_LogC_EI800_AWG(aces);}
+break;
+case 8:
+{aces = ACES_to_Log3G10_RWG(aces);}
+break;
+case 9:
+{aces = ACES_to_SLog3_SG3(aces);}
+break;
+case 10:
+{aces = ACES_to_SLog3_SG3C(aces);}
+}
 
-if (_rrt == 1 && (_odt > 4 && _odt < 25))
-aces = RRT_cpu(aces);
+if (_rrt == 1 && _odt < 22)
+aces = h_RRT(aces);
 
 switch (_odt)
 {
 case 0:
-{
-}
+{}
 break;
 case 1:
 {
@@ -1054,159 +1003,101 @@ aces = outputTransform( aces, Y_MIN, Y_MID, Y_MAX, DISPLAY_PRI, LIMITING_PRI, EO
 }
 break;
 case 2:
-{
-aces = ACES_to_ACEScc(aces);
-}
+{aces = ODT_Rec709_100nits_dim(aces);}
 break;
 case 3:
-{
-aces = ACES_to_ACEScct(aces);
-}
+{aces = ODT_Rec709_D60sim_100nits_dim(aces);}
 break;
 case 4:
-{
-aces = ACES_to_ADX(aces);
-}
+{aces = ODT_sRGB_100nits_dim(aces);}
 break;
 case 5:
-{
-aces = ODT_Rec709_100nits_dim(aces);
-}
+{aces = ODT_sRGB_D60sim_100nits_dim(aces);}
 break;
 case 6:
-{
-aces = ODT_Rec709_D60sim_100nits_dim(aces);
-}
+{aces = ODT_Rec2020_100nits_dim(aces);}
 break;
 case 7:
-{
-aces = ODT_sRGB_100nits_dim(aces);
-}
+{aces = ODT_Rec2020_Rec709limited_100nits_dim(aces);}
 break;
 case 8:
-{
-aces = ODT_sRGB_D60sim_100nits_dim(aces);
-}
+{aces = ODT_Rec2020_P3D65limited_100nits_dim(aces);}
 break;
 case 9:
-{
-aces = ODT_Rec2020_100nits_dim(aces);
-}
+{aces = ODT_Rec2020_ST2084_1000nits(aces);}
 break;
 case 10:
-{
-aces = ODT_Rec2020_Rec709limited_100nits_dim(aces);
-}
+{aces = ODT_P3DCI_48nits(aces);}
 break;
 case 11:
-{
-aces = ODT_Rec2020_P3D65limited_100nits_dim(aces);
-}
+{aces = ODT_P3DCI_D60sim_48nits(aces);}
 break;
 case 12:
-{
-aces = ODT_Rec2020_ST2084_1000nits(aces);
-}
+{aces = ODT_P3DCI_D65sim_48nits(aces);}
 break;
 case 13:
-{
-aces = ODT_P3DCI_48nits(aces);
-}
+{aces = ODT_P3D60_48nits(aces);}
 break;
 case 14:
-{
-aces = ODT_P3DCI_D60sim_48nits(aces);
-}
+{aces = ODT_P3D65_48nits(aces);}
 break;
 case 15:
-{
-aces = ODT_P3DCI_D65sim_48nits(aces);
-}
+{aces = ODT_P3D65_D60sim_48nits(aces);}
 break;
 case 16:
-{
-aces = ODT_P3D60_48nits(aces);
-}
+{aces = ODT_P3D65_Rec709limited_48nits(aces);}
 break;
 case 17:
-{
-aces = ODT_P3D65_48nits(aces);
-}
+{aces = ODT_DCDM(aces);}
 break;
 case 18:
-{
-aces = ODT_P3D65_D60sim_48nits(aces);
-}
+{aces = ODT_DCDM_P3D60limited(aces);}
 break;
 case 19:
-{
-aces = ODT_P3D65_Rec709limited_48nits(aces);
-}
+{aces = ODT_DCDM_P3D65limited(aces);}
 break;
 case 20:
-{
-aces = ODT_DCDM(aces);
-}
+{aces = ODT_RGBmonitor_100nits_dim(aces);}
 break;
 case 21:
-{
-aces = ODT_DCDM_P3D60limited(aces);
-}
+{aces = ODT_RGBmonitor_D60sim_100nits_dim(aces);}
 break;
 case 22:
-{
-aces = ODT_DCDM_P3D65limited(aces);
-}
+{aces = RRTODT_Rec709_100nits_10nits_BT1886(aces);}
 break;
 case 23:
-{
-aces = ODT_RGBmonitor_100nits_dim(aces);
-}
+{aces = RRTODT_Rec709_100nits_10nits_sRGB(aces);}
 break;
 case 24:
-{
-aces = ODT_RGBmonitor_D60sim_100nits_dim(aces);
-}
+{aces = RRTODT_P3D65_108nits_7_2nits_ST2084(aces);}
 break;
 case 25:
-{
-aces = RRTODT_P3D65_108nits_7_2nits_ST2084(aces);
-}
+{aces = RRTODT_P3D65_1000nits_15nits_ST2084(aces);}
 break;
 case 26:
-{
-aces = RRTODT_Rec2020_1000nits_15nits_HLG(aces);
-}
+{aces = RRTODT_P3D65_2000nits_15nits_ST2084(aces);}
 break;
 case 27:
-{
-aces = RRTODT_Rec2020_1000nits_15nits_ST2084(aces);
-}
+{aces = RRTODT_P3D65_4000nits_15nits_ST2084(aces);}
 break;
 case 28:
-{
-aces = RRTODT_Rec2020_2000nits_15nits_ST2084(aces);
-}
+{aces = RRTODT_Rec2020_1000nits_15nits_HLG(aces);}
 break;
 case 29:
-{
-aces = RRTODT_Rec2020_4000nits_15nits_ST2084(aces);
-}
+{aces = RRTODT_Rec2020_1000nits_15nits_ST2084(aces);}
 break;
 case 30:
-{
-aces = RRTODT_Rec709_100nits_10nits_BT1886(aces);
-}
+{aces = RRTODT_Rec2020_2000nits_15nits_ST2084(aces);}
 break;
 case 31:
-{
-aces = RRTODT_Rec709_100nits_10nits_sRGB(aces);
-}}} else {
+{aces = RRTODT_Rec2020_4000nits_15nits_ST2084(aces);}
+}
+} else {
+
 switch (_invodt)
 {
 case 0:
-{
-}
+{}
 break;
 case 1:
 {
@@ -1224,123 +1115,88 @@ aces = invOutputTransform( aces, Y_MIN, Y_MID, Y_MAX, DISPLAY_PRI, LIMITING_PRI,
 }
 break;
 case 2:
-{
-aces = InvODT_Rec709_100nits_dim(aces);
-}
+{aces = InvODT_Rec709_100nits_dim(aces);}
 break;
 case 3:
-{
-aces = InvODT_Rec709_D60sim_100nits_dim(aces);
-}
+{aces = InvODT_Rec709_D60sim_100nits_dim(aces);}
 break;
 case 4:
-{
-aces = InvODT_sRGB_100nits_dim(aces);
-}
+{aces = InvODT_sRGB_100nits_dim(aces);}
 break;
 case 5:
-{
-aces = InvODT_sRGB_D60sim_100nits_dim(aces);
-}
+{aces = InvODT_sRGB_D60sim_100nits_dim(aces);}
 break;
 case 6:
-{
-aces = InvODT_Rec2020_100nits_dim(aces);
-}
+{aces = InvODT_Rec2020_100nits_dim(aces);}
 break;
 case 7:
-{
-aces = InvODT_Rec2020_ST2084_1000nits(aces);
-}
+{aces = InvODT_Rec2020_ST2084_1000nits(aces);}
 break;
 case 8:
-{
-aces = InvODT_P3DCI_48nits(aces);
-}
+{aces = InvODT_P3DCI_48nits(aces);}
 break;
 case 9:
-{
-aces = InvODT_P3DCI_D60sim_48nits(aces);
-}
+{aces = InvODT_P3DCI_D60sim_48nits(aces);}
 break;
 case 10:
-{
-aces = InvODT_P3DCI_D65sim_48nits(aces);
-}
+{aces = InvODT_P3DCI_D65sim_48nits(aces);}
 break;
 case 11:
-{
-aces = InvODT_P3D60_48nits(aces);
-}
+{aces = InvODT_P3D60_48nits(aces);}
 break;
 case 12:
-{
-aces = InvODT_P3D65_48nits(aces);
-}
+{aces = InvODT_P3D65_48nits(aces);}
 break;
 case 13:
-{
-aces = InvODT_P3D65_D60sim_48nits(aces);
-}
+{aces = InvODT_P3D65_D60sim_48nits(aces);}
 break;
 case 14:
-{
-aces = InvODT_DCDM(aces);
-}
+{aces = InvODT_DCDM(aces);}
 break;
 case 15:
-{
-aces = InvODT_DCDM_P3D65limited(aces);
-}
+{aces = InvODT_DCDM_P3D65limited(aces);}
 break;
 case 16:
-{
-aces = InvODT_RGBmonitor_100nits_dim(aces);
-}
+{aces = InvODT_RGBmonitor_100nits_dim(aces);}
 break;
 case 17:
-{
-aces = InvODT_RGBmonitor_D60sim_100nits_dim(aces);
-}
+{aces = InvODT_RGBmonitor_D60sim_100nits_dim(aces);}
 break;
 case 18:
-{
-aces = InvRRTODT_P3D65_108nits_7_2nits_ST2084(aces);
-}
+{aces = InvRRTODT_Rec709_100nits_10nits_BT1886(aces);}
 break;
 case 19:
-{
-aces = InvRRTODT_Rec2020_1000nits_15nits_HLG(aces);
-}
+{aces = InvRRTODT_Rec709_100nits_10nits_sRGB(aces);}
 break;
 case 20:
-{
-aces = InvRRTODT_Rec2020_1000nits_15nits_ST2084(aces);
-}
+{aces = InvRRTODT_P3D65_108nits_7_2nits_ST2084(aces);}
 break;
 case 21:
-{
-aces = InvRRTODT_Rec2020_2000nits_15nits_ST2084(aces);
-}
+{aces = InvRRTODT_P3D65_1000nits_15nits_ST2084(aces);}
 break;
 case 22:
-{
-aces = InvRRTODT_Rec2020_4000nits_15nits_ST2084(aces);
-}
+{aces = InvRRTODT_P3D65_2000nits_15nits_ST2084(aces);}
 break;
 case 23:
-{
-aces = InvRRTODT_Rec709_100nits_10nits_BT1886(aces);
-}
+{aces = InvRRTODT_P3D65_4000nits_15nits_ST2084(aces);}
 break;
 case 24:
-{
-aces = InvRRTODT_Rec709_100nits_10nits_sRGB(aces);
-}}
-if(_invrrt == 1)
-{
-aces = InvRRT_cpu(aces);
-}}
+{aces = InvRRTODT_Rec2020_1000nits_15nits_HLG(aces);}
+break;
+case 25:
+{aces = InvRRTODT_Rec2020_1000nits_15nits_ST2084(aces);}
+break;
+case 26:
+{aces = InvRRTODT_Rec2020_2000nits_15nits_ST2084(aces);}
+break;
+case 27:
+{aces = InvRRTODT_Rec2020_4000nits_15nits_ST2084(aces);}
+}
+
+if(_invrrt == 1 && _invodt < 18)
+aces = h_InvRRT(aces);
+}
+
 dstPix[0] = aces.x;
 dstPix[1] = aces.y;
 dstPix[2] = aces.z;
@@ -1356,15 +1212,15 @@ void ACES::setSrcImg(OFX::Image* p_SrcImg) {
 _srcImg = p_SrcImg;
 }
 
-void ACES::setScales(int p_Direction, int p_IDT, int p_ACESIN, int p_LMT, int p_ACESOUT, int p_RRT, 
+void ACES::setScales(int p_Direction, int p_CSCIN, int p_IDT, int p_LMT, int p_CSCOUT, int p_RRT, 
 int p_InvRRT, int p_ODT, int p_InvODT, float p_Exposure, float *p_LMTScale, float *p_Lum, 
 int p_DISPLAY, int p_LIMIT, int p_EOTF, int p_SURROUND, int *p_Switch)
 {
 _direction = p_Direction;
+_cscin = p_CSCIN;
 _idt = p_IDT;
-_acesin = p_ACESIN;
 _lmt = p_LMT;
-_acesout = p_ACESOUT;
+_cscout = p_CSCOUT;
 _rrt = p_RRT;
 _invrrt = p_InvRRT;
 _odt = p_ODT;
@@ -1422,10 +1278,10 @@ private:
 OFX::Clip* m_DstClip;
 OFX::Clip* m_SrcClip;
 OFX::ChoiceParam* m_Direction;
+OFX::ChoiceParam* m_CSCIN;
 OFX::ChoiceParam* m_IDT;
-OFX::ChoiceParam* m_ACESIN;
 OFX::ChoiceParam* m_LMT;
-OFX::ChoiceParam* m_ACESOUT;
+OFX::ChoiceParam* m_CSCOUT;
 OFX::ChoiceParam* m_RRT;
 OFX::ChoiceParam* m_InvRRT;
 OFX::ChoiceParam* m_ODT;
@@ -1487,10 +1343,10 @@ ACESPlugin::ACESPlugin(OfxImageEffectHandle p_Handle)
 m_DstClip = fetchClip(kOfxImageEffectOutputClipName);
 m_SrcClip = fetchClip(kOfxImageEffectSimpleSourceClipName);
 m_Direction = fetchChoiceParam(kParamInput);
+m_CSCIN = fetchChoiceParam(kParamCSCIN);
 m_IDT = fetchChoiceParam(kParamIDT);
-m_ACESIN = fetchChoiceParam(kParamACESIN);
 m_LMT = fetchChoiceParam(kParamLMT);
-m_ACESOUT = fetchChoiceParam(kParamACESOUT);
+m_CSCOUT = fetchChoiceParam(kParamCSCOUT);
 m_RRT = fetchChoiceParam(kParamRRT);
 m_InvRRT = fetchChoiceParam(kParamInvRRT);
 m_ODT = fetchChoiceParam(kParamODT);
@@ -1523,10 +1379,10 @@ m_ScaleCH2 = fetchDoubleParam("ScaleCH2");
 m_YMIN = fetchDoubleParam("YMIN");
 m_YMID = fetchDoubleParam("YMID");
 m_YMAX = fetchDoubleParam("YMAX");
-m_DISPLAY = fetchChoiceParam("DISPLAY");
-m_LIMIT = fetchChoiceParam("LIMIT");
-m_EOTF = fetchChoiceParam("EOTF");
-m_SURROUND = fetchChoiceParam("SURROUND");
+m_DISPLAY = fetchChoiceParam(kParamDISPLAY);
+m_LIMIT = fetchChoiceParam(kParamLIMIT);
+m_EOTF = fetchChoiceParam(kParamEOTF);
+m_SURROUND = fetchChoiceParam(kParamSURROUND);
 m_STRETCH = fetchBooleanParam("STRETCH");
 m_D60SIM = fetchBooleanParam("D60SIM");
 m_LEGALRANGE = fetchBooleanParam("LEGALRANGE");
@@ -1558,50 +1414,34 @@ OFX::throwSuiteStatusException(kOfxStatErrUnsupported);
 
 bool ACESPlugin::isIdentity(const OFX::IsIdentityArguments& p_Args, OFX::Clip*& p_IdentityClip, double& p_IdentityTime)
 { 
-int IDT_i;
-m_IDT->getValueAtTime(p_Args.time, IDT_i);
-IDTEnum IDT = (IDTEnum)IDT_i;
-int _idt = IDT_i;
+int _idt;
+m_IDT->getValueAtTime(p_Args.time, _idt);
 bool idt = _idt == 0;
-int ACESIN_i;
-m_ACESIN->getValueAtTime(p_Args.time, ACESIN_i);
-ACESINEnum ACESIN = (ACESINEnum)ACESIN_i;
-int _acesin = ACESIN_i;
-bool acesin = _acesin == 0;
-int LMT_i;
-m_LMT->getValueAtTime(p_Args.time, LMT_i);
-LMTEnum LMT = (LMTEnum)LMT_i;
-int _lmt = LMT_i;
+int _cscin;
+m_CSCIN->getValueAtTime(p_Args.time, _cscin);
+bool cscin = _cscin == 0;
+int _lmt;
+m_LMT->getValueAtTime(p_Args.time, _lmt);
 bool lmt = _lmt == 0;
-int ACESOUT_i;
-m_ACESOUT->getValueAtTime(p_Args.time, ACESOUT_i);
-ACESOUTEnum ACESOUT = (ACESOUTEnum)ACESOUT_i;
-int _acesout = ACESOUT_i;
-bool acesout = _acesout == 0;
-int RRT_i;
-m_RRT->getValueAtTime(p_Args.time, RRT_i);
-RRTEnum RRT = (RRTEnum)RRT_i;
-int _rrt = RRT_i;
+int _cscout;
+m_CSCOUT->getValueAtTime(p_Args.time, _cscout);
+bool cscout = _cscout == 0;
+int _rrt;
+m_RRT->getValueAtTime(p_Args.time, _rrt);
 bool rrt = _rrt == 0;
-int InvRRT_i;
-m_InvRRT->getValueAtTime(p_Args.time, InvRRT_i);
-InvRRTEnum InvRRT = (InvRRTEnum)InvRRT_i;
-int _invrrt = InvRRT_i;
+int _invrrt;
+m_InvRRT->getValueAtTime(p_Args.time, _invrrt);
 bool invrrt = _invrrt == 0;
-int ODT_i;
-m_ODT->getValueAtTime(p_Args.time, ODT_i);
-ODTEnum ODT = (ODTEnum)ODT_i;
-int _odt = ODT_i;
+int _odt;
+m_ODT->getValueAtTime(p_Args.time, _odt);
 bool odt = _odt == 0;
-int InvODT_i;
-m_InvODT->getValueAtTime(p_Args.time, InvODT_i);
-InvODTEnum InvODT = (InvODTEnum)InvODT_i;
-int _invodt = InvODT_i;
+int _invodt;
+m_InvODT->getValueAtTime(p_Args.time, _invodt);
 bool invodt = _invodt == 0;
 float _exposure = m_Exposure->getValueAtTime(p_Args.time);
-bool exposure = _exposure = 0.0f;
+bool exposure = _exposure == 0.0f;
 
-if (idt && acesin && lmt && acesout && rrt && invrrt && odt && invodt && exposure) {
+if (idt && cscin && lmt && cscout && rrt && invrrt && odt && invodt && exposure) {
 p_IdentityClip = m_SrcClip;
 p_IdentityTime = p_Args.time;
 return true;
@@ -1612,20 +1452,17 @@ return false;
 void ACESPlugin::changedParam(const OFX::InstanceChangedArgs& p_Args, const std::string& p_ParamName)
 {
 if (p_ParamName == kParamInput) {
-int Direction_i;
-m_Direction->getValueAtTime(p_Args.time, Direction_i);
-InputEnum Direction = (InputEnum)Direction_i;
-int direction = Direction_i;
-bool forward = Direction_i == 0;
-bool inverse = Direction_i == 1;
-int LMT_i;
-m_LMT->getValueAtTime(p_Args.time, LMT_i);
-LMTEnum LMT = (LMTEnum)LMT_i;
-bool custom = LMT_i == 1;
+int direction;
+m_Direction->getValueAtTime(p_Args.time, direction);
+bool forward = direction == 0;
+bool inverse = direction == 1;
+int _lmt;
+m_LMT->getValueAtTime(p_Args.time, _lmt);
+bool custom = _lmt == 1;
+m_CSCIN->setIsSecretAndDisabled(!forward);
 m_IDT->setIsSecretAndDisabled(!forward);
-m_ACESIN->setIsSecretAndDisabled(!forward);
 m_LMT->setIsSecretAndDisabled(!forward);
-m_ACESOUT->setIsSecretAndDisabled(!forward);
+m_CSCOUT->setIsSecretAndDisabled(!forward);
 m_RRT->setIsSecretAndDisabled(!forward);
 m_InvRRT->setIsSecretAndDisabled(forward);
 m_ODT->setIsSecretAndDisabled(!forward);
@@ -1655,14 +1492,12 @@ m_Shift4->setIsSecretAndDisabled(!forward || !custom);
 m_HueCH2->setIsSecretAndDisabled(!forward || !custom);
 m_RangeCH2->setIsSecretAndDisabled(!forward || !custom);
 m_ScaleCH2->setIsSecretAndDisabled(!forward || !custom);
-int ODT_i;
-m_ODT->getValueAtTime(p_Args.time, ODT_i);
-ODTEnum ODT = (ODTEnum)ODT_i;
-bool odt = ODT_i == 1;
-int InvODT_i;
-m_InvODT->getValueAtTime(p_Args.time, InvODT_i);
-InvODTEnum InvODT = (InvODTEnum)InvODT_i;
-bool invodt = InvODT_i == 1;
+int _odt;
+m_ODT->getValueAtTime(p_Args.time, _odt);
+bool odt = _odt == 1;
+int _invodt;
+m_InvODT->getValueAtTime(p_Args.time, _invodt);
+bool invodt = _invodt == 1;
 m_YMIN->setIsSecretAndDisabled(!(odt && forward) && !(invodt && inverse));
 m_YMID->setIsSecretAndDisabled(!(odt && forward) && !(invodt && inverse));
 m_YMAX->setIsSecretAndDisabled(!(odt && forward) && !(invodt && inverse));
@@ -1676,10 +1511,9 @@ m_LEGALRANGE->setIsSecretAndDisabled(!(odt && forward) && !(invodt && inverse));
 }
 
 if (p_ParamName == kParamLMT) {
-int LMT_i;
-m_LMT->getValueAtTime(p_Args.time, LMT_i);
-LMTEnum LMT = (LMTEnum)LMT_i;
-bool custom = LMT_i == 1 || LMT_i == 4;
+int _lmt;
+m_LMT->getValueAtTime(p_Args.time, _lmt);
+bool custom = _lmt == 1 || _lmt == 4;
 m_ScaleC->setIsSecretAndDisabled(!custom);
 m_Slope->setIsSecretAndDisabled(!custom);
 m_Offset->setIsSecretAndDisabled(!custom);
@@ -1705,7 +1539,7 @@ m_HueCH2->setIsSecretAndDisabled(!custom);
 m_RangeCH2->setIsSecretAndDisabled(!custom);
 m_ScaleCH2->setIsSecretAndDisabled(!custom);
 
-if (LMT_i == 4) {
+if (_lmt == 4) {
 m_ScaleC->setValue(0.7);
 m_Slope->setValue(1.0);
 m_Offset->setValue(0.0);
@@ -1732,7 +1566,7 @@ m_RangeCH2->setValue(120.0);
 m_ScaleCH2->setValue(1.4);
 }
 
-if (LMT_i == 1) {
+if (_lmt == 1) {
 m_ScaleC->setValue(1.0);
 m_Slope->setValue(1.0);
 m_Offset->setValue(0.0);
@@ -1760,10 +1594,9 @@ m_ScaleCH2->setValue(1.0);
 }}
 
 if (p_ParamName == kParamODT) {
-int ODT_i;
-m_ODT->getValueAtTime(p_Args.time, ODT_i);
-ODTEnum ODT = (ODTEnum)ODT_i;
-bool custom = ODT_i == 1;
+int _odt;
+m_ODT->getValueAtTime(p_Args.time, _odt);
+bool custom = _odt == 1;
 m_YMIN->setIsSecretAndDisabled(!custom);
 m_YMID->setIsSecretAndDisabled(!custom);
 m_YMAX->setIsSecretAndDisabled(!custom);
@@ -1777,10 +1610,9 @@ m_LEGALRANGE->setIsSecretAndDisabled(!custom);
 }
 
 if (p_ParamName == kParamInvODT) {
-int InvODT_i;
-m_InvODT->getValueAtTime(p_Args.time, InvODT_i);
-InvODTEnum InvODT = (InvODTEnum)InvODT_i;
-bool custom = InvODT_i == 1;
+int _invodt;
+m_InvODT->getValueAtTime(p_Args.time, _invodt);
+bool custom = _invodt == 1;
 m_YMIN->setIsSecretAndDisabled(!custom);
 m_YMID->setIsSecretAndDisabled(!custom);
 m_YMAX->setIsSecretAndDisabled(!custom);
@@ -1797,42 +1629,24 @@ if (p_ParamName == "info") {
 sendMessage(OFX::Message::eMessageMessage, "", string(kPluginDescription));
 }
 
-int Direction_i;
-m_Direction->getValueAtTime(p_Args.time, Direction_i);
-InputEnum Direction = (InputEnum)Direction_i;
-int _direction = Direction_i;
-int IDT_i;
-m_IDT->getValueAtTime(p_Args.time, IDT_i);
-IDTEnum IDT = (IDTEnum)IDT_i;
-int _idt = IDT_i;
-int ACESIN_i;
-m_ACESIN->getValueAtTime(p_Args.time, ACESIN_i);
-ACESINEnum ACESIN = (ACESINEnum)ACESIN_i;
-int _acesin = ACESIN_i;
-int LMT_i;
-m_LMT->getValueAtTime(p_Args.time, LMT_i);
-LMTEnum LMT = (LMTEnum)LMT_i;
-int _lmt = LMT_i;
-int ACESOUT_i;
-m_ACESOUT->getValueAtTime(p_Args.time, ACESOUT_i);
-ACESOUTEnum ACESOUT = (ACESOUTEnum)ACESOUT_i;
-int _acesout = ACESOUT_i;
-int RRT_i;
-m_RRT->getValueAtTime(p_Args.time, RRT_i);
-RRTEnum RRT = (RRTEnum)RRT_i;
-int _rrt = RRT_i;
-int InvRRT_i;
-m_InvRRT->getValueAtTime(p_Args.time, InvRRT_i);
-InvRRTEnum InvRRT = (InvRRTEnum)InvRRT_i;
-int _invrrt = InvRRT_i;
-int ODT_i;
-m_ODT->getValueAtTime(p_Args.time, ODT_i);
-ODTEnum ODT = (ODTEnum)ODT_i;
-int _odt = ODT_i;
-int InvODT_i;
-m_InvODT->getValueAtTime(p_Args.time, InvODT_i);
-InvODTEnum InvODT = (InvODTEnum)InvODT_i;
-int _invodt = InvODT_i;
+int _direction;
+m_Direction->getValueAtTime(p_Args.time, _direction);
+int _cscin;
+m_CSCIN->getValueAtTime(p_Args.time, _cscin);
+int _idt;
+m_IDT->getValueAtTime(p_Args.time, _idt);
+int _lmt;
+m_LMT->getValueAtTime(p_Args.time, _lmt);
+int _cscout;
+m_CSCOUT->getValueAtTime(p_Args.time, _cscout);
+int _rrt;
+m_RRT->getValueAtTime(p_Args.time, _rrt);
+int _invrrt;
+m_InvRRT->getValueAtTime(p_Args.time, _invrrt);
+int _odt;
+m_ODT->getValueAtTime(p_Args.time, _odt);
+int _invodt;
+m_InvODT->getValueAtTime(p_Args.time, _invodt);
 float _exposure = m_Exposure->getValueAtTime(p_Args.time);
 float _lmtscale[24];
 _lmtscale[0] = m_ScaleC->getValueAtTime(p_Args.time);
@@ -1864,22 +1678,14 @@ _lum[0] = m_YMIN->getValueAtTime(p_Args.time);
 _lum[0] *= 0.0001f;
 _lum[1] = m_YMID->getValueAtTime(p_Args.time);
 _lum[2] = m_YMAX->getValueAtTime(p_Args.time);
-int DISPLAY_i;
-m_DISPLAY->getValueAtTime(p_Args.time, DISPLAY_i);
-DISPLAYEnum DISPLAY = (DISPLAYEnum)DISPLAY_i;
-int _display = DISPLAY_i;
-int LIMIT_i;
-m_LIMIT->getValueAtTime(p_Args.time, LIMIT_i);
-LIMITEnum LIMIT = (LIMITEnum)LIMIT_i;
-int _limit = LIMIT_i;
-int EOTF_i;
-m_EOTF->getValueAtTime(p_Args.time, EOTF_i);
-EOTFEnum EOTF = (EOTFEnum)EOTF_i;
-int _eotf = EOTF_i;
-int SURROUND_i;
-m_SURROUND->getValueAtTime(p_Args.time, SURROUND_i);
-SURROUNDEnum SURROUND = (SURROUNDEnum)SURROUND_i;
-int _surround = SURROUND_i;
+int _display;
+m_DISPLAY->getValueAtTime(p_Args.time, _display);
+int _limit;
+m_LIMIT->getValueAtTime(p_Args.time, _limit);
+int _eotf;
+m_EOTF->getValueAtTime(p_Args.time, _eotf);
+int _surround;
+m_SURROUND->getValueAtTime(p_Args.time, _surround);
 int _switch[3];
 bool stretch = m_STRETCH->getValueAtTime(p_Args.time);
 _switch[0] = stretch ? 1 : 0;
@@ -1893,13 +1699,12 @@ string PATH;
 m_Path->getValue(PATH);
 string NAME;
 m_Name->getValue(NAME);
-
 OFX::Message::MessageReplyEnum reply = sendMessage(OFX::Message::eMessageQuestion, "", "Save " + NAME + ".dctl to " + PATH + " ?");
 if (reply == OFX::Message::eMessageReplyYes) {
 FILE * pFile;
 pFile = fopen ((PATH + NAME + ".dctl").c_str(), "w");
 if (pFile != NULL) {
-fprintf (pFile, "// ACES 1.1 DCTL export \n" \
+fprintf (pFile, "// ACES 1.2 DCTL export \n" \
 "// Should be placed in directory as ACES_LIB.h \n" \
 " \n" \
 "#include \"ACES_LIB.h\" \n" \
@@ -1907,10 +1712,10 @@ fprintf (pFile, "// ACES 1.1 DCTL export \n" \
 "__DEVICE__ float3 transform(int p_Width, int p_Height, int p_X, int p_Y, float p_R, float p_G, float p_B) \n" \
 "{ \n" \
 "int Direction = %d; \n" \
+"int CscIn = %d; \n" \
 "int Idt = %d; \n" \
-"int AcesIn = %d; \n" \
 "int Lmt = %d; \n" \
-"int AcesOut = %d; \n" \
+"int CscOut = %d; \n" \
 "int Rrt = %d; \n" \
 "int InvRrt = %d; \n" \
 "int Odt = %d; \n" \
@@ -1943,7 +1748,6 @@ fprintf (pFile, "// ACES 1.1 DCTL export \n" \
 "float Black_Luminance = %ff; \n" \
 "float Midpoint_Luminance = %ff; \n" \
 "float Peak_white_Luminance = %ff; \n" \
-" \n" \
 "int Display = %d; \n" \
 "int Limit = %d; \n" \
 "int Eotf = %d; \n" \
@@ -1953,246 +1757,155 @@ fprintf (pFile, "// ACES 1.1 DCTL export \n" \
 "int Legal_Range = %d; \n" \
 "float3 aces = make_float3(p_R, p_G, p_B); \n" \
 "if (Direction == 0) { \n" \
-"switch (Idt) \n" \
-"{ \n" \
+"switch (CscIn){ \n" \
 "case 0: \n" \
-"{ \n" \
-"} \n" \
+"{} \n" \
 "break; \n" \
 "case 1: \n" \
-"{ \n" \
-"aces = ACEScc_to_ACES(aces); \n" \
-"} \n" \
+"{aces = ACEScc_to_ACES(aces);} \n" \
 "break; \n" \
 "case 2: \n" \
-"{ \n" \
-"aces = ACEScct_to_ACES(aces); \n" \
-"} \n" \
+"{aces = ACEScct_to_ACES(aces);} \n" \
 "break; \n" \
 "case 3: \n" \
-"{ \n" \
-"aces = IDT_Alexa_v3_logC_EI800(aces); \n" \
-"} \n" \
+"{aces = ACEScg_to_ACES(aces);} \n" \
 "break; \n" \
 "case 4: \n" \
-"{ \n" \
-"aces = IDT_Alexa_v3_raw_EI800_CCT6500(aces); \n" \
-"} \n" \
+"{aces = ACESproxy_to_ACES(aces);} \n" \
 "break; \n" \
 "case 5: \n" \
-"{ \n" \
-"aces = ADX_to_ACES(aces); \n" \
-"} \n" \
+"{aces = ADX_to_ACES(aces);} \n" \
 "break; \n" \
 "case 6: \n" \
-"{ \n" \
-"aces = IDT_Panasonic_V35(aces); \n" \
-"} \n" \
+"{aces = ICpCt_to_ACES(aces);} \n" \
 "break; \n" \
 "case 7: \n" \
-"{ \n" \
-"aces = IDT_REDWideGamutRGB_Log3G10(aces); \n" \
-"} \n" \
+"{aces = LogC_EI800_AWG_to_ACES(aces);} \n" \
 "break; \n" \
 "case 8: \n" \
-"{ \n" \
-"aces = IDT_Canon_C100_A_D55(aces); \n" \
-"} \n" \
+"{aces = Log3G10_RWG_to_ACES(aces);} \n" \
 "break; \n" \
 "case 9: \n" \
-"{ \n" \
-"aces = IDT_Canon_C100_A_Tng(aces); \n" \
-"} \n" \
+"{aces = SLog3_SG3_to_ACES(aces);} \n" \
 "break; \n" \
 "case 10: \n" \
-"{ \n" \
-"aces = IDT_Canon_C100mk2_A_D55(aces); \n" \
-"} \n" \
+"{aces = SLog3_SG3C_to_ACES(aces);}} \n" \
+"switch (Idt){ \n" \
+"case 0: \n" \
+"{} \n" \
+"break; \n" \
+"case 1: \n" \
+"{aces = IDT_Alexa_v3_raw_EI800_CCT6500(aces);} \n" \
+"break; \n" \
+"case 2: \n" \
+"{aces = IDT_Panasonic_V35(aces);} \n" \
+"break; \n" \
+"case 3: \n" \
+"{aces = IDT_Canon_C100_A_D55(aces);} \n" \
+"break; \n" \
+"case 4: \n" \
+"{aces = IDT_Canon_C100_A_Tng(aces);} \n" \
+"break; \n" \
+"case 5: \n" \
+"{aces = IDT_Canon_C100mk2_A_D55(aces);} \n" \
+"break; \n" \
+"case 6: \n" \
+"{aces = IDT_Canon_C100mk2_A_Tng(aces);} \n" \
+"break; \n" \
+"case 7: \n" \
+"{aces = IDT_Canon_C300_A_D55(aces);} \n" \
+"break; \n" \
+"case 8: \n" \
+"{aces = IDT_Canon_C300_A_Tng(aces);} \n" \
+"break; \n" \
+"case 9: \n" \
+"{aces = IDT_Canon_C500_A_D55(aces);} \n" \
+"break; \n" \
+"case 10: \n" \
+"{aces = IDT_Canon_C500_A_Tng(aces);} \n" \
 "break; \n" \
 "case 11: \n" \
-"{ \n" \
-"aces = IDT_Canon_C100mk2_A_Tng(aces); \n" \
-"} \n" \
+"{aces = IDT_Canon_C500_B_D55(aces);} \n" \
 "break; \n" \
 "case 12: \n" \
-"{ \n" \
-"aces = IDT_Canon_C300_A_D55(aces); \n" \
-"} \n" \
+"{aces = IDT_Canon_C500_B_Tng(aces);} \n" \
 "break; \n" \
 "case 13: \n" \
-"{ \n" \
-"aces = IDT_Canon_C300_A_Tng(aces); \n" \
-"} \n" \
+"{aces = IDT_Canon_C500_CinemaGamut_A_D55(aces);} \n" \
 "break; \n" \
 "case 14: \n" \
-"{ \n" \
-"aces = IDT_Canon_C500_A_D55(aces); \n" \
-"} \n" \
+"{aces = IDT_Canon_C500_CinemaGamut_A_Tng(aces);} \n" \
 "break; \n" \
 "case 15: \n" \
-"{ \n" \
-"aces = IDT_Canon_C500_A_Tng(aces); \n" \
-"} \n" \
+"{aces = IDT_Canon_C500_DCI_P3_A_D55(aces);} \n" \
 "break; \n" \
 "case 16: \n" \
-"{ \n" \
-"aces = IDT_Canon_C500_B_D55(aces); \n" \
-"} \n" \
+"{aces = IDT_Canon_C500_DCI_P3_A_Tng(aces);} \n" \
 "break; \n" \
 "case 17: \n" \
-"{ \n" \
-"aces = IDT_Canon_C500_B_Tng(aces); \n" \
-"} \n" \
+"{aces = IDT_Canon_C300mk2_CanonLog_BT2020_D_D55(aces);} \n" \
 "break; \n" \
 "case 18: \n" \
-"{ \n" \
-"aces = IDT_Canon_C500_CinemaGamut_A_D55(aces); \n" \
-"} \n" \
+"{aces = IDT_Canon_C300mk2_CanonLog_BT2020_D_Tng(aces);} \n" \
 "break; \n" \
 "case 19: \n" \
-"{ \n" \
-"aces = IDT_Canon_C500_CinemaGamut_A_Tng(aces); \n" \
-"} \n" \
+"{aces = IDT_Canon_C300mk2_CanonLog_CinemaGamut_C_D55(aces);} \n" \
 "break; \n" \
 "case 20: \n" \
-"{ \n" \
-"aces = IDT_Canon_C500_DCI_P3_A_D55(aces); \n" \
-"} \n" \
+"{aces = IDT_Canon_C300mk2_CanonLog_CinemaGamut_C_Tng(aces);} \n" \
 "break; \n" \
 "case 21: \n" \
-"{ \n" \
-"aces = IDT_Canon_C500_DCI_P3_A_Tng(aces); \n" \
-"} \n" \
+"{aces = IDT_Canon_C300mk2_CanonLog2_BT2020_B_D55(aces);} \n" \
 "break; \n" \
 "case 22: \n" \
-"{ \n" \
-"aces = IDT_Canon_C300mk2_CanonLog_BT2020_D_D55(aces); \n" \
-"} \n" \
+"{aces = IDT_Canon_C300mk2_CanonLog2_BT2020_B_Tng(aces);} \n" \
 "break; \n" \
 "case 23: \n" \
-"{ \n" \
-"aces = IDT_Canon_C300mk2_CanonLog_BT2020_D_Tng(aces); \n" \
-"} \n" \
+"{aces = IDT_Canon_C300mk2_CanonLog2_CinemaGamut_A_D55(aces);} \n" \
 "break; \n" \
 "case 24: \n" \
-"{ \n" \
-"aces = IDT_Canon_C300mk2_CanonLog_CinemaGamut_C_D55(aces); \n" \
-"} \n" \
+"{aces = IDT_Canon_C300mk2_CanonLog2_CinemaGamut_A_Tng(aces);} \n" \
 "break; \n" \
 "case 25: \n" \
-"{ \n" \
-"aces = IDT_Canon_C300mk2_CanonLog_CinemaGamut_C_Tng(aces); \n" \
-"} \n" \
+"{aces = IDT_Canon_C300mk2_CanonLog3_BT2020_F_D55(aces);} \n" \
 "break; \n" \
 "case 26: \n" \
-"{ \n" \
-"aces = IDT_Canon_C300mk2_CanonLog2_BT2020_B_D55(aces); \n" \
-"} \n" \
+"{aces = IDT_Canon_C300mk2_CanonLog3_BT2020_F_Tng(aces);} \n" \
 "break; \n" \
 "case 27: \n" \
-"{ \n" \
-"aces = IDT_Canon_C300mk2_CanonLog2_BT2020_B_Tng(aces); \n" \
-"} \n" \
+"{aces = IDT_Canon_C300mk2_CanonLog3_CinemaGamut_E_D55(aces);} \n" \
 "break; \n" \
 "case 28: \n" \
-"{ \n" \
-"aces = IDT_Canon_C300mk2_CanonLog2_CinemaGamut_A_D55(aces); \n" \
-"} \n" \
+"{aces = IDT_Canon_C300mk2_CanonLog3_CinemaGamut_E_Tng(aces);} \n" \
 "break; \n" \
 "case 29: \n" \
-"{ \n" \
-"aces = IDT_Canon_C300mk2_CanonLog2_CinemaGamut_A_Tng(aces); \n" \
-"} \n" \
+"{aces = IDT_Sony_SLog1_SGamut(aces);} \n" \
 "break; \n" \
 "case 30: \n" \
-"{ \n" \
-"aces = IDT_Canon_C300mk2_CanonLog3_BT2020_F_D55(aces); \n" \
-"} \n" \
+"{aces = IDT_Sony_SLog2_SGamut_Daylight(aces);} \n" \
 "break; \n" \
 "case 31: \n" \
-"{ \n" \
-"aces = IDT_Canon_C300mk2_CanonLog3_BT2020_F_Tng(aces); \n" \
-"} \n" \
+"{aces = IDT_Sony_SLog2_SGamut_Tungsten(aces);} \n" \
 "break; \n" \
 "case 32: \n" \
-"{ \n" \
-"aces = IDT_Canon_C300mk2_CanonLog3_CinemaGamut_E_D55(aces); \n" \
-"} \n" \
+"{aces = IDT_Sony_Venice_SGamut3(aces);} \n" \
 "break; \n" \
 "case 33: \n" \
-"{ \n" \
-"aces = IDT_Canon_C300mk2_CanonLog3_CinemaGamut_E_Tng(aces); \n" \
-"} \n" \
+"{aces = IDT_Sony_Venice_SGamut3Cine(aces);} \n" \
 "break; \n" \
 "case 34: \n" \
-"{ \n" \
-"aces = IDT_Sony_SLog1_SGamut(aces); \n" \
-"} \n" \
+"{aces = IDT_Rec709(aces);} \n" \
 "break; \n" \
 "case 35: \n" \
-"{ \n" \
-"aces = IDT_Sony_SLog2_SGamut_Daylight(aces); \n" \
-"} \n" \
-"break; \n" \
-"case 36: \n" \
-"{ \n" \
-"aces = IDT_Sony_SLog2_SGamut_Tungsten(aces); \n" \
-"} \n" \
-"break; \n" \
-"case 37: \n" \
-"{ \n" \
-"aces = IDT_Sony_SLog3_SGamut3(aces); \n" \
-"} \n" \
-"break; \n" \
-"case 38: \n" \
-"{ \n" \
-"aces = IDT_Sony_SLog3_SGamut3Cine(aces); \n" \
-"} \n" \
-"break; \n" \
-"case 39: \n" \
-"{ \n" \
-"aces = IDT_Rec709(aces); \n" \
-"} \n" \
-"break; \n" \
-"case 40: \n" \
-"{ \n" \
-"aces = IDT_sRGB(aces); \n" \
-"}} \n" \
+"{aces = IDT_sRGB(aces);}} \n" \
 "if (Exposure != 0.0f) { \n" \
 "aces.x *= _exp2f(Exposure); \n" \
 "aces.y *= _exp2f(Exposure); \n" \
 "aces.z *= _exp2f(Exposure); \n" \
 "} \n" \
-"switch (AcesIn) \n" \
-"{ \n" \
+"switch (Lmt){ \n" \
 "case 0: \n" \
-"{ \n" \
-"} \n" \
-"break; \n" \
-"case 1: \n" \
-"{ \n" \
-"aces = ACES_to_ACEScc(aces); \n" \
-"} \n" \
-"break; \n" \
-"case 2: \n" \
-"{ \n" \
-"aces = ACES_to_ACEScct(aces); \n" \
-"} \n" \
-"break; \n" \
-"case 3: \n" \
-"{ \n" \
-"aces = ACES_to_ACEScg(aces); \n" \
-"} \n" \
-"break; \n" \
-"case 4: \n" \
-"{ \n" \
-"aces = ACES_to_ACESproxy(aces); \n" \
-"}} \n" \
-"switch (Lmt) \n" \
-"{ \n" \
-"case 0: \n" \
-"{ \n" \
-"} \n" \
+"{} \n" \
 "break; \n" \
 "case 1: \n" \
 "{ \n" \
@@ -2202,7 +1915,7 @@ fprintf (pFile, "// ACES 1.1 DCTL export \n" \
 "float3 SLOPE = {Slope, Slope, Slope}; \n" \
 "float3 OFFSET = {Offset, Offset, Offset}; \n" \
 "float3 POWER = {Power, Power, Power}; \n" \
-"aces = ASCCDL_inACEScct(aces, SLOPE, OFFSET, POWER); \n" \
+"aces = ASCCDL_inACEScct(aces, SLOPE, OFFSET, POWER, 1.0f); \n" \
 "} \n" \
 "if (Contrast != 1.0f) \n" \
 "aces = gamma_adjust_linear(aces, Contrast, Pivot); \n" \
@@ -2237,7 +1950,7 @@ fprintf (pFile, "// ACES 1.1 DCTL export \n" \
 "float3 SLOPE = {Slope, Slope, Slope * 0.94f}; \n" \
 "float3 OFFSET = {Offset, Offset, Offset + 0.02f}; \n" \
 "float3 POWER = {Power, Power, Power}; \n" \
-"aces = ASCCDL_inACEScct(aces, SLOPE, OFFSET, POWER); \n" \
+"aces = ASCCDL_inACEScct(aces, SLOPE, OFFSET, POWER, 1.0f); \n" \
 "if (Contrast != 1.0f) \n" \
 "aces = gamma_adjust_linear(aces, Contrast, Pivot); \n" \
 "if (Shift1 != 0.0f) \n" \
@@ -2258,38 +1971,45 @@ fprintf (pFile, "// ACES 1.1 DCTL export \n" \
 "{ \n" \
 "aces = LMT_Bleach(aces); \n" \
 "}} \n" \
-"switch (AcesOut) \n" \
-"{ \n" \
+"switch (CscOut){ \n" \
 "case 0: \n" \
-"{ \n" \
-"} \n" \
+"{} \n" \
 "break; \n" \
 "case 1: \n" \
-"{ \n" \
-"aces = ACEScc_to_ACES(aces); \n" \
-"} \n" \
+"{aces = ACES_to_ACEScc(aces);} \n" \
 "break; \n" \
 "case 2: \n" \
-"{ \n" \
-"aces = ACEScct_to_ACES(aces); \n" \
-"} \n" \
+"{aces = ACES_to_ACEScct(aces);} \n" \
 "break; \n" \
 "case 3: \n" \
-"{ \n" \
-"aces = ACEScg_to_ACES(aces); \n" \
-"} \n" \
+"{aces = ACES_to_ACEScg(aces);} \n" \
 "break; \n" \
 "case 4: \n" \
-"{ \n" \
-"aces = ACESproxy_to_ACES(aces); \n" \
-"}} \n" \
-"if (Rrt == 1 && (Odt == 0 || (Odt > 4 && Odt < 25))) \n" \
-"aces = RRT(aces); \n" \
-"switch (Odt) \n" \
-"{ \n" \
-"case 0: \n" \
-"{ \n" \
+"{aces = ACES_to_ACESproxy(aces);} \n" \
+"break; \n" \
+"case 5: \n" \
+"{aces = ACES_to_ADX(aces);} \n" \
+"break; \n" \
+"case 6: \n" \
+"{aces = ACES_to_ICpCt(aces);} \n" \
+"break; \n" \
+"case 7: \n" \
+"{aces = ACES_to_LogC_EI800_AWG(aces);} \n" \
+"break; \n" \
+"case 8: \n" \
+"{aces = ACES_to_Log3G10_RWG(aces);} \n" \
+"break; \n" \
+"case 9: \n" \
+"{aces = ACES_to_SLog3_SG3(aces);} \n" \
+"break; \n" \
+"case 10: \n" \
+"{aces = ACES_to_SLog3_SG3C(aces);} \n" \
 "} \n" \
+"if (Rrt == 1 && Odt < 22) \n" \
+"aces = RRT(aces); \n" \
+"switch (Odt){ \n" \
+"case 0: \n" \
+"{} \n" \
 "break; \n" \
 "case 1: \n" \
 "{ \n" \
@@ -2307,160 +2027,99 @@ fprintf (pFile, "// ACES 1.1 DCTL export \n" \
 "} \n" \
 "break; \n" \
 "case 2: \n" \
-"{ \n" \
-"aces = ACES_to_ACEScc(aces); \n" \
-"} \n" \
+"{aces = ODT_Rec709_100nits_dim(aces);} \n" \
 "break; \n" \
 "case 3: \n" \
-"{ \n" \
-"aces = ACES_to_ACEScct(aces); \n" \
-"} \n" \
+"{aces = ODT_Rec709_D60sim_100nits_dim(aces);} \n" \
 "break; \n" \
 "case 4: \n" \
-"{ \n" \
-"aces = ACES_to_ADX(aces); \n" \
-"} \n" \
+"{aces = ODT_sRGB_100nits_dim(aces);} \n" \
 "break; \n" \
 "case 5: \n" \
-"{ \n" \
-"aces = ODT_Rec709_100nits_dim(aces); \n" \
-"} \n" \
+"{aces = ODT_sRGB_D60sim_100nits_dim(aces);} \n" \
 "break; \n" \
 "case 6: \n" \
-"{ \n" \
-"aces = ODT_Rec709_D60sim_100nits_dim(aces); \n" \
-"} \n" \
+"{aces = ODT_Rec2020_100nits_dim(aces);} \n" \
 "break; \n" \
 "case 7: \n" \
-"{ \n" \
-"aces = ODT_sRGB_100nits_dim(aces); \n" \
-"} \n" \
+"{aces = ODT_Rec2020_Rec709limited_100nits_dim(aces);} \n" \
 "break; \n" \
 "case 8: \n" \
-"{ \n" \
-"aces = ODT_sRGB_D60sim_100nits_dim(aces); \n" \
-"} \n" \
+"{aces = ODT_Rec2020_P3D65limited_100nits_dim(aces);} \n" \
 "break; \n" \
 "case 9: \n" \
-"{ \n" \
-"aces = ODT_Rec2020_100nits_dim(aces); \n" \
-"} \n" \
+"{aces = ODT_Rec2020_ST2084_1000nits(aces);} \n" \
 "break; \n" \
 "case 10: \n" \
-"{ \n" \
-"aces = ODT_Rec2020_Rec709limited_100nits_dim(aces); \n" \
-"} \n" \
+"{aces = ODT_P3DCI_48nits(aces);} \n" \
 "break; \n" \
 "case 11: \n" \
-"{ \n" \
-"aces = ODT_Rec2020_P3D65limited_100nits_dim(aces); \n" \
-"} \n" \
+"{aces = ODT_P3DCI_D60sim_48nits(aces);} \n" \
 "break; \n" \
 "case 12: \n" \
-"{ \n" \
-"aces = ODT_Rec2020_ST2084_1000nits(aces); \n" \
-"} \n" \
+"{aces = ODT_P3DCI_D65sim_48nits(aces);} \n" \
 "break; \n" \
 "case 13: \n" \
-"{ \n" \
-"aces = ODT_P3DCI_48nits(aces); \n" \
-"} \n" \
+"{aces = ODT_P3D60_48nits(aces);} \n" \
 "break; \n" \
 "case 14: \n" \
-"{ \n" \
-"aces = ODT_P3DCI_D60sim_48nits(aces); \n" \
-"} \n" \
+"{aces = ODT_P3D65_48nits(aces);} \n" \
 "break; \n" \
 "case 15: \n" \
-"{ \n" \
-"aces = ODT_P3DCI_D65sim_48nits(aces); \n" \
-"} \n" \
+"{aces = ODT_P3D65_D60sim_48nits(aces);} \n" \
 "break; \n" \
 "case 16: \n" \
-"{ \n" \
-"aces = ODT_P3D60_48nits(aces); \n" \
-"} \n" \
+"{aces = ODT_P3D65_Rec709limited_48nits(aces);} \n" \
 "break; \n" \
 "case 17: \n" \
-"{ \n" \
-"aces = ODT_P3D65_48nits(aces); \n" \
-"} \n" \
+"{aces = ODT_DCDM(aces);} \n" \
 "break; \n" \
 "case 18: \n" \
-"{ \n" \
-"aces = ODT_P3D65_D60sim_48nits(aces); \n" \
-"} \n" \
+"{aces = ODT_DCDM_P3D60limited(aces);} \n" \
 "break; \n" \
 "case 19: \n" \
-"{ \n" \
-"aces = ODT_P3D65_Rec709limited_48nits(aces); \n" \
-"} \n" \
+"{aces = ODT_DCDM_P3D65limited(aces);} \n" \
 "break; \n" \
 "case 20: \n" \
-"{ \n" \
-"aces = ODT_DCDM(aces); \n" \
-"} \n" \
+"{aces = ODT_RGBmonitor_100nits_dim(aces);} \n" \
 "break; \n" \
 "case 21: \n" \
-"{ \n" \
-"aces = ODT_DCDM_P3D60limited(aces); \n" \
-"} \n" \
+"{aces = ODT_RGBmonitor_D60sim_100nits_dim(aces);} \n" \
 "break; \n" \
 "case 22: \n" \
-"{ \n" \
-"aces = ODT_DCDM_P3D65limited(aces); \n" \
-"} \n" \
+"{aces = RRTODT_Rec709_100nits_10nits_BT1886(aces);} \n" \
 "break; \n" \
 "case 23: \n" \
-"{ \n" \
-"aces = ODT_RGBmonitor_100nits_dim(aces); \n" \
-"} \n" \
+"{aces = RRTODT_Rec709_100nits_10nits_sRGB(aces);} \n" \
 "break; \n" \
 "case 24: \n" \
-"{ \n" \
-"aces = ODT_RGBmonitor_D60sim_100nits_dim(aces); \n" \
-"} \n" \
+"{aces = RRTODT_P3D65_108nits_7_2nits_ST2084(aces);} \n" \
 "break; \n" \
 "case 25: \n" \
-"{ \n" \
-"aces = RRTODT_P3D65_108nits_7_2nits_ST2084(aces); \n" \
-"} \n" \
+"{aces = RRTODT_P3D65_1000nits_15nits_ST2084(aces);} \n" \
 "break; \n" \
 "case 26: \n" \
-"{ \n" \
-"aces = RRTODT_Rec2020_1000nits_15nits_HLG(aces); \n" \
-"} \n" \
+"{aces = RRTODT_P3D65_2000nits_15nits_ST2084(aces);} \n" \
 "break; \n" \
 "case 27: \n" \
-"{ \n" \
-"aces = RRTODT_Rec2020_1000nits_15nits_ST2084(aces); \n" \
-"} \n" \
+"{aces = RRTODT_P3D65_4000nits_15nits_ST2084(aces);} \n" \
 "break; \n" \
 "case 28: \n" \
-"{ \n" \
-"aces = RRTODT_Rec2020_2000nits_15nits_ST2084(aces); \n" \
-"} \n" \
+"{aces = RRTODT_Rec2020_1000nits_15nits_HLG(aces);} \n" \
 "break; \n" \
 "case 29: \n" \
-"{ \n" \
-"aces = RRTODT_Rec2020_4000nits_15nits_ST2084(aces); \n" \
-"} \n" \
+"{aces = RRTODT_Rec2020_1000nits_15nits_ST2084(aces);} \n" \
 "break; \n" \
 "case 30: \n" \
-"{ \n" \
-"aces = RRTODT_Rec709_100nits_10nits_BT1886(aces); \n" \
-"} \n" \
+"{aces = RRTODT_Rec2020_2000nits_15nits_ST2084(aces);} \n" \
 "break; \n" \
 "case 31: \n" \
-"{ \n" \
-"aces = RRTODT_Rec709_100nits_10nits_sRGB(aces); \n" \
-"}} \n" \
-"} else { \n" \
-"switch (InvOdt) \n" \
-"{ \n" \
-"case 0: \n" \
-"{ \n" \
+"{aces = RRTODT_Rec2020_4000nits_15nits_ST2084(aces);} \n" \
 "} \n" \
+"} else { \n" \
+"switch (InvOdt){ \n" \
+"case 0: \n" \
+"{} \n" \
 "break; \n" \
 "case 1: \n" \
 "{ \n" \
@@ -2478,124 +2137,88 @@ fprintf (pFile, "// ACES 1.1 DCTL export \n" \
 "} \n" \
 "break; \n" \
 "case 2: \n" \
-"{ \n" \
-"aces = InvODT_Rec709_100nits_dim(aces); \n" \
-"} \n" \
+"{aces = InvODT_Rec709_100nits_dim(aces);} \n" \
 "break; \n" \
 "case 3: \n" \
-"{ \n" \
-"aces = InvODT_Rec709_D60sim_100nits_dim(aces); \n" \
-"} \n" \
+"{aces = InvODT_Rec709_D60sim_100nits_dim(aces);} \n" \
 "break; \n" \
 "case 4: \n" \
-"{ \n" \
-"aces = InvODT_sRGB_100nits_dim(aces); \n" \
-"} \n" \
+"{aces = InvODT_sRGB_100nits_dim(aces);} \n" \
 "break; \n" \
 "case 5: \n" \
-"{ \n" \
-"aces = InvODT_sRGB_D60sim_100nits_dim(aces); \n" \
-"} \n" \
+"{aces = InvODT_sRGB_D60sim_100nits_dim(aces);} \n" \
 "break; \n" \
 "case 6: \n" \
-"{ \n" \
-"aces = InvODT_Rec2020_100nits_dim(aces); \n" \
-"} \n" \
+"{aces = InvODT_Rec2020_100nits_dim(aces);} \n" \
 "break; \n" \
 "case 7: \n" \
-"{ \n" \
-"aces = InvODT_Rec2020_ST2084_1000nits(aces); \n" \
-"} \n" \
+"{aces = InvODT_Rec2020_ST2084_1000nits(aces);} \n" \
 "break; \n" \
 "case 8: \n" \
-"{ \n" \
-"aces = InvODT_P3DCI_48nits(aces); \n" \
-"} \n" \
+"{aces = InvODT_P3DCI_48nits(aces);} \n" \
 "break; \n" \
 "case 9: \n" \
-"{ \n" \
-"aces = InvODT_P3DCI_D60sim_48nits(aces); \n" \
-"} \n" \
+"{aces = InvODT_P3DCI_D60sim_48nits(aces);} \n" \
 "break; \n" \
 "case 10: \n" \
-"{ \n" \
-"aces = InvODT_P3DCI_D65sim_48nits(aces); \n" \
-"} \n" \
+"{aces = InvODT_P3DCI_D65sim_48nits(aces);} \n" \
 "break; \n" \
 "case 11: \n" \
-"{ \n" \
-"aces = InvODT_P3D60_48nits(aces); \n" \
-"} \n" \
+"{aces = InvODT_P3D60_48nits(aces);} \n" \
 "break; \n" \
 "case 12: \n" \
-"{ \n" \
-"aces = InvODT_P3D65_48nits(aces); \n" \
-"} \n" \
+"{aces = InvODT_P3D65_48nits(aces);} \n" \
 "break; \n" \
 "case 13: \n" \
-"{ \n" \
-"aces = InvODT_P3D65_D60sim_48nits(aces); \n" \
-"} \n" \
+"{aces = InvODT_P3D65_D60sim_48nits(aces);} \n" \
 "break; \n" \
 "case 14: \n" \
-"{ \n" \
-"aces = InvODT_DCDM(aces); \n" \
-"} \n" \
+"{aces = InvODT_DCDM(aces);} \n" \
 "break; \n" \
 "case 15: \n" \
-"{ \n" \
-"aces = InvODT_DCDM_P3D65limited(aces); \n" \
-"} \n" \
+"{aces = InvODT_DCDM_P3D65limited(aces);} \n" \
 "break; \n" \
 "case 16: \n" \
-"{ \n" \
-"aces = InvODT_RGBmonitor_100nits_dim(aces); \n" \
-"} \n" \
+"{aces = InvODT_RGBmonitor_100nits_dim(aces);} \n" \
 "break; \n" \
 "case 17: \n" \
-"{ \n" \
-"aces = InvODT_RGBmonitor_D60sim_100nits_dim(aces); \n" \
-"} \n" \
+"{aces = InvODT_RGBmonitor_D60sim_100nits_dim(aces);} \n" \
 "break; \n" \
 "case 18: \n" \
-"{ \n" \
-"aces = InvRRTODT_P3D65_108nits_7_2nits_ST2084(aces); \n" \
-"} \n" \
+"{aces = InvRRTODT_Rec709_100nits_10nits_BT1886(aces);} \n" \
 "break; \n" \
 "case 19: \n" \
-"{ \n" \
-"aces = InvRRTODT_Rec2020_1000nits_15nits_HLG(aces); \n" \
-"} \n" \
+"{aces = InvRRTODT_Rec709_100nits_10nits_sRGB(aces);} \n" \
 "break; \n" \
 "case 20: \n" \
-"{ \n" \
-"aces = InvRRTODT_Rec2020_1000nits_15nits_ST2084(aces); \n" \
-"} \n" \
+"{aces = InvRRTODT_P3D65_108nits_7_2nits_ST2084(aces);} \n" \
 "break; \n" \
 "case 21: \n" \
-"{ \n" \
-"aces = InvRRTODT_Rec2020_2000nits_15nits_ST2084(aces); \n" \
-"} \n" \
+"{aces = InvRRTODT_P3D65_1000nits_15nits_ST2084(aces);} \n" \
 "break; \n" \
 "case 22: \n" \
-"{ \n" \
-"aces = InvRRTODT_Rec2020_4000nits_15nits_ST2084(aces); \n" \
-"} \n" \
+"{aces = InvRRTODT_P3D65_2000nits_15nits_ST2084(aces);} \n" \
 "break; \n" \
 "case 23: \n" \
-"{ \n" \
-"aces = InvRRTODT_Rec709_100nits_10nits_BT1886(aces); \n" \
-"} \n" \
+"{aces = InvRRTODT_P3D65_4000nits_15nits_ST2084(aces);} \n" \
 "break; \n" \
 "case 24: \n" \
-"{ \n" \
-"aces = InvRRTODT_Rec709_100nits_10nits_sRGB(aces); \n" \
-"}} \n" \
-"if (InvRrt == 1 && (InvOdt != 1 && InvOdt < 18)) \n" \
+"{aces = InvRRTODT_Rec2020_1000nits_15nits_HLG(aces);} \n" \
+"break; \n" \
+"case 25: \n" \
+"{aces = InvRRTODT_Rec2020_1000nits_15nits_ST2084(aces);} \n" \
+"break; \n" \
+"case 26: \n" \
+"{aces = InvRRTODT_Rec2020_2000nits_15nits_ST2084(aces);} \n" \
+"break; \n" \
+"case 27: \n" \
+"{aces = InvRRTODT_Rec2020_4000nits_15nits_ST2084(aces);} \n" \
+"} \n" \
+"if (InvRrt == 1 && InvOdt < 18) \n" \
 "aces = InvRRT(aces); \n" \
 "} \n" \
 "return make_float3(aces.x, aces.y, aces.z); \n" \
-"}\n", _direction, _idt, _acesin, _lmt, _acesout, _rrt, _invrrt, _odt, _invodt, _exposure, 
+"}\n", _direction, _cscin, _idt, _lmt, _cscout, _rrt, _invrrt, _odt, _invodt, _exposure, 
 _lmtscale[0], _lmtscale[1], _lmtscale[2], _lmtscale[3], _lmtscale[4], _lmtscale[5], _lmtscale[6], _lmtscale[7], 
 _lmtscale[8], _lmtscale[9], _lmtscale[10], _lmtscale[11], _lmtscale[12], _lmtscale[13], _lmtscale[14], _lmtscale[15], 
 _lmtscale[16], _lmtscale[17], _lmtscale[18], _lmtscale[19], _lmtscale[20], _lmtscale[21], _lmtscale[22], _lmtscale[23], 
@@ -2603,29 +2226,27 @@ _lum[0], _lum[1], _lum[2], _display, _limit, _eotf, _surround, _switch[0], _swit
 fclose (pFile);
 } else {
 sendMessage(OFX::Message::eMessageError, "", string("Error: Cannot save " + NAME + ".dctl to " + PATH  + ". Check Permissions."));
-}}
+}}}
 
 if (p_ParamName == kParamSHAPER) {
-int Shaper_i;
-m_Shaper->getValueAtTime(p_Args.time, Shaper_i);
-SHAPEREnum Shaper = (SHAPEREnum)Shaper_i;
-int shaper = Shaper_i;
+int Shaper;
+m_Shaper->getValueAtTime(p_Args.time, Shaper);
 double min_cc = ACEScc_to_lin(0.0);
 double max_cc = ACEScc_to_lin(1.0);
 double min_cct = ACEScct_to_lin(0.0);
 double max_cct = ACEScct_to_lin(1.0);
-if (shaper == 0) {
+if (Shaper == 0) {
 m_Input1->setIsSecretAndDisabled(true);
 m_Lutsize->setIsSecretAndDisabled(true);
 m_ExprLUT->setIsSecretAndDisabled(true);
 m_Input2->setValue(0.0, 1.0);
-}else if(shaper == 1){
+}else if (Shaper == 1){
 m_Input1->setIsSecretAndDisabled(false);
 m_Lutsize->setIsSecretAndDisabled(false);
 m_ExprLUT->setIsSecretAndDisabled(true);
 m_Input1->setValue(min_cc, max_cc);
 }
-else if(shaper == 2){
+else if (Shaper == 2){
 m_Input1->setIsSecretAndDisabled(false);
 m_Lutsize->setIsSecretAndDisabled(false);
 m_ExprLUT->setIsSecretAndDisabled(true);
@@ -2637,10 +2258,8 @@ m_ExprLUT->setIsSecretAndDisabled(false);
 }}
 
 if (p_ParamName == "range1" || p_ParamName == kParamMathLUT || p_ParamName == kParamSHAPER) {
-int Shaper_i;
-m_Shaper->getValueAtTime(p_Args.time, Shaper_i);
-SHAPEREnum Shaper = (SHAPEREnum)Shaper_i;
-int shaper = Shaper_i;
+int Shaper;
+m_Shaper->getValueAtTime(p_Args.time, Shaper);
 double shaperA = 0.0;
 double shaperB = 0.0;
 double inputA = 0.0;
@@ -2670,10 +2289,10 @@ expressionLUT.register_symbol_table(symbol_table);
 exprtk::parser<double> parserLUT;
 doLUT = parserLUT.compile(E.content,expressionLUT);
 
-if (shaper == 0){}
-else if(shaper == 1){
+if (Shaper == 0){}
+else if(Shaper == 1){
 m_Input2->setValue(ccA, ccB);
-} else if(shaper == 2){
+} else if(Shaper == 2){
 m_Input2->setValue(cctA, cctB);
 } else {
 temPix = shaperA;
@@ -2684,10 +2303,8 @@ m_Input2->setValue(inputA, inputB);
 }}
 
 if (p_ParamName == "button2") {
-int Shaper_i;
-m_Shaper->getValueAtTime(p_Args.time, Shaper_i);
-SHAPEREnum _Shaper = (SHAPEREnum)Shaper_i;
-int Shaper = Shaper_i;
+int Shaper;
+m_Shaper->getValueAtTime(p_Args.time, Shaper);
 double shaper = 0.0;
 double shaperA = 0.0;
 double shaperB = 0.0;
@@ -2759,343 +2376,257 @@ float G = fmod(floor(i / cube), cube) / (cube - 1) * (inputB - inputA) + inputA;
 float B = fmod(floor(i / (cube * cube)), cube) / (cube - 1) * (inputB - inputA) + inputA;
 float3 aces = make_float3(R, G, B);
 if (_direction == 0) {
-switch (_idt)
-{
+switch (_cscin){
 case 0:
-{
-}
+{}
 break;
 case 1:
-{
-aces = ACEScc_to_ACES(aces);
-}
+{aces = ACEScc_to_ACES(aces);}
 break;
 case 2:
-{
-aces = ACEScct_to_ACES(aces);
-}
+{aces = ACEScct_to_ACES(aces);}
 break;
 case 3:
-{
-aces = IDT_Alexa_v3_logC_EI800(aces);
-}
+{aces = ACEScg_to_ACES(aces);}
 break;
 case 4:
-{
-aces = IDT_Alexa_v3_raw_EI800_CCT6500(aces);
-}
+{aces = ACESproxy_to_ACES(aces);}
 break;
 case 5:
-{
-aces = ADX_to_ACES(aces);
-}
+{aces = ADX_to_ACES(aces);}
 break;
 case 6:
-{
-aces = IDT_Panasonic_V35(aces);
-}
+{aces = ICpCt_to_ACES(aces);}
 break;
 case 7:
-{
-aces = IDT_REDWideGamutRGB_Log3G10(aces);
-}
+{aces = LogC_EI800_AWG_to_ACES(aces);}
 break;
 case 8:
-{
-aces = IDT_Canon_C100_A_D55(aces);
-}
+{aces = Log3G10_RWG_to_ACES(aces);}
 break;
 case 9:
-{
-aces = IDT_Canon_C100_A_Tng(aces);
-}
+{aces = SLog3_SG3_to_ACES(aces);}
 break;
 case 10:
-{
-aces = IDT_Canon_C100mk2_A_D55(aces);
-}
+{aces = SLog3_SG3C_to_ACES(aces);}}
+switch (_idt){
+case 0:
+{}
+break;
+case 1:
+{aces = IDT_Alexa_v3_raw_EI800_CCT6500(aces);}
+break;
+case 2:
+{aces = IDT_Panasonic_V35(aces);}
+break;
+case 3:
+{aces = IDT_Canon_C100_A_D55(aces);}
+break;
+case 4:
+{aces = IDT_Canon_C100_A_Tng(aces);}
+break;
+case 5:
+{aces = IDT_Canon_C100mk2_A_D55(aces);}
+break;
+case 6:
+{aces = IDT_Canon_C100mk2_A_Tng(aces);}
+break;
+case 7:
+{aces = IDT_Canon_C300_A_D55(aces);}
+break;
+case 8:
+{aces = IDT_Canon_C300_A_Tng(aces);}
+break;
+case 9:
+{aces = IDT_Canon_C500_A_D55(aces);}
+break;
+case 10:
+{aces = IDT_Canon_C500_A_Tng(aces);}
 break;
 case 11:
-{
-aces = IDT_Canon_C100mk2_A_Tng(aces);
-}
+{aces = IDT_Canon_C500_B_D55(aces);}
 break;
 case 12:
-{
-aces = IDT_Canon_C300_A_D55(aces);
-}
+{aces = IDT_Canon_C500_B_Tng(aces);}
 break;
 case 13:
-{
-aces = IDT_Canon_C300_A_Tng(aces);
-}
+{aces = IDT_Canon_C500_CinemaGamut_A_D55(aces);}
 break;
 case 14:
-{
-aces = IDT_Canon_C500_A_D55(aces);
-}
+{aces = IDT_Canon_C500_CinemaGamut_A_Tng(aces);}
 break;
 case 15:
-{
-aces = IDT_Canon_C500_A_Tng(aces);
-}
+{aces = IDT_Canon_C500_DCI_P3_A_D55(aces);}
 break;
 case 16:
-{
-aces = IDT_Canon_C500_B_D55(aces);
-}
+{aces = IDT_Canon_C500_DCI_P3_A_Tng(aces);}
 break;
 case 17:
-{
-aces = IDT_Canon_C500_B_Tng(aces);
-}
+{aces = IDT_Canon_C300mk2_CanonLog_BT2020_D_D55(aces);}
 break;
 case 18:
-{
-aces = IDT_Canon_C500_CinemaGamut_A_D55(aces);
-}
+{aces = IDT_Canon_C300mk2_CanonLog_BT2020_D_Tng(aces);}
 break;
 case 19:
-{
-aces = IDT_Canon_C500_CinemaGamut_A_Tng(aces);
-}
+{aces = IDT_Canon_C300mk2_CanonLog_CinemaGamut_C_D55(aces);}
 break;
 case 20:
-{
-aces = IDT_Canon_C500_DCI_P3_A_D55(aces);
-}
+{aces = IDT_Canon_C300mk2_CanonLog_CinemaGamut_C_Tng(aces);}
 break;
 case 21:
-{
-aces = IDT_Canon_C500_DCI_P3_A_Tng(aces);
-}
+{aces = IDT_Canon_C300mk2_CanonLog2_BT2020_B_D55(aces);}
 break;
 case 22:
-{
-aces = IDT_Canon_C300mk2_CanonLog_BT2020_D_D55(aces);
-}
+{aces = IDT_Canon_C300mk2_CanonLog2_BT2020_B_Tng(aces);}
 break;
 case 23:
-{
-aces = IDT_Canon_C300mk2_CanonLog_BT2020_D_Tng(aces);
-}
+{aces = IDT_Canon_C300mk2_CanonLog2_CinemaGamut_A_D55(aces);}
 break;
 case 24:
-{
-aces = IDT_Canon_C300mk2_CanonLog_CinemaGamut_C_D55(aces);
-}
+{aces = IDT_Canon_C300mk2_CanonLog2_CinemaGamut_A_Tng(aces);}
 break;
 case 25:
-{
-aces = IDT_Canon_C300mk2_CanonLog_CinemaGamut_C_Tng(aces);
-}
+{aces = IDT_Canon_C300mk2_CanonLog3_BT2020_F_D55(aces);}
 break;
 case 26:
-{
-aces = IDT_Canon_C300mk2_CanonLog2_BT2020_B_D55(aces);
-}
+{aces = IDT_Canon_C300mk2_CanonLog3_BT2020_F_Tng(aces);}
 break;
 case 27:
-{
-aces = IDT_Canon_C300mk2_CanonLog2_BT2020_B_Tng(aces);
-}
+{aces = IDT_Canon_C300mk2_CanonLog3_CinemaGamut_E_D55(aces);}
 break;
 case 28:
-{
-aces = IDT_Canon_C300mk2_CanonLog2_CinemaGamut_A_D55(aces);
-}
+{aces = IDT_Canon_C300mk2_CanonLog3_CinemaGamut_E_Tng(aces);}
 break;
 case 29:
-{
-aces = IDT_Canon_C300mk2_CanonLog2_CinemaGamut_A_Tng(aces);
-}
+{aces = IDT_Sony_SLog1_SGamut(aces);}
 break;
 case 30:
-{
-aces = IDT_Canon_C300mk2_CanonLog3_BT2020_F_D55(aces);
-}
+{aces = IDT_Sony_SLog2_SGamut_Daylight(aces);}
 break;
 case 31:
-{
-aces = IDT_Canon_C300mk2_CanonLog3_BT2020_F_Tng(aces);
-}
+{aces = IDT_Sony_SLog2_SGamut_Tungsten(aces);}
 break;
 case 32:
-{
-aces = IDT_Canon_C300mk2_CanonLog3_CinemaGamut_E_D55(aces);
-}
+{aces = IDT_Sony_Venice_SGamut3(aces);}
 break;
 case 33:
-{
-aces = IDT_Canon_C300mk2_CanonLog3_CinemaGamut_E_Tng(aces);
-}
+{aces = IDT_Sony_Venice_SGamut3Cine(aces);}
 break;
 case 34:
-{
-aces = IDT_Sony_SLog1_SGamut(aces);
-}
+{aces = IDT_Rec709(aces);}
 break;
 case 35:
-{
-aces = IDT_Sony_SLog2_SGamut_Daylight(aces);
+{aces = IDT_sRGB(aces);}
 }
-break;
-case 36:
-{
-aces = IDT_Sony_SLog2_SGamut_Tungsten(aces);
-}
-break;
-case 37:
-{
-aces = IDT_Sony_SLog3_SGamut3(aces);
-}
-break;
-case 38:
-{
-aces = IDT_Sony_SLog3_SGamut3Cine(aces);
-}
-break;
-case 39:
-{
-aces = IDT_Rec709(aces);
-}
-break;
-case 40:
-{
-aces = IDT_sRGB(aces);
-}}
 if (_exposure != 0.0f) {
 aces.x *= exp2f(_exposure);
 aces.y *= exp2f(_exposure);
 aces.z *= exp2f(_exposure);
 }
-switch (_acesin)
-{
-case 0:
-{
-}
-break;
-case 1:
-{
-aces = ACES_to_ACEScc(aces);
-}
-break;
-case 2:
-{
-aces = ACES_to_ACEScct(aces);
-}
-break;
-case 3:
-{
-aces = ACES_to_ACEScg(aces);
-}
-break;
-case 4:
-{
-aces = ACES_to_ACESproxy(aces);
-}}
 switch (_lmt)
 {
 case 0:
-{
-}
+{}
 break;
 case 1:
 {
-if (_lmtscale[0] != 1.0f)
+if(_lmtscale[0] != 1.0f)
 aces = scale_C(aces, _lmtscale[0]);
 if(!(_lmtscale[1] == 1.0f && _lmtscale[2] == 0.0f && _lmtscale[3] == 1.0f)) {
 float3 SLOPE = {_lmtscale[1], _lmtscale[1], _lmtscale[1]};
 float3 OFFSET = {_lmtscale[2], _lmtscale[2], _lmtscale[2]};
 float3 POWER = {_lmtscale[3], _lmtscale[3], _lmtscale[3]};
-aces = ASCCDL_inACEScct(aces, SLOPE, OFFSET, POWER);
+aces = ASCCDL_inACEScct(aces, SLOPE, OFFSET, POWER, 1.0f);
 }
-if (_lmtscale[4] != 1.0f)
+if(_lmtscale[4] != 1.0f)
 aces = gamma_adjust_linear(aces, _lmtscale[4], _lmtscale[5]);
-if (_lmtscale[8] != 0.0f)
+if(_lmtscale[8] != 0.0f)
 aces = rotate_H_in_H(aces, _lmtscale[6], _lmtscale[7], _lmtscale[8]);
-if (_lmtscale[11] != 0.0f)
+if(_lmtscale[11] != 0.0f)
 aces = rotate_H_in_H(aces, _lmtscale[9], _lmtscale[10], _lmtscale[11]);
-if (_lmtscale[14] != 0.0f)
+if(_lmtscale[14] != 0.0f)
 aces = rotate_H_in_H(aces, _lmtscale[12], _lmtscale[13], _lmtscale[14]);
-if (_lmtscale[17] != 1.0f)
+if(_lmtscale[17] != 1.0f)
 aces = scale_C_at_H(aces, _lmtscale[15], _lmtscale[16], _lmtscale[17]);
-if (_lmtscale[20] != 0.0f)
+if(_lmtscale[20] != 0.0f)
 aces = rotate_H_in_H(aces, _lmtscale[18], _lmtscale[19], _lmtscale[20]);
-if (_lmtscale[23] != 1.0f)
+if(_lmtscale[23] != 1.0f)
 aces = scale_C_at_H(aces, _lmtscale[21], _lmtscale[22], _lmtscale[23]);
 }
 break;
 case 2:
-{
-aces = LMT_BlueLightArtifactFix(aces);
-}
+{aces = LMT_BlueLightArtifactFix(aces);}
 break;
 case 3:
-{
-aces = LMT_PFE(aces);
-}
+{aces = LMT_PFE(aces);}
 break;
 case 4:
 {
-if (_lmtscale[0] != 1.0f)
+if(_lmtscale[0] != 1.0f)
 aces = scale_C(aces, _lmtscale[0]);
 float3 SLOPE = {_lmtscale[1], _lmtscale[1], _lmtscale[1] * 0.94f};
 float3 OFFSET = {_lmtscale[2], _lmtscale[2], _lmtscale[2] + 0.02f};
 float3 POWER = {_lmtscale[3], _lmtscale[3], _lmtscale[3]};
-aces = ASCCDL_inACEScct(aces, SLOPE, OFFSET, POWER);
-if (_lmtscale[4] != 1.0f)
+aces = ASCCDL_inACEScct(aces, SLOPE, OFFSET, POWER, 1.0f);
+if(_lmtscale[4] != 1.0f)
 aces = gamma_adjust_linear(aces, _lmtscale[4], _lmtscale[5]);
-if (_lmtscale[8] != 0.0f)
+if(_lmtscale[8] != 0.0f)
 aces = rotate_H_in_H(aces, _lmtscale[6], _lmtscale[7], _lmtscale[8]);
-if (_lmtscale[11] != 0.0f)
+if(_lmtscale[11] != 0.0f)
 aces = rotate_H_in_H(aces, _lmtscale[9], _lmtscale[10], _lmtscale[11]);
-if (_lmtscale[14] != 0.0f)
+if(_lmtscale[14] != 0.0f)
 aces = rotate_H_in_H(aces, _lmtscale[12], _lmtscale[13], _lmtscale[14]);
-if (_lmtscale[17] != 1.0f)
+if(_lmtscale[17] != 1.0f)
 aces = scale_C_at_H(aces, _lmtscale[15], _lmtscale[16], _lmtscale[17]);
-if (_lmtscale[20] != 0.0f)
+if(_lmtscale[20] != 0.0f)
 aces = rotate_H_in_H(aces, _lmtscale[18], _lmtscale[19], _lmtscale[20]);
-if (_lmtscale[23] != 1.0f)
+if(_lmtscale[23] != 1.0f)
 aces = scale_C_at_H(aces, _lmtscale[21], _lmtscale[22], _lmtscale[23]);
 }
 break;
 case 5:
-{
-aces = LMT_Bleach(aces);
-}}
-switch (_acesout)
-{
-case 0:
-{
+{aces = LMT_Bleach(aces);}
 }
+switch (_cscout){
+case 0:
+{}
 break;
 case 1:
-{
-aces = ACEScc_to_ACES(aces);
-}
+{aces = ACES_to_ACEScc(aces);}
 break;
 case 2:
-{
-aces = ACEScct_to_ACES(aces);
-}
+{aces = ACES_to_ACEScct(aces);}
 break;
 case 3:
-{
-aces = ACEScg_to_ACES(aces);
-}
+{aces = ACES_to_ACEScg(aces);}
 break;
 case 4:
-{
-aces = ACESproxy_to_ACES(aces);
-}}
-if (_rrt == 1 && (_odt == 0 || (_odt > 4 && _odt < 25)))
-aces = RRT_cpu(aces);
+{aces = ACES_to_ACESproxy(aces);}
+break;
+case 5:
+{aces = ACES_to_ADX(aces);}
+break;
+case 6:
+{aces = ACES_to_ICpCt(aces);}
+break;
+case 7:
+{aces = ACES_to_LogC_EI800_AWG(aces);}
+break;
+case 8:
+{aces = ACES_to_Log3G10_RWG(aces);}
+break;
+case 9:
+{aces = ACES_to_SLog3_SG3(aces);}
+break;
+case 10:
+{aces = ACES_to_SLog3_SG3C(aces);}
+}
+if (_rrt == 1 && _odt < 22)
+aces = h_RRT(aces);
 switch (_odt)
 {
 case 0:
-{
-}
+{}
 break;
 case 1:
 {
@@ -3113,159 +2644,99 @@ aces = outputTransform( aces, Y_MIN, Y_MID, Y_MAX, DISPLAY_PRI, LIMITING_PRI, EO
 }
 break;
 case 2:
-{
-aces = ACES_to_ACEScc(aces);
-}
+{aces = ODT_Rec709_100nits_dim(aces);}
 break;
 case 3:
-{
-aces = ACES_to_ACEScct(aces);
-}
+{aces = ODT_Rec709_D60sim_100nits_dim(aces);}
 break;
 case 4:
-{
-aces = ACES_to_ADX(aces);
-}
+{aces = ODT_sRGB_100nits_dim(aces);}
 break;
 case 5:
-{
-aces = ODT_Rec709_100nits_dim(aces);
-}
+{aces = ODT_sRGB_D60sim_100nits_dim(aces);}
 break;
 case 6:
-{
-aces = ODT_Rec709_D60sim_100nits_dim(aces);
-}
+{aces = ODT_Rec2020_100nits_dim(aces);}
 break;
 case 7:
-{
-aces = ODT_sRGB_100nits_dim(aces);
-}
+{aces = ODT_Rec2020_Rec709limited_100nits_dim(aces);}
 break;
 case 8:
-{
-aces = ODT_sRGB_D60sim_100nits_dim(aces);
-}
+{aces = ODT_Rec2020_P3D65limited_100nits_dim(aces);}
 break;
 case 9:
-{
-aces = ODT_Rec2020_100nits_dim(aces);
-}
+{aces = ODT_Rec2020_ST2084_1000nits(aces);}
 break;
 case 10:
-{
-aces = ODT_Rec2020_Rec709limited_100nits_dim(aces);
-}
+{aces = ODT_P3DCI_48nits(aces);}
 break;
 case 11:
-{
-aces = ODT_Rec2020_P3D65limited_100nits_dim(aces);
-}
+{aces = ODT_P3DCI_D60sim_48nits(aces);}
 break;
 case 12:
-{
-aces = ODT_Rec2020_ST2084_1000nits(aces);
-}
+{aces = ODT_P3DCI_D65sim_48nits(aces);}
 break;
 case 13:
-{
-aces = ODT_P3DCI_48nits(aces);
-}
+{aces = ODT_P3D60_48nits(aces);}
 break;
 case 14:
-{
-aces = ODT_P3DCI_D60sim_48nits(aces);
-}
+{aces = ODT_P3D65_48nits(aces);}
 break;
 case 15:
-{
-aces = ODT_P3DCI_D65sim_48nits(aces);
-}
+{aces = ODT_P3D65_D60sim_48nits(aces);}
 break;
 case 16:
-{
-aces = ODT_P3D60_48nits(aces);
-}
+{aces = ODT_P3D65_Rec709limited_48nits(aces);}
 break;
 case 17:
-{
-aces = ODT_P3D65_48nits(aces);
-}
+{aces = ODT_DCDM(aces);}
 break;
 case 18:
-{
-aces = ODT_P3D65_D60sim_48nits(aces);
-}
+{aces = ODT_DCDM_P3D60limited(aces);}
 break;
 case 19:
-{
-aces = ODT_P3D65_Rec709limited_48nits(aces);
-}
+{aces = ODT_DCDM_P3D65limited(aces);}
 break;
 case 20:
-{
-aces = ODT_DCDM(aces);
-}
+{aces = ODT_RGBmonitor_100nits_dim(aces);}
 break;
 case 21:
-{
-aces = ODT_DCDM_P3D60limited(aces);
-}
+{aces = ODT_RGBmonitor_D60sim_100nits_dim(aces);}
 break;
 case 22:
-{
-aces = ODT_DCDM_P3D65limited(aces);
-}
+{aces = RRTODT_Rec709_100nits_10nits_BT1886(aces);}
 break;
 case 23:
-{
-aces = ODT_RGBmonitor_100nits_dim(aces);
-}
+{aces = RRTODT_Rec709_100nits_10nits_sRGB(aces);}
 break;
 case 24:
-{
-aces = ODT_RGBmonitor_D60sim_100nits_dim(aces);
-}
+{aces = RRTODT_P3D65_108nits_7_2nits_ST2084(aces);}
 break;
 case 25:
-{
-aces = RRTODT_P3D65_108nits_7_2nits_ST2084(aces);
-}
+{aces = RRTODT_P3D65_1000nits_15nits_ST2084(aces);}
 break;
 case 26:
-{
-aces = RRTODT_Rec2020_1000nits_15nits_HLG(aces);
-}
+{aces = RRTODT_P3D65_2000nits_15nits_ST2084(aces);}
 break;
 case 27:
-{
-aces = RRTODT_Rec2020_1000nits_15nits_ST2084(aces);
-}
+{aces = RRTODT_P3D65_4000nits_15nits_ST2084(aces);}
 break;
 case 28:
-{
-aces = RRTODT_Rec2020_2000nits_15nits_ST2084(aces);
-}
+{aces = RRTODT_Rec2020_1000nits_15nits_HLG(aces);}
 break;
 case 29:
-{
-aces = RRTODT_Rec2020_4000nits_15nits_ST2084(aces);
-}
+{aces = RRTODT_Rec2020_1000nits_15nits_ST2084(aces);}
 break;
 case 30:
-{
-aces = RRTODT_Rec709_100nits_10nits_BT1886(aces);
-}
+{aces = RRTODT_Rec2020_2000nits_15nits_ST2084(aces);}
 break;
 case 31:
-{
-aces = RRTODT_Rec709_100nits_10nits_sRGB(aces);
-}}} else {
+{aces = RRTODT_Rec2020_4000nits_15nits_ST2084(aces);}
+}} else {
 switch (_invodt)
 {
 case 0:
-{
-}
+{}
 break;
 case 1:
 {
@@ -3283,128 +2754,92 @@ aces = invOutputTransform( aces, Y_MIN, Y_MID, Y_MAX, DISPLAY_PRI, LIMITING_PRI,
 }
 break;
 case 2:
-{
-aces = InvODT_Rec709_100nits_dim(aces);
-}
+{aces = InvODT_Rec709_100nits_dim(aces);}
 break;
 case 3:
-{
-aces = InvODT_Rec709_D60sim_100nits_dim(aces);
-}
+{aces = InvODT_Rec709_D60sim_100nits_dim(aces);}
 break;
 case 4:
-{
-aces = InvODT_sRGB_100nits_dim(aces);
-}
+{aces = InvODT_sRGB_100nits_dim(aces);}
 break;
 case 5:
-{
-aces = InvODT_sRGB_D60sim_100nits_dim(aces);
-}
+{aces = InvODT_sRGB_D60sim_100nits_dim(aces);}
 break;
 case 6:
-{
-aces = InvODT_Rec2020_100nits_dim(aces);
-}
+{aces = InvODT_Rec2020_100nits_dim(aces);}
 break;
 case 7:
-{
-aces = InvODT_Rec2020_ST2084_1000nits(aces);
-}
+{aces = InvODT_Rec2020_ST2084_1000nits(aces);}
 break;
 case 8:
-{
-aces = InvODT_P3DCI_48nits(aces);
-}
+{aces = InvODT_P3DCI_48nits(aces);}
 break;
 case 9:
-{
-aces = InvODT_P3DCI_D60sim_48nits(aces);
-}
+{aces = InvODT_P3DCI_D60sim_48nits(aces);}
 break;
 case 10:
-{
-aces = InvODT_P3DCI_D65sim_48nits(aces);
-}
+{aces = InvODT_P3DCI_D65sim_48nits(aces);}
 break;
 case 11:
-{
-aces = InvODT_P3D60_48nits(aces);
-}
+{aces = InvODT_P3D60_48nits(aces);}
 break;
 case 12:
-{
-aces = InvODT_P3D65_48nits(aces);
-}
+{aces = InvODT_P3D65_48nits(aces);}
 break;
 case 13:
-{
-aces = InvODT_P3D65_D60sim_48nits(aces);
-}
+{aces = InvODT_P3D65_D60sim_48nits(aces);}
 break;
 case 14:
-{
-aces = InvODT_DCDM(aces);
-}
+{aces = InvODT_DCDM(aces);}
 break;
 case 15:
-{
-aces = InvODT_DCDM_P3D65limited(aces);
-}
+{aces = InvODT_DCDM_P3D65limited(aces);}
 break;
 case 16:
-{
-aces = InvODT_RGBmonitor_100nits_dim(aces);
-}
+{aces = InvODT_RGBmonitor_100nits_dim(aces);}
 break;
 case 17:
-{
-aces = InvODT_RGBmonitor_D60sim_100nits_dim(aces);
-}
+{aces = InvODT_RGBmonitor_D60sim_100nits_dim(aces);}
 break;
 case 18:
-{
-aces = InvRRTODT_P3D65_108nits_7_2nits_ST2084(aces);
-}
+{aces = InvRRTODT_Rec709_100nits_10nits_BT1886(aces);}
 break;
 case 19:
-{
-aces = InvRRTODT_Rec2020_1000nits_15nits_HLG(aces);
-}
+{aces = InvRRTODT_Rec709_100nits_10nits_sRGB(aces);}
 break;
 case 20:
-{
-aces = InvRRTODT_Rec2020_1000nits_15nits_ST2084(aces);
-}
+{aces = InvRRTODT_P3D65_108nits_7_2nits_ST2084(aces);}
 break;
 case 21:
-{
-aces = InvRRTODT_Rec2020_2000nits_15nits_ST2084(aces);
-}
+{aces = InvRRTODT_P3D65_1000nits_15nits_ST2084(aces);}
 break;
 case 22:
-{
-aces = InvRRTODT_Rec2020_4000nits_15nits_ST2084(aces);
-}
+{aces = InvRRTODT_P3D65_2000nits_15nits_ST2084(aces);}
 break;
 case 23:
-{
-aces = InvRRTODT_Rec709_100nits_10nits_BT1886(aces);
-}
+{aces = InvRRTODT_P3D65_4000nits_15nits_ST2084(aces);}
 break;
 case 24:
-{
-aces = InvRRTODT_Rec709_100nits_10nits_sRGB(aces);
-}}
-if (_invrrt == 1 && (_invodt != 1 && _invodt < 18))
-aces = InvRRT_cpu(aces);
+{aces = InvRRTODT_Rec2020_1000nits_15nits_HLG(aces);}
+break;
+case 25:
+{aces = InvRRTODT_Rec2020_1000nits_15nits_ST2084(aces);}
+break;
+case 26:
+{aces = InvRRTODT_Rec2020_2000nits_15nits_ST2084(aces);}
+break;
+case 27:
+{aces = InvRRTODT_Rec2020_4000nits_15nits_ST2084(aces);}
+}
+if(_invrrt == 1 && _invodt < 18)
+aces = h_InvRRT(aces);
 }
 fprintf (pFile, "%.*f %.*f %.*f\n", decimal, aces.x, decimal, aces.y, decimal, aces.z);
 }
 fclose (pFile);
 } else {
 sendMessage(OFX::Message::eMessageError, "", string("Error: Cannot save " + NAME + ".cube to " + PATH + ". Check Permissions."));
-}}}}}
+}}}}
 
 void ACESPlugin::setupAndProcess(ACES& p_ACES, const OFX::RenderArguments& p_Args)
 {
@@ -3416,39 +2851,30 @@ std::auto_ptr<OFX::Image> src(m_SrcClip->fetchImage(p_Args.time));
 OFX::BitDepthEnum srcBitDepth = src->getPixelDepth();
 OFX::PixelComponentEnum srcComponents = src->getPixelComponents();
 
-if ((srcBitDepth != dstBitDepth) || (srcComponents != dstComponents))
-{
+if (srcBitDepth != dstBitDepth || srcComponents != dstComponents) {
 OFX::throwSuiteStatusException(kOfxStatErrValue);
 }
 
 int _direction;
 m_Direction->getValueAtTime(p_Args.time, _direction);
-
+int _cscin;
+m_CSCIN->getValueAtTime(p_Args.time, _cscin);
 int _idt;
 m_IDT->getValueAtTime(p_Args.time, _idt);
-
-int _acesin;
-m_ACESIN->getValueAtTime(p_Args.time, _acesin);
-
 int _lmt;
 m_LMT->getValueAtTime(p_Args.time, _lmt);
-
-int _acesout;
-m_ACESOUT->getValueAtTime(p_Args.time, _acesout);
-
+int _cscout;
+m_CSCOUT->getValueAtTime(p_Args.time, _cscout);
 int _rrt;
 m_RRT->getValueAtTime(p_Args.time, _rrt);
-
 int _invrrt;
 m_InvRRT->getValueAtTime(p_Args.time, _invrrt);
-
 int _odt;
 m_ODT->getValueAtTime(p_Args.time, _odt);
-
 int _invodt;
 m_InvODT->getValueAtTime(p_Args.time, _invodt);
-
 float _exposure = m_Exposure->getValueAtTime(p_Args.time);
+
 float _lmtscale[24];
 _lmtscale[0] = m_ScaleC->getValueAtTime(p_Args.time);
 _lmtscale[1] = m_Slope->getValueAtTime(p_Args.time);
@@ -3486,25 +2912,14 @@ _lum[0] = m_YMIN->getValueAtTime(p_Args.time);
 _lum[1] = m_YMID->getValueAtTime(p_Args.time);
 _lum[2] = m_YMAX->getValueAtTime(p_Args.time);
 
-int DISPLAY_i;
-m_DISPLAY->getValueAtTime(p_Args.time, DISPLAY_i);
-DISPLAYEnum DISPLAY = (DISPLAYEnum)DISPLAY_i;
-int _display = DISPLAY_i;
-
-int LIMIT_i;
-m_LIMIT->getValueAtTime(p_Args.time, LIMIT_i);
-LIMITEnum LIMIT = (LIMITEnum)LIMIT_i;
-int _limit = LIMIT_i;
-
-int EOTF_i;
-m_EOTF->getValueAtTime(p_Args.time, EOTF_i);
-EOTFEnum EOTF = (EOTFEnum)EOTF_i;
-int _eotf = EOTF_i;
-
-int SURROUND_i;
-m_SURROUND->getValueAtTime(p_Args.time, SURROUND_i);
-SURROUNDEnum SURROUND = (SURROUNDEnum)SURROUND_i;
-int _surround = SURROUND_i;
+int _display;
+m_DISPLAY->getValueAtTime(p_Args.time, _display);
+int _limit;
+m_LIMIT->getValueAtTime(p_Args.time, _limit);
+int _eotf;
+m_EOTF->getValueAtTime(p_Args.time, _eotf);
+int _surround;
+m_SURROUND->getValueAtTime(p_Args.time, _surround);
 
 int _switch[3];
 bool stretch = m_STRETCH->getValueAtTime(p_Args.time);
@@ -3522,7 +2937,7 @@ p_ACES.setGPURenderArgs(p_Args);
 
 p_ACES.setRenderWindow(p_Args.renderWindow);
 
-p_ACES.setScales(_direction, _idt, _acesin, _lmt, _acesout, _rrt, _invrrt, _odt, 
+p_ACES.setScales(_direction, _cscin, _idt, _lmt, _cscout, _rrt, _invrrt, _odt, 
 _invodt, _exposure, _lmtscale, _lum, _display, _limit, _eotf, _surround, _switch);
 
 p_ACES.process();
@@ -3533,9 +2948,7 @@ p_ACES.process();
 using namespace OFX;
 
 ACESPluginFactory::ACESPluginFactory()
-: PluginFactoryHelper<ACESPluginFactory>(kPluginIdentifier, kPluginVersionMajor, kPluginVersionMinor)
-{
-}
+: PluginFactoryHelper<ACESPluginFactory>(kPluginIdentifier, kPluginVersionMajor, kPluginVersionMinor) {}
 
 void ACESPluginFactory::describe(ImageEffectDescriptor& p_Desc)
 {
@@ -3573,9 +2986,8 @@ param->setRange(0.0, 1.0);
 param->setIncrement(0.001);
 param->setDisplayRange(0.0, 1.0);
 param->setDoubleType(eDoubleTypeScale);
-if (p_Parent) {
+if (p_Parent)
 param->setParent(*p_Parent);
-}
 return param;
 }
 
@@ -3605,25 +3017,45 @@ choiceparam->setDefault( (int)eInputStandard );
 choiceparam->setAnimates(false);
 page->addChild(*choiceparam);
 
+choiceparam = p_Desc.defineChoiceParam(kParamCSCIN);
+choiceparam->setLabel(kParamCSCINLabel);
+choiceparam->setHint(kParamCSCINHint);
+assert(choiceparam->getNOptions() == (int)eCSCINBypass);
+choiceparam->appendOption(kParamCSCINOptionBypass, kParamCSCINOptionBypassHint);
+assert(choiceparam->getNOptions() == (int)eCSCINACEScc);
+choiceparam->appendOption(kParamCSCINOptionACEScc, kParamCSCINOptionACESccHint);
+assert(choiceparam->getNOptions() == (int)eCSCINACEScct);
+choiceparam->appendOption(kParamCSCINOptionACEScct, kParamCSCINOptionACEScctHint);
+assert(choiceparam->getNOptions() == (int)eCSCINACEScg);
+choiceparam->appendOption(kParamCSCINOptionACEScg, kParamCSCINOptionACEScgHint);
+assert(choiceparam->getNOptions() == (int)eCSCINACESproxy);
+choiceparam->appendOption(kParamCSCINOptionACESproxy, kParamCSCINOptionACESproxyHint);
+assert(choiceparam->getNOptions() == (int)eCSCINADX);
+choiceparam->appendOption(kParamCSCINOptionADX, kParamCSCINOptionADXHint);
+assert(choiceparam->getNOptions() == (int)eCSCINICPCT);
+choiceparam->appendOption(kParamCSCINOptionICPCT, kParamCSCINOptionICPCTHint);
+assert(choiceparam->getNOptions() == (int)eCSCINLOGCAWG);
+choiceparam->appendOption(kParamCSCINOptionLOGCAWG, kParamCSCINOptionLOGCAWGHint);
+assert(choiceparam->getNOptions() == (int)eCSCINLOG3G10RWG);
+choiceparam->appendOption(kParamCSCINOptionLOG3G10RWG, kParamCSCINOptionLOG3G10RWGHint);
+assert(choiceparam->getNOptions() == (int)eCSCINSLOG3SG3);
+choiceparam->appendOption(kParamCSCINOptionSLOG3SG3, kParamCSCINOptionSLOG3SG3Hint);
+assert(choiceparam->getNOptions() == (int)eCSCINSLOG3SG3C);
+choiceparam->appendOption(kParamCSCINOptionSLOG3SG3C, kParamCSCINOptionSLOG3SG3CHint);
+choiceparam->setDefault( (int)eCSCINBypass );
+choiceparam->setAnimates(false);
+choiceparam->setIsSecretAndDisabled(false);
+page->addChild(*choiceparam);
+
 choiceparam = p_Desc.defineChoiceParam(kParamIDT);
 choiceparam->setLabel(kParamIDTLabel);
 choiceparam->setHint(kParamIDTHint);
 assert(choiceparam->getNOptions() == (int)eIDTBypass);
 choiceparam->appendOption(kParamIDTOptionBypass, kParamIDTOptionBypassHint);
-assert(choiceparam->getNOptions() == (int)eIDTACEScc);
-choiceparam->appendOption(kParamIDTOptionACEScc, kParamIDTOptionACESccHint);
-assert(choiceparam->getNOptions() == (int)eIDTACEScct);
-choiceparam->appendOption(kParamIDTOptionACEScct, kParamIDTOptionACEScctHint);
-assert(choiceparam->getNOptions() == (int)eIDTAlexaLogC800);
-choiceparam->appendOption(kParamIDTOptionAlexaLogC800, kParamIDTOptionAlexaLogC800Hint);
 assert(choiceparam->getNOptions() == (int)eIDTAlexaRaw800);
 choiceparam->appendOption(kParamIDTOptionAlexaRaw800, kParamIDTOptionAlexaRaw800Hint);
-assert(choiceparam->getNOptions() == (int)eIDTADX);
-choiceparam->appendOption(kParamIDTOptionADX, kParamIDTOptionADXHint);
 assert(choiceparam->getNOptions() == (int)eIDTPanasonicV35);
 choiceparam->appendOption(kParamIDTOptionPanasonicV35, kParamIDTOptionPanasonicV35Hint);
-assert(choiceparam->getNOptions() == (int)eIDTREDWideGamutRGBLog3G10);
-choiceparam->appendOption(kParamIDTOptionREDWideGamutRGBLog3G10, kParamIDTOptionREDWideGamutRGBLog3G10Hint);
 assert(choiceparam->getNOptions() == (int)eIDTCanonC100AD55);
 choiceparam->appendOption(kParamIDTOptionCanonC100AD55, kParamIDTOptionCanonC100AD55Hint);
 assert(choiceparam->getNOptions() == (int)eIDTCanonC100ATNG);
@@ -3682,10 +3114,10 @@ assert(choiceparam->getNOptions() == (int)eIDTSonySLog2SGamutDaylight);
 choiceparam->appendOption(kParamIDTOptionSonySLog2SGamutDaylight, kParamIDTOptionSonySLog2SGamutDaylightHint);
 assert(choiceparam->getNOptions() == (int)eIDTSonySLog2SGamutTungsten);
 choiceparam->appendOption(kParamIDTOptionSonySLog2SGamutTungsten, kParamIDTOptionSonySLog2SGamutTungstenHint);
-assert(choiceparam->getNOptions() == (int)eIDTSonySLog3SGamut3);
-choiceparam->appendOption(kParamIDTOptionSonySLog3SGamut3, kParamIDTOptionSonySLog3SGamut3Hint);
-assert(choiceparam->getNOptions() == (int)eIDTSonySLog3SGamut3Cine);
-choiceparam->appendOption(kParamIDTOptionSonySLog3SGamut3Cine, kParamIDTOptionSonySLog3SGamut3CineHint);
+assert(choiceparam->getNOptions() == (int)eIDTSonyVeniceSGamut3);
+choiceparam->appendOption(kParamIDTOptionSonyVeniceSGamut3, kParamIDTOptionSonyVeniceSGamut3Hint);
+assert(choiceparam->getNOptions() == (int)eIDTSonyVeniceSGamut3Cine);
+choiceparam->appendOption(kParamIDTOptionSonyVeniceSGamut3Cine, kParamIDTOptionSonyVeniceSGamut3CineHint);
 assert(choiceparam->getNOptions() == (int)eIDTRec709);
 choiceparam->appendOption(kParamIDTOptionRec709, kParamIDTOptionRec709Hint);
 assert(choiceparam->getNOptions() == (int)eIDTSRGB);
@@ -3702,24 +3134,6 @@ param->setIncrement(0.001f);
 param->setDisplayRange(-10.0f, 10.0f);
 param->setIsSecretAndDisabled(false);
 page->addChild(*param);
-
-choiceparam = p_Desc.defineChoiceParam(kParamACESIN);
-choiceparam->setLabel(kParamACESINLabel);
-choiceparam->setHint(kParamACESINHint);
-assert(choiceparam->getNOptions() == (int)eACESINBypass);
-choiceparam->appendOption(kParamACESINOptionBypass, kParamACESINOptionBypassHint);
-assert(choiceparam->getNOptions() == (int)eACESINACEScc);
-choiceparam->appendOption(kParamACESINOptionACEScc, kParamACESINOptionACESccHint);
-assert(choiceparam->getNOptions() == (int)eACESINACEScct);
-choiceparam->appendOption(kParamACESINOptionACEScct, kParamACESINOptionACEScctHint);
-assert(choiceparam->getNOptions() == (int)eACESINACEScg);
-choiceparam->appendOption(kParamACESINOptionACEScg, kParamACESINOptionACEScgHint);
-assert(choiceparam->getNOptions() == (int)eACESINACESproxy);
-choiceparam->appendOption(kParamACESINOptionACESproxy, kParamACESINOptionACESproxyHint);
-choiceparam->setDefault( (int)eACESINBypass );
-choiceparam->setAnimates(false);
-choiceparam->setIsSecretAndDisabled(false);
-page->addChild(*choiceparam);
 
 choiceparam = p_Desc.defineChoiceParam(kParamLMT);
 choiceparam->setLabel(kParamLMTLabel);
@@ -3933,20 +3347,32 @@ param->setDisplayRange(0.0, 2.0);
 param->setIsSecretAndDisabled(true);
 page->addChild(*param);
 
-choiceparam = p_Desc.defineChoiceParam(kParamACESOUT);
-choiceparam->setLabel(kParamACESOUTLabel);
-choiceparam->setHint(kParamACESOUTHint);
-assert(choiceparam->getNOptions() == (int)eACESOUTBypass);
-choiceparam->appendOption(kParamACESOUTOptionBypass, kParamACESOUTOptionBypassHint);
-assert(choiceparam->getNOptions() == (int)eACESOUTACEScc);
-choiceparam->appendOption(kParamACESOUTOptionACEScc, kParamACESOUTOptionACESccHint);
-assert(choiceparam->getNOptions() == (int)eACESOUTACEScct);
-choiceparam->appendOption(kParamACESOUTOptionACEScct, kParamACESOUTOptionACEScctHint);
-assert(choiceparam->getNOptions() == (int)eACESOUTACEScg);
-choiceparam->appendOption(kParamACESOUTOptionACEScg, kParamACESOUTOptionACEScgHint);
-assert(choiceparam->getNOptions() == (int)eACESOUTACESproxy);
-choiceparam->appendOption(kParamACESOUTOptionACESproxy, kParamACESOUTOptionACESproxyHint);
-choiceparam->setDefault( (int)eACESOUTBypass );
+choiceparam = p_Desc.defineChoiceParam(kParamCSCOUT);
+choiceparam->setLabel(kParamCSCOUTLabel);
+choiceparam->setHint(kParamCSCOUTHint);
+assert(choiceparam->getNOptions() == (int)eCSCOUTBypass);
+choiceparam->appendOption(kParamCSCOUTOptionBypass, kParamCSCOUTOptionBypassHint);
+assert(choiceparam->getNOptions() == (int)eCSCOUTACEScc);
+choiceparam->appendOption(kParamCSCOUTOptionACEScc, kParamCSCOUTOptionACESccHint);
+assert(choiceparam->getNOptions() == (int)eCSCOUTACEScct);
+choiceparam->appendOption(kParamCSCOUTOptionACEScct, kParamCSCOUTOptionACEScctHint);
+assert(choiceparam->getNOptions() == (int)eCSCOUTACEScg);
+choiceparam->appendOption(kParamCSCOUTOptionACEScg, kParamCSCOUTOptionACEScgHint);
+assert(choiceparam->getNOptions() == (int)eCSCOUTACESproxy);
+choiceparam->appendOption(kParamCSCOUTOptionACESproxy, kParamCSCOUTOptionACESproxyHint);
+assert(choiceparam->getNOptions() == (int)eCSCOUTADX);
+choiceparam->appendOption(kParamCSCOUTOptionADX, kParamCSCOUTOptionADXHint);
+assert(choiceparam->getNOptions() == (int)eCSCOUTICPCT);
+choiceparam->appendOption(kParamCSCOUTOptionICPCT, kParamCSCOUTOptionICPCTHint);
+assert(choiceparam->getNOptions() == (int)eCSCOUTLOGCAWG);
+choiceparam->appendOption(kParamCSCOUTOptionLOGCAWG, kParamCSCOUTOptionLOGCAWGHint);
+assert(choiceparam->getNOptions() == (int)eCSCOUTLOG3G10RWG);
+choiceparam->appendOption(kParamCSCOUTOptionLOG3G10RWG, kParamCSCOUTOptionLOG3G10RWGHint);
+assert(choiceparam->getNOptions() == (int)eCSCOUTSLOG3SG3);
+choiceparam->appendOption(kParamCSCOUTOptionSLOG3SG3, kParamCSCOUTOptionSLOG3SG3Hint);
+assert(choiceparam->getNOptions() == (int)eCSCOUTSLOG3SG3C);
+choiceparam->appendOption(kParamCSCOUTOptionSLOG3SG3C, kParamCSCOUTOptionSLOG3SG3CHint);
+choiceparam->setDefault( (int)eCSCOUTBypass );
 choiceparam->setAnimates(false);
 choiceparam->setIsSecretAndDisabled(false);
 page->addChild(*choiceparam);
@@ -3970,12 +3396,6 @@ assert(choiceparam->getNOptions() == (int)eODTBypass);
 choiceparam->appendOption(kParamODTOptionBypass, kParamODTOptionBypassHint);
 assert(choiceparam->getNOptions() == (int)eODTCustom);
 choiceparam->appendOption(kParamODTOptionCustom, kParamODTOptionCustomHint);
-assert(choiceparam->getNOptions() == (int)eODTACEScc);
-choiceparam->appendOption(kParamODTOptionACEScc, kParamODTOptionACESccHint);
-assert(choiceparam->getNOptions() == (int)eODTACEScct);
-choiceparam->appendOption(kParamODTOptionACEScct, kParamODTOptionACEScctHint);
-assert(choiceparam->getNOptions() == (int)eODTADX);
-choiceparam->appendOption(kParamODTOptionADX, kParamODTOptionADXHint);
 assert(choiceparam->getNOptions() == (int)eODTRec709_100dim);
 choiceparam->appendOption(kParamODTOptionRec709_100dim, kParamODTOptionRec709_100dimHint);
 assert(choiceparam->getNOptions() == (int)eODTRec709_D60sim_100dim);
@@ -4016,8 +3436,18 @@ assert(choiceparam->getNOptions() == (int)eODTRGBmonitor_100dim);
 choiceparam->appendOption(kParamODTOptionRGBmonitor_100dim, kParamODTOptionRGBmonitor_100dimHint);
 assert(choiceparam->getNOptions() == (int)eODTRGBmonitor_D60sim_100dim);
 choiceparam->appendOption(kParamODTOptionRGBmonitor_D60sim_100dim, kParamODTOptionRGBmonitor_D60sim_100dimHint);
+assert(choiceparam->getNOptions() == (int)eODTRRTODT_Rec709_100nits_10nits_BT1886);
+choiceparam->appendOption(kParamODTOptionRRTODT_Rec709_100nits_10nits_BT1886, kParamODTOptionRRTODT_Rec709_100nits_10nits_BT1886Hint);
+assert(choiceparam->getNOptions() == (int)eODTRRTODT_Rec709_100nits_10nits_sRGB);
+choiceparam->appendOption(kParamODTOptionRRTODT_Rec709_100nits_10nits_sRGB, kParamODTOptionRRTODT_Rec709_100nits_10nits_sRGBHint);
 assert(choiceparam->getNOptions() == (int)eODTRRTODT_P3D65_108nits_7_2nits_ST2084);
 choiceparam->appendOption(kParamODTOptionRRTODT_P3D65_108nits_7_2nits_ST2084, kParamODTOptionRRTODT_P3D65_108nits_7_2nits_ST2084Hint);
+assert(choiceparam->getNOptions() == (int)eODTRRTODT_P3D65_1000nits_15nits_ST2084);
+choiceparam->appendOption(kParamODTOptionRRTODT_P3D65_1000nits_15nits_ST2084, kParamODTOptionRRTODT_P3D65_1000nits_15nits_ST2084Hint);
+assert(choiceparam->getNOptions() == (int)eODTRRTODT_P3D65_2000nits_15nits_ST2084);
+choiceparam->appendOption(kParamODTOptionRRTODT_P3D65_2000nits_15nits_ST2084, kParamODTOptionRRTODT_P3D65_2000nits_15nits_ST2084Hint);
+assert(choiceparam->getNOptions() == (int)eODTRRTODT_P3D65_4000nits_15nits_ST2084);
+choiceparam->appendOption(kParamODTOptionRRTODT_P3D65_4000nits_15nits_ST2084, kParamODTOptionRRTODT_P3D65_4000nits_15nits_ST2084Hint);
 assert(choiceparam->getNOptions() == (int)eODTRRTODT_Rec2020_1000nits_15nits_HLG);
 choiceparam->appendOption(kParamODTOptionRRTODT_Rec2020_1000nits_15nits_HLG, kParamODTOptionRRTODT_Rec2020_1000nits_15nits_HLGHint);
 assert(choiceparam->getNOptions() == (int)eODTRRTODT_Rec2020_1000nits_15nits_ST2084);
@@ -4026,10 +3456,6 @@ assert(choiceparam->getNOptions() == (int)eODTRRTODT_Rec2020_2000nits_15nits_ST2
 choiceparam->appendOption(kParamODTOptionRRTODT_Rec2020_2000nits_15nits_ST2084, kParamODTOptionRRTODT_Rec2020_2000nits_15nits_ST2084Hint);
 assert(choiceparam->getNOptions() == (int)eODTRRTODT_Rec2020_4000nits_15nits_ST2084);
 choiceparam->appendOption(kParamODTOptionRRTODT_Rec2020_4000nits_15nits_ST2084, kParamODTOptionRRTODT_Rec2020_4000nits_15nits_ST2084Hint);
-assert(choiceparam->getNOptions() == (int)eODTRRTODT_Rec709_100nits_10nits_BT1886);
-choiceparam->appendOption(kParamODTOptionRRTODT_Rec709_100nits_10nits_BT1886, kParamODTOptionRRTODT_Rec709_100nits_10nits_BT1886Hint);
-assert(choiceparam->getNOptions() == (int)eODTRRTODT_Rec709_100nits_10nits_sRGB);
-choiceparam->appendOption(kParamODTOptionRRTODT_Rec709_100nits_10nits_sRGB, kParamODTOptionRRTODT_Rec709_100nits_10nits_sRGBHint);
 choiceparam->setDefault( (int)eODTBypass );
 choiceparam->setAnimates(false);
 choiceparam->setIsSecretAndDisabled(false);
@@ -4074,8 +3500,18 @@ assert(choiceparam->getNOptions() == (int)eInvODTRGBmonitor_100dim);
 choiceparam->appendOption(kParamInvODTOptionRGBmonitor_100dim, kParamInvODTOptionRGBmonitor_100dimHint);
 assert(choiceparam->getNOptions() == (int)eInvODTRGBmonitor_D60sim_100dim);
 choiceparam->appendOption(kParamInvODTOptionRGBmonitor_D60sim_100dim, kParamInvODTOptionRGBmonitor_D60sim_100dimHint);
+assert(choiceparam->getNOptions() == (int)eInvODTRRTODT_Rec709_100nits_10nits_BT1886);
+choiceparam->appendOption(kParamInvODTOptionRRTODT_Rec709_100nits_10nits_BT1886, kParamInvODTOptionRRTODT_Rec709_100nits_10nits_BT1886Hint);
+assert(choiceparam->getNOptions() == (int)eInvODTRRTODT_Rec709_100nits_10nits_sRGB);
+choiceparam->appendOption(kParamInvODTOptionRRTODT_Rec709_100nits_10nits_sRGB, kParamInvODTOptionRRTODT_Rec709_100nits_10nits_sRGBHint);
 assert(choiceparam->getNOptions() == (int)eInvODTRRTODT_P3D65_108nits_7_2nits_ST2084);
 choiceparam->appendOption(kParamInvODTOptionRRTODT_P3D65_108nits_7_2nits_ST2084, kParamInvODTOptionRRTODT_P3D65_108nits_7_2nits_ST2084Hint);
+assert(choiceparam->getNOptions() == (int)eInvODTRRTODT_P3D65_1000nits_15nits_ST2084);
+choiceparam->appendOption(kParamODTOptionRRTODT_P3D65_1000nits_15nits_ST2084, kParamODTOptionRRTODT_P3D65_1000nits_15nits_ST2084Hint);
+assert(choiceparam->getNOptions() == (int)eInvODTRRTODT_P3D65_2000nits_15nits_ST2084);
+choiceparam->appendOption(kParamODTOptionRRTODT_P3D65_2000nits_15nits_ST2084, kParamODTOptionRRTODT_P3D65_2000nits_15nits_ST2084Hint);
+assert(choiceparam->getNOptions() == (int)eInvODTRRTODT_P3D65_4000nits_15nits_ST2084);
+choiceparam->appendOption(kParamODTOptionRRTODT_P3D65_4000nits_15nits_ST2084, kParamODTOptionRRTODT_P3D65_4000nits_15nits_ST2084Hint);
 assert(choiceparam->getNOptions() == (int)eInvODTRRTODT_Rec2020_1000nits_15nits_HLG);
 choiceparam->appendOption(kParamInvODTOptionRRTODT_Rec2020_1000nits_15nits_HLG, kParamInvODTOptionRRTODT_Rec2020_1000nits_15nits_HLGHint);
 assert(choiceparam->getNOptions() == (int)eInvODTRRTODT_Rec2020_1000nits_15nits_ST2084);
@@ -4084,10 +3520,6 @@ assert(choiceparam->getNOptions() == (int)eInvODTRRTODT_Rec2020_2000nits_15nits_
 choiceparam->appendOption(kParamInvODTOptionRRTODT_Rec2020_2000nits_15nits_ST2084, kParamInvODTOptionRRTODT_Rec2020_2000nits_15nits_ST2084Hint);
 assert(choiceparam->getNOptions() == (int)eInvODTRRTODT_Rec2020_4000nits_15nits_ST2084);
 choiceparam->appendOption(kParamInvODTOptionRRTODT_Rec2020_4000nits_15nits_ST2084, kParamInvODTOptionRRTODT_Rec2020_4000nits_15nits_ST2084Hint);
-assert(choiceparam->getNOptions() == (int)eInvODTRRTODT_Rec709_100nits_10nits_BT1886);
-choiceparam->appendOption(kParamInvODTOptionRRTODT_Rec709_100nits_10nits_BT1886, kParamInvODTOptionRRTODT_Rec709_100nits_10nits_BT1886Hint);
-assert(choiceparam->getNOptions() == (int)eInvODTRRTODT_Rec709_100nits_10nits_sRGB);
-choiceparam->appendOption(kParamInvODTOptionRRTODT_Rec709_100nits_10nits_sRGB, kParamInvODTOptionRRTODT_Rec709_100nits_10nits_sRGBHint);
 choiceparam->setDefault( (int)eInvODTBypass );
 choiceparam->setAnimates(false);
 choiceparam->setIsSecretAndDisabled(true);
@@ -4239,7 +3671,7 @@ page->addChild(*script);
 StringParamDescriptor* stringparam = p_Desc.defineStringParam("name");
 stringparam->setLabel("Name");
 stringparam->setHint("overwrites if the same");
-stringparam->setDefault("ACES");
+stringparam->setDefault("ACESexport");
 stringparam->setParent(*script);
 page->addChild(*stringparam);
 
@@ -4267,7 +3699,7 @@ page->addChild(*lutexport);
 stringparam = p_Desc.defineStringParam("name2");
 stringparam->setLabel("Name");
 stringparam->setHint("overwrites if the same");
-stringparam->setDefault("ACES_LUT");
+stringparam->setDefault("ACESexport");
 stringparam->setParent(*lutexport);
 page->addChild(*stringparam);
 
