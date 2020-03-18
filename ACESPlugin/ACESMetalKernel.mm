@@ -39,102 +39,102 @@ const char* kernelSource =  \
 "float coefsLow[6]; float coefsHigh[6]; \n" \
 "} TsParams; \n" \
 "#define REF_PT		((7120.0f - 1520.0f) / 8000.0f * (100.0f / 55.0f) - log10(0.18f)) * 1.0f \n" \
-"__constant mat3 MM = { {0.5f, -1.0f, 0.5f}, {-1.0f, 1.0f, 0.5f}, {0.5f, 0.0f, 0.0f} }; \n" \
-"__constant float TINY = 1e-10f; \n" \
-"__constant float DIM_SURROUND_GAMMA = 0.9811f; \n" \
-"__constant float ODT_SAT_FACTOR = 0.93f; \n" \
-"__constant float MIN_STOP_SDR = -6.5f; \n" \
-"__constant float MAX_STOP_SDR = 6.5f; \n" \
-"__constant float MIN_STOP_RRT = -15.0f; \n" \
-"__constant float MAX_STOP_RRT = 18.0f; \n" \
-"__constant float MIN_LUM_SDR = 0.02f; \n" \
-"__constant float MAX_LUM_SDR = 48.0f; \n" \
-"__constant float MIN_LUM_RRT = 0.0001f; \n" \
-"__constant float MAX_LUM_RRT = 10000.0f; \n" \
-"__constant float RRT_GLOW_GAIN = 0.05f; \n" \
-"__constant float RRT_GLOW_MID = 0.08f; \n" \
-"__constant float RRT_RED_SCALE = 0.82f; \n" \
-"__constant float RRT_RED_PIVOT = 0.03f; \n" \
-"__constant float RRT_RED_HUE = 0.0f; \n" \
-"__constant float RRT_RED_WIDTH = 135.0f; \n" \
-"__constant float RRT_SAT_FACTOR = 0.96f; \n" \
-"__constant float X_BRK = 0.0078125f; \n" \
-"__constant float Y_BRK = 0.155251141552511f; \n" \
-"__constant float A = 10.5402377416545f; \n" \
-"__constant float B = 0.0729055341958355f; \n" \
-"__constant float sqrt3over4 = 0.433012701892219f; \n" \
-"__constant float pq_m1 = 0.1593017578125f; \n" \
-"__constant float pq_m2 = 78.84375f; \n" \
-"__constant float pq_c1 = 0.8359375f; \n" \
-"__constant float pq_c2 = 18.8515625f; \n" \
-"__constant float pq_c3 = 18.6875f; \n" \
-"__constant float pq_C = 10000.0f; \n" \
-"__constant mat3 CDD_TO_CID =  \n" \
+"constant mat3 MM = { {0.5f, -1.0f, 0.5f}, {-1.0f, 1.0f, 0.5f}, {0.5f, 0.0f, 0.0f} }; \n" \
+"constant float TINY = 1e-10f; \n" \
+"constant float DIM_SURROUND_GAMMA = 0.9811f; \n" \
+"constant float ODT_SAT_FACTOR = 0.93f; \n" \
+"constant float MIN_STOP_SDR = -6.5f; \n" \
+"constant float MAX_STOP_SDR = 6.5f; \n" \
+"constant float MIN_STOP_RRT = -15.0f; \n" \
+"constant float MAX_STOP_RRT = 18.0f; \n" \
+"constant float MIN_LUM_SDR = 0.02f; \n" \
+"constant float MAX_LUM_SDR = 48.0f; \n" \
+"constant float MIN_LUM_RRT = 0.0001f; \n" \
+"constant float MAX_LUM_RRT = 10000.0f; \n" \
+"constant float RRT_GLOW_GAIN = 0.05f; \n" \
+"constant float RRT_GLOW_MID = 0.08f; \n" \
+"constant float RRT_RED_SCALE = 0.82f; \n" \
+"constant float RRT_RED_PIVOT = 0.03f; \n" \
+"constant float RRT_RED_HUE = 0.0f; \n" \
+"constant float RRT_RED_WIDTH = 135.0f; \n" \
+"constant float RRT_SAT_FACTOR = 0.96f; \n" \
+"constant float X_BRK = 0.0078125f; \n" \
+"constant float Y_BRK = 0.155251141552511f; \n" \
+"constant float A = 10.5402377416545f; \n" \
+"constant float B = 0.0729055341958355f; \n" \
+"constant float sqrt3over4 = 0.433012701892219f; \n" \
+"constant float pq_m1 = 0.1593017578125f; \n" \
+"constant float pq_m2 = 78.84375f; \n" \
+"constant float pq_c1 = 0.8359375f; \n" \
+"constant float pq_c2 = 18.8515625f; \n" \
+"constant float pq_c3 = 18.6875f; \n" \
+"constant float pq_C = 10000.0f; \n" \
+"constant mat3 CDD_TO_CID =  \n" \
 "{ {0.75573f, 0.05901f, 0.16134f}, {0.22197f, 0.96928f, 0.07406f}, {0.02230f, -0.02829f, 0.76460f} }; \n" \
-"__constant mat3 EXP_TO_ACES =  \n" \
+"constant mat3 EXP_TO_ACES =  \n" \
 "{ {0.72286f, 0.11923f, 0.01427f}, {0.12630f, 0.76418f, 0.08213f}, {0.15084f, 0.11659f, 0.90359f} }; \n" \
-"__constant Chromaticities AP0 = \n" \
+"constant Chromaticities AP0 = \n" \
 "{ {0.7347f, 0.2653f}, {0.0f, 1.0f}, {0.0001f, -0.077f}, {0.32168f, 0.33767f} }; \n" \
-"__constant Chromaticities AP1 = \n" \
+"constant Chromaticities AP1 = \n" \
 "{ {0.713f, 0.293f}, {0.165f, 0.83f}, {0.128f, 0.044f}, {0.32168f, 0.33767f} }; \n" \
-"__constant Chromaticities REC709_PRI = \n" \
+"constant Chromaticities REC709_PRI = \n" \
 "{ {0.64f, 0.33f}, {0.3f, 0.6f}, {0.15f, 0.06f}, {0.3127f, 0.329f} }; \n" \
-"__constant Chromaticities P3D60_PRI = \n" \
+"constant Chromaticities P3D60_PRI = \n" \
 "{ {0.68f, 0.32f}, {0.265f, 0.69f}, {0.15f, 0.06f}, {0.32168, 0.33767f} }; \n" \
-"__constant Chromaticities P3D65_PRI = \n" \
+"constant Chromaticities P3D65_PRI = \n" \
 "{ {0.68f, 0.32f}, {0.265f, 0.69f}, {0.15f, 0.06f}, {0.3127f, 0.329f} }; \n" \
-"__constant Chromaticities P3DCI_PRI = \n" \
+"constant Chromaticities P3DCI_PRI = \n" \
 "{ {0.68f, 0.32f}, {0.265f, 0.69f}, {0.15f, 0.06f}, {0.314f, 0.351f} }; \n" \
-"__constant Chromaticities ARRI_ALEXA_WG_PRI = \n" \
+"constant Chromaticities ARRI_ALEXA_WG_PRI = \n" \
 "{ {0.684f, 0.313f}, {0.221f, 0.848f}, {0.0861f, -0.102f}, {0.3127f, 0.329f} }; \n" \
-"__constant Chromaticities REC2020_PRI = \n" \
+"constant Chromaticities REC2020_PRI = \n" \
 "{ {0.708f, 0.292f}, {0.17f, 0.797f}, {0.131f, 0.046f}, {0.3127f, 0.329f} }; \n" \
-"__constant Chromaticities RIMMROMM_PRI = \n" \
+"constant Chromaticities RIMMROMM_PRI = \n" \
 "{ {0.7347f, 0.2653f}, {0.1596f, 0.8404f}, {0.0366f, 0.0001f}, {0.3457f, 0.3585f} }; \n" \
-"__constant mat3 CONE_RESP_MATRADFORD = \n" \
+"constant mat3 CONE_RESP_MATRADFORD = \n" \
 "{ {0.8951f, -0.7502f, 0.0389f}, {0.2664f, 1.7135f, -0.0685f}, {-0.1614f, 0.0367f, 1.0296f} }; \n" \
-"__constant mat3 CONE_RESP_MAT_CAT02 = \n" \
+"constant mat3 CONE_RESP_MAT_CAT02 = \n" \
 "{ {0.7328f, -0.7036f, 0.003f}, {0.4296f, 1.6975f, 0.0136f}, {-0.1624f, 0.0061f, 0.9834f} }; \n" \
-"__constant mat3 AP0_2_XYZ_MAT =  \n" \
+"constant mat3 AP0_2_XYZ_MAT =  \n" \
 "{ {0.9525523959f, 0.3439664498f, 0.0f}, {0.0f, 0.7281660966f, 0.0f}, {0.0000936786f, -0.0721325464f, 1.0088251844f} }; \n" \
-"__constant mat3 XYZ_2_AP0_MAT =  \n" \
+"constant mat3 XYZ_2_AP0_MAT =  \n" \
 "{ {1.0498110175f, -0.4959030231f, 0.0f}, {0.0f, 1.3733130458f, 0.0f}, {-0.0000974845f, 0.0982400361f, 0.9912520182f} }; \n" \
-"__constant mat3 AP1_2_XYZ_MAT =  \n" \
+"constant mat3 AP1_2_XYZ_MAT =  \n" \
 "{ {0.6624541811f, 0.2722287168f, -0.0055746495f}, {0.1340042065f, 0.6740817658f, 0.0040607335f}, {0.156187687f, 0.0536895174f, 1.0103391003f} }; \n" \
-"__constant mat3 XYZ_2_AP1_MAT =  \n" \
+"constant mat3 XYZ_2_AP1_MAT =  \n" \
 "{ {1.6410233797f, -0.6636628587f, 0.0117218943f}, {-0.3248032942f, 1.6153315917f, -0.008284442f}, {-0.2364246952f, 0.0167563477f, 0.9883948585f} }; \n" \
-"__constant mat3 AP0_2_AP1_MAT =  \n" \
+"constant mat3 AP0_2_AP1_MAT =  \n" \
 "{ {1.4514393161f, -0.0765537734f, 0.0083161484f}, {-0.2365107469f, 1.1762296998f, -0.0060324498f}, {-0.2149285693f, -0.0996759264f, 0.9977163014f} }; \n" \
-"__constant mat3 AP1_2_AP0_MAT =  \n" \
+"constant mat3 AP1_2_AP0_MAT =  \n" \
 "{ {0.6954522414f, 0.0447945634f, -0.0055258826f}, {0.1406786965f, 0.8596711185f, 0.0040252103f}, {0.1638690622f, 0.0955343182f, 1.0015006723f} }; \n" \
-"__constant mat3 D60_2_D65_CAT =  \n" \
+"constant mat3 D60_2_D65_CAT =  \n" \
 "{ {0.987224f, -0.00759836f, 0.00307257f}, {-0.00611327f, 1.00186f, -0.00509595f}, {0.0159533f, 0.00533002f, 1.08168f} }; \n" \
-"__constant mat3 LMS_2_AP0_MAT =  \n" \
+"constant mat3 LMS_2_AP0_MAT =  \n" \
 "{ { 2.2034860017f, -0.5267000086f, -0.0465914122f}, {-1.4028871323f,  1.5838401289f, -0.0457828327f}, { 0.1994183978f, -0.0571107433f, 1.0924829098f} }; \n" \
-"__constant mat3 ICtCp_2_LMSp_MAT =  \n" \
+"constant mat3 ICtCp_2_LMSp_MAT =  \n" \
 "{ { 1.0f, 1.0f, 1.0f}, { 0.0086064753f, -0.0086064753f, 0.5600463058f}, { 0.1110335306f, -0.1110335306f, -0.3206319566f} }; \n" \
-"__constant mat3 AP0_2_LMS_MAT =  \n" \
+"constant mat3 AP0_2_LMS_MAT =  \n" \
 "{ { 0.5729360781f, 0.1916984459f, 0.0324676922f}, { 0.5052187675f, 0.8013733145f, 0.0551294631f}, {-0.0781710859f, 0.0069006377f, 0.9123015294f} }; \n" \
-"__constant mat3 LMSp_2_ICtCp_MAT =  \n" \
+"constant mat3 LMSp_2_ICtCp_MAT =  \n" \
 "{ { 0.5f, 1.6137000085f, 4.378062447f}, { 0.5f, -3.3233961429f, -4.2455397991f}, { 0.0f, 1.7096961344f, -0.1325226479f} }; \n" \
-"__constant mat3 SG3_2_AP0_MAT =  \n" \
+"constant mat3 SG3_2_AP0_MAT =  \n" \
 "{ { 0.7529825954f, 0.0217076974f, -0.0094160528f}, { 0.1433702162f, 1.0153188355f, 0.0033704179f}, { 0.1036471884f, -0.0370265329f, 1.0060456349f} }; \n" \
-"__constant mat3 AP0_2_SG3_MAT =  \n" \
+"constant mat3 AP0_2_SG3_MAT =  \n" \
 "{ { 1.3316572111f, -0.0280131244f, 0.0125574528f}, {-0.1875611006f, 0.9887375645f, -0.0050679052f}, {-0.1440961106f, 0.0392755599f, 0.9925104526f} }; \n" \
-"__constant mat3 SG3C_2_AP0_MAT =  \n" \
+"constant mat3 SG3C_2_AP0_MAT =  \n" \
 "{ { 0.6387886672f, -0.0039159061f, -0.0299072021f}, { 0.2723514337f, 1.0880732308f, -0.0264325799f}, { 0.0888598992f, -0.0841573249f, 1.056339782f} }; \n" \
-"__constant mat3 AP0_2_SG3C_MAT =  \n" \
+"constant mat3 AP0_2_SG3C_MAT =  \n" \
 "{ { 1.5554591070f,  0.0090216145f, 0.0442640666f}, {-0.3932807985f, 0.9185569566f, 0.0118502607f}, {-0.1621783087f, 0.0724214290f, 0.9438856727f} }; \n" \
-"__constant mat3 AWG_2_AP0_MAT =  \n" \
+"constant mat3 AWG_2_AP0_MAT =  \n" \
 "{ { 0.6802059161f, 0.0854150695f, 0.0020562648f}, { 0.2361367500f, 1.0174707720f, -0.0625622837f}, { 0.0836574074f, -0.1028858550f, 1.0605062481f} }; \n" \
-"__constant mat3 AP0_2_AWG_MAT =  \n" \
+"constant mat3 AP0_2_AWG_MAT =  \n" \
 "{ { 1.5159863829f, -0.1283275799f, -0.0105107561f}, {-0.3613418588f, 1.0193145873f, 0.0608329325f}, {-0.1546444592f, 0.1090123949f, 0.9496764954f} }; \n" \
-"__constant mat3 RWG_2_AP0_MAT =  \n" \
+"constant mat3 RWG_2_AP0_MAT =  \n" \
 "{ { 0.7850585442f, 0.0231738066f, -0.0737605663f}, { 0.0838583156f, 1.0878975877f, -0.3145898729f}, { 0.1310821505f, -0.1110709153f, 1.3883506702f} }; \n" \
-"__constant mat3 AP0_2_RWG_MAT =  \n" \
+"constant mat3 AP0_2_RWG_MAT =  \n" \
 "{ { 1.2655392805f, -0.0205691227f, 0.0625750095f}, {-0.1352322515f,  0.9431709627f,  0.2065308369f}, {-0.1303056816f, 0.0773976700f, 0.7308939479f} }; \n" \
-"__constant float3 AP1_RGB2Y = {0.2722287168f, 0.6740817658f, 0.0536895174f}; \n" \
-"__constant float3 AP1_RGB2Y_B = {0.2722287168f, 0.6740817658f, 0.0536895174f}; \n" \
+"constant float3 AP1_RGB2Y = {0.2722287168f, 0.6740817658f, 0.0536895174f}; \n" \
+"constant float3 AP1_RGB2Y_B = {0.2722287168f, 0.6740817658f, 0.0536895174f}; \n" \
 "inline Chromaticities make_chromaticities( float2 A, float2 B, float2 C, float2 D) { \n" \
 "Chromaticities E; \n" \
 "E.red = A; E.green = B; E.blue = C; E.white = D; \n" \
