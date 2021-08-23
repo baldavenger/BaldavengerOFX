@@ -27,7 +27,6 @@ using std::string;
 #define kPluginName "ChannelBox"
 #define kPluginGrouping "BaldavengerOFX"
 #define kPluginDescription \
-"------------------------------------------------------------------------------------------------------------------ \n" \
 "Channel Limit: Limit specific colour channels so that they never exceed the value of one or both of the other two channels.\n" \
 "Channel Swap: Rebuild channels using information from the other two. \n" \
 "Combine with the built-in Luma Mask to limit the effect to a specific range."
@@ -156,8 +155,6 @@ public:
 explicit ChannelBox(OFX::ImageEffect& p_Instance);
 
 virtual void processImagesCUDA();
-virtual void processImagesOpenCL();
-//virtual void processImagesMetal();
 virtual void multiThreadProcessImages(OfxRectI p_ProcWindow);
 
 void setSrcImg(OFX::Image* p_SrcImg);
@@ -194,44 +191,6 @@ float* output = static_cast<float*>(_dstImg->getPixelData());
 RunCudaKernel(input, output, width, height, _choice, _channelBox, _channelSwap, _lumaMath, _switch, _mask);
 }
 
-extern void RunOpenCLKernel(void* p_CmdQ, const float* p_Input, float* p_Output, int p_Width, int p_Height, int p_Choice, int p_ChannelBox, float* p_ChannelSwap, int p_LumaMath, int* p_Switch, float* p_Mask);
-
-void ChannelBox::processImagesOpenCL()
-{
-const OfxRectI& bounds = _srcImg->getBounds();
-const int width = bounds.x2 - bounds.x1;
-const int height = bounds.y2 - bounds.y1;
-
-_mask[1] = _mask[1] * kResolutionScale;
-
-float* input = static_cast<float*>(_srcImg->getPixelData());
-float* output = static_cast<float*>(_dstImg->getPixelData());
-
-RunOpenCLKernel(_pOpenCLCmdQ, input, output, width, height, _choice, _channelBox, _channelSwap, _lumaMath, _switch, _mask);
-}
-/*
-#ifdef __APPLE__
-extern void RunMetalKernel(void* p_CmdQ, const float* p_Input, float* p_Output, int p_Width, int p_Height, 
-int p_Choice, int p_ChannelBox, float* p_ChannelSwap, int p_LumaMath, int* p_Switch, float* p_Mask);
-
-#endif
-
-void ChannelBox::processImagesMetal()
-{
-#ifdef __APPLE__
-const OfxRectI& bounds = _srcImg->getBounds();
-const int width = bounds.x2 - bounds.x1;
-const int height = bounds.y2 - bounds.y1;
-
-_mask[1] = _mask[1] * kResolutionScale;
-
-float* input = static_cast<float*>(_srcImg->getPixelData());
-float* output = static_cast<float*>(_dstImg->getPixelData());
-
-RunMetalKernel(_pMetalCmdQ, input, output, width, height, _choice, _channelBox, _channelSwap, _lumaMath, _switch, _mask);
-#endif
-}
-*/
 void ChannelBox::multiThreadProcessImages(OfxRectI p_ProcWindow)
 {
 for (int y = p_ProcWindow.y1; y < p_ProcWindow.y2; ++y) {
@@ -583,11 +542,7 @@ p_Desc.setRenderTwiceAlways(false);
 p_Desc.setSupportsMultipleClipPARs(kSupportsMultipleClipPARs);
 
 // Setup GPU render capability flags
-p_Desc.setSupportsOpenCLRender(true);
 p_Desc.setSupportsCudaRender(true);
-//#ifdef __APPLE__
-//p_Desc.setSupportsMetalRender(true);
-//#endif
 }
 
 static DoubleParamDescriptor* defineScaleParam(OFX::ImageEffectDescriptor& p_Desc, const std::string& p_Name, 

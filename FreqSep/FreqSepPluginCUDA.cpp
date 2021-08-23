@@ -26,7 +26,6 @@ using std::string;
 #define kPluginName "Frequency Separation"
 #define kPluginGrouping "BaldavengerOFX"
 #define kPluginDescription \
-"------------------------------------------------------------------------------------------------------------------ \n" \
 "Frequency Separation"
 
 #define kPluginIdentifier "BaldavengerOFX.FreqSep"
@@ -87,8 +86,6 @@ public:
 explicit FreqSep(OFX::ImageEffect& p_Instance);
 
 virtual void processImagesCUDA();
-virtual void processImagesOpenCL();
-//virtual void processImagesMetal();
 virtual void multiThreadProcessImages(OfxRectI p_ProcWindow);
 
 void setSrcImg(OFX::Image* p_SrcImg);
@@ -127,46 +124,6 @@ float* output = static_cast<float*>(_dstImg->getPixelData());
 RunCudaKernel(input, output, width, height, _space, _display, _blur, _sharpen, _cont, _switch);
 }
 
-extern void RunOpenCLKernel(void* p_CmdQ, float* p_Input, float* p_Output, int p_Width, int p_Height, int p_Space, int p_Display, float* p_Blur, float* p_Sharpen, float* p_Cont, int* p_Switch);
-
-void FreqSep::processImagesOpenCL()
-{
-const OfxRectI& bounds = _srcImg->getBounds();
-const int width = bounds.x2 - bounds.x1;
-const int height = bounds.y2 - bounds.y1;
-
-for(int c = 0; c < 6; c++){
-_blur[c] = _blur[c] * kResolutionScale; 
-}
-
-float* input = static_cast<float*>(_srcImg->getPixelData());
-float* output = static_cast<float*>(_dstImg->getPixelData());
-
-RunOpenCLKernel(_pOpenCLCmdQ, input, output, width, height, _space, _display, _blur, _sharpen, _cont, _switch);
-}
-/*
-#ifdef __APPLE__
-extern void RunMetalKernel(void* p_CmdQ, float* p_Input, float* p_Output, int p_Width, int p_Height, int p_Space, int p_Display, float* p_Blur, float* p_Sharpen, float* p_Cont, int* p_Switch);
-#endif
-
-void FreqSep::processImagesMetal()
-{
-#ifdef __APPLE__
-const OfxRectI& bounds = _srcImg->getBounds();
-const int width = bounds.x2 - bounds.x1;
-const int height = bounds.y2 - bounds.y1;
-
-for(int c = 0; c < 6; c++){
-_blur[c] = _blur[c] * kResolutionScale; 
-}
-
-float* input = static_cast<float*>(_srcImg->getPixelData());
-float* output = static_cast<float*>(_dstImg->getPixelData());
-
-RunMetalKernel(_pMetalCmdQ, input, output, width, height, _space, _display, _blur, _sharpen, _cont, _switch);
-#endif
-}
-*/
 void FreqSep::multiThreadProcessImages(OfxRectI p_ProcWindow)
 {
 for (int y = p_ProcWindow.y1; y < p_ProcWindow.y2; ++y)
@@ -637,11 +594,7 @@ p_Desc.setTemporalClipAccess(false);
 p_Desc.setRenderTwiceAlways(false);
 p_Desc.setSupportsMultipleClipPARs(kSupportsMultipleClipPARs);
 
-p_Desc.setSupportsOpenCLRender(true);
 p_Desc.setSupportsCudaRender(true);
-//#ifdef __APPLE__
-//p_Desc.setSupportsMetalRender(true);
-//#endif
 }
 
 void FreqSepPluginFactory::describeInContext(OFX::ImageEffectDescriptor& p_Desc, OFX::ContextEnum /*p_Context*/)

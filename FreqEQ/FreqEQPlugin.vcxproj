@@ -8,7 +8,7 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{88405F0E-918E-4523-8627-1380BC83A605}</ProjectGuid>
-    <RootNamespace>FreqSepPlugin</RootNamespace>
+    <RootNamespace>FreqEQPlugin</RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -32,7 +32,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(Platform)\$(Configuration)\</IntDir>
-    <LinkIncremental>false</LinkIncremental>
+    <LinkIncremental>true</LinkIncremental>
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(CUDA_INC_PATH);$(AMDAPPSDKROOT)/include;../openfx/include;../openfx/Support/include;../SupportExt</IncludePath>
     <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(CUDA_LIB_PATH);$(AMDAPPSDKROOT)/lib/x86_64</LibraryPath>
   </PropertyGroup>
@@ -58,10 +58,10 @@
     </Link>
     <PostBuildEvent>
       <Message>Creating bundle...</Message>
-      <Command>if not exist "$(OutDir)FreqSep.Win10.DR17.CUDA.ofx.bundle\Contents\Resources" mkdir "$(OutDir)FreqSep.Win10.DR17.CUDA.ofx.bundle\Contents\Resources"
-      copy "(OutDir)..\..\BaldavengerOFX.FreqSep.png" "$(OutDir)FreqSep.Win10.DR17.CUDA.ofx.bundle\Contents\Resources"
-if not exist "$(OutDir)FreqSep.Win10.DR17.CUDA.ofx.bundle\Contents\Win64" mkdir "$(OutDir)FreqSep.Win10.DR17.CUDA.ofx.bundle\Contents\Win64"
-copy /Y "$(TargetPath)" /B "$(OutDir)FreqSep.Win10.DR17.CUDA.ofx.bundle\Contents\Win64\FreqSep.ofx" /B
+      <Command>if not exist "$(OutDir)FreqEQ.Win10.DR17.CUDA.ofx.bundle\Contents\Resources" mkdir "$(OutDir)FreqEQ.Win10.DR17.CUDA.ofx.bundle\Contents\Resources"
+      copy "(OutDir)..\..\BaldavengerOFX.FreqEQ.png" "$(OutDir)FreqEQ.Win10.DR17.CUDA.ofx.bundle\Contents\Resources"
+if not exist "$(OutDir)FreqEQ.Win10.DR17.CUDA.ofx.bundle\Contents\Win64" mkdir "$(OutDir)FreqEQ.Win10.DR17.CUDA.ofx.bundle\Contents\Win64"
+copy /Y "$(TargetPath)" /B "$(OutDir)FreqEQ.Win10.DR17.CUDA.ofx.bundle\Contents\Win64\FreqEQ.ofx" /B
 </Command>
     </PostBuildEvent>
     <CudaCompile>
@@ -77,10 +77,10 @@ copy /Y "$(TargetPath)" /B "$(OutDir)FreqSep.Win10.DR17.CUDA.ofx.bundle\Contents
     <ClCompile Include="..\openfx\Support\Library\ofxsParams.cpp" />
     <ClCompile Include="..\openfx\Support\Library\ofxsProperty.cpp" />
     <ClCompile Include="..\openfx\Support\Library\ofxsPropertyValidation.cpp" />
-    <ClCompile Include="FreqSepPluginCUDA.cpp" />
+    <ClCompile Include="FilmGradePluginCUDA.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <CudaCompile Include="FreqSepCudaKernel.cu" />
+    <CudaCompile Include="FreqEQCudaKernel.cu" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

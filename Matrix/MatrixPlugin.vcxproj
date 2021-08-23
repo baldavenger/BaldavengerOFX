@@ -20,7 +20,7 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
-    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 8.0.props" />
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 11.0.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -58,10 +58,10 @@
     </Link>
     <PostBuildEvent>
       <Message>Creating bundle...</Message>
-      <Command>if not exist "$(OutDir)Matrix.ofx.bundle\Contents\Resources" mkdir "$(OutDir)Matrix.ofx.bundle\Contents\Resources"
-		copy "(OutDir)..\..\BaldavengerOFX.Matrix.png" "$(OutDir)Matrix.ofx.bundle\Contents\Resources"
-		if not exist "$(OutDir)Matrix.ofx.bundle\Contents\Win64" mkdir "$(OutDir)Matrix.ofx.bundle\Contents\Win64"
-		copy /Y "$(TargetPath)" /B "$(OutDir)Matrix.ofx.bundle\Contents\Win64\Matrix.ofx" /B
+      <Command>if not exist "$(OutDir)Matrix.Win10.DR17.CUDA.ofx.bundle\Contents\Resources" mkdir "$(OutDir)Matrix.Win10.DR17.CUDA.ofx.bundle\Contents\Resources"
+		copy "(OutDir)..\..\BaldavengerOFX.Matrix.png" "$(OutDir)Matrix.Win10.DR17.CUDA.ofx.bundle\Contents\Resources"
+		if not exist "$(OutDir)Matrix.Win10.DR17.CUDA.ofx.bundle\Contents\Win64" mkdir "$(OutDir)Matrix.Win10.DR17.CUDA.ofx.bundle\Contents\Win64"
+		copy /Y "$(TargetPath)" /B "$(OutDir)Matrix.Win10.DR17.CUDA.ofx.bundle\Contents\Win64\Matrix.ofx" /B
 	  </Command>
     </PostBuildEvent>
     <CudaCompile>
@@ -78,13 +78,12 @@
     <ClCompile Include="..\openfx\Support\Library\ofxsProperty.cpp" />
     <ClCompile Include="..\openfx\Support\Library\ofxsPropertyValidation.cpp" />
     <ClCompile Include="MatrixPluginCUDA.cpp" />
-    <ClCompile Include="MatrixOpenCLKernel.cpp" />
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="MatrixCudaKernel.cu" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 8.0.targets" />
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 11.0.targets" />
   </ImportGroup>
 </Project>

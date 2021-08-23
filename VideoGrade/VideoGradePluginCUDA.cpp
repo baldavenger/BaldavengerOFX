@@ -26,7 +26,6 @@ using std::string;
 #define kPluginName "VideoGrade"
 #define kPluginGrouping "BaldavengerOFX"
 #define kPluginDescription \
-"------------------------------------------------------------------------------------------------------------------ \n" \
 "VideoGrade: Video style grading, with Lift, Gamma, Gain, and Offset controls, adjustable \n" \
 "anchors for Lift and Gain, adjustable region for Gamma, and Upper Gamma Bias option."
 
@@ -93,8 +92,6 @@ public:
 explicit VideoGrade(OFX::ImageEffect& p_Instance);
 
 virtual void processImagesCUDA();
-virtual void processImagesOpenCL();
-//virtual void processImagesMetal();
 virtual void multiThreadProcessImages(OfxRectI p_ProcWindow);
 
 void setSrcImg(OFX::Image* p_SrcImg);
@@ -128,40 +125,6 @@ float* output = static_cast<float*>(_dstImg->getPixelData());
 RunCudaKernel(input, output, width, height, _lumaMath, _switch, _display, _scales);
 }
 
-extern void RunOpenCLKernel(void* p_CmdQ, const float* p_Input, float* p_Output, 
-int p_Width, int p_Height, int p_LumaMath, int* p_Switch, int p_Display, float* p_Scales);
-
-void VideoGrade::processImagesOpenCL()
-{
-const OfxRectI& bounds = _srcImg->getBounds();
-const int width = bounds.x2 - bounds.x1;
-const int height = bounds.y2 - bounds.y1;
-
-float* input = static_cast<float*>(_srcImg->getPixelData());
-float* output = static_cast<float*>(_dstImg->getPixelData());
-
-RunOpenCLKernel(_pOpenCLCmdQ, input, output, width, height, _lumaMath, _switch, _display, _scales);
-}
-/*
-#ifdef __APPLE__
-extern void RunMetalKernel(void* p_CmdQ, const float* p_Input, float* p_Output, int p_Width, 
-int p_Height, int p_LumaMath, int* p_Switch, int p_Display, float* p_Scales);
-#endif
-
-void VideoGrade::processImagesMetal()
-{
-#ifdef __APPLE__
-const OfxRectI& bounds = _srcImg->getBounds();
-const int width = bounds.x2 - bounds.x1;
-const int height = bounds.y2 - bounds.y1;
-
-float* input = static_cast<float*>(_srcImg->getPixelData());
-float* output = static_cast<float*>(_dstImg->getPixelData());
-
-RunMetalKernel(_pMetalCmdQ, input, output, width, height, _lumaMath, _switch, _display, _scales);
-#endif
-}
-*/
 void VideoGrade::multiThreadProcessImages(OfxRectI p_ProcWindow)
 {
 for (int y = p_ProcWindow.y1; y < p_ProcWindow.y2; ++y) {
@@ -453,11 +416,7 @@ p_Desc.setTemporalClipAccess(false);
 p_Desc.setRenderTwiceAlways(false);
 p_Desc.setSupportsMultipleClipPARs(kSupportsMultipleClipPARs);
 
-p_Desc.setSupportsOpenCLRender(true);
 p_Desc.setSupportsCudaRender(true);
-//#ifdef __APPLE__
-//p_Desc.setSupportsMetalRender(true);
-//#endif
 }
 
 static DoubleParamDescriptor* defineScaleParam(OFX::ImageEffectDescriptor& p_Desc, const std::string& p_Name, 

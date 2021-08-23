@@ -22,7 +22,6 @@ using std::string;
 #define kPluginName "HueConverge"
 #define kPluginGrouping "BaldavengerOFX"
 #define kPluginDescription \
-"------------------------------------------------------------------------------------------------------------------ \n" \
 "HueConverge: Allows for the isolation and rotation + convergence of specific ranges of hue. Also \n" \
 "included are log controls, saturation soft-clip, and individual alphas."
 
@@ -205,9 +204,7 @@ class HueConverge : public OFX::ImageProcessor
 public:
 explicit HueConverge(OFX::ImageEffect& p_Instance);
 
-//virtual void processImagesCUDA();
-//virtual void processImagesOpenCL();
-//virtual void processImagesMetal();
+virtual void processImagesMetal();
 virtual void multiThreadProcessImages(OfxRectI p_ProcWindow);
 
 void setSrcImg(OFX::Image* p_SrcImg);
@@ -234,45 +231,6 @@ HueConverge::HueConverge(OFX::ImageEffect& p_Instance)
 {
 }
 
-/*
-extern void RunCudaKernel(float* p_Input, float* p_Output, int p_Width, int p_Height, int* p_Switch, float* p_Log, float* p_Sat, 
-float *p_Hue1, float *p_Hue2, float *p_Hue3, int p_Display, float* p_Blur, int p_Math, int p_HueMedian, int p_Isolate);
-
-void HueConverge::processImagesCUDA()
-{
-const OfxRectI& bounds = _srcImg->getBounds();
-const int width = bounds.x2 - bounds.x1;
-const int height = bounds.y2 - bounds.y1;
-
-for(int c = 0; c < 4; c++){
-_blur[c] = _blur[c] * kResolutionScale; 
-}
-
-float* input = static_cast<float*>(_srcImg->getPixelData());
-float* output = static_cast<float*>(_dstImg->getPixelData());
-
-RunCudaKernel(input, output, width, height, _switch, _log, _sat, _hue1, _hue2, _hue3, _display, _blur, _math, _hueMedian, _isolate);
-}
-
-extern void RunOpenCLKernel(void* p_CmdQ, float* p_Input, float* p_Output, int p_Width, int p_Height, int* p_Switch, float* p_Log, float* p_Sat, 
-float *p_Hue1, float *p_Hue2, float *p_Hue3, int p_Display, float* p_Blur, int p_Math, int p_HueMedian, int p_Isolate);
-
-void HueConverge::processImagesOpenCL()
-{
-const OfxRectI& bounds = _srcImg->getBounds();
-const int width = bounds.x2 - bounds.x1;
-const int height = bounds.y2 - bounds.y1;
-
-for(int c = 0; c < 4; c++){
-_blur[c] = _blur[c] * kResolutionScale; 
-}
-
-float* input = static_cast<float*>(_srcImg->getPixelData());
-float* output = static_cast<float*>(_dstImg->getPixelData());
-
-RunOpenCLKernel(_pOpenCLCmdQ, input, output, width, height, _switch, _log, _sat, _hue1, _hue2, _hue3, _display, _blur, _math, _hueMedian, _isolate);
-}
-
 #ifdef __APPLE__
 extern void RunMetalKernel(void* p_CmdQ, float* p_Input, float* p_Output, int p_Width, int p_Height, int* p_Switch, float* p_Log, float* p_Sat, 
 float *p_Hue1, float *p_Hue2, float *p_Hue3, int p_Display, float* p_Blur, int p_Math, int p_HueMedian, int p_Isolate);
@@ -295,7 +253,6 @@ float* output = static_cast<float*>(_dstImg->getPixelData());
 RunMetalKernel(_pMetalCmdQ, input, output, width, height, _switch, _log, _sat, _hue1, _hue2, _hue3, _display, _blur, _math, _hueMedian, _isolate);
 #endif
 }
-*/
 
 void HueConverge::multiThreadProcessImages(OfxRectI p_ProcWindow)
 {
@@ -800,7 +757,7 @@ p_HueConverge.setDstImg(dst.get());
 p_HueConverge.setSrcImg(src.get());
 
 // Setup GPU Render arguments
-//p_HueConverge.setGPURenderArgs(p_Args);
+p_HueConverge.setGPURenderArgs(p_Args);
 
 // Set the render window
 p_HueConverge.setRenderWindow(p_Args.renderWindow);
@@ -844,11 +801,9 @@ p_Desc.setTemporalClipAccess(false);
 p_Desc.setRenderTwiceAlways(false);
 p_Desc.setSupportsMultipleClipPARs(kSupportsMultipleClipPARs);
 
-//p_Desc.setSupportsOpenCLRender(true);
-//p_Desc.setSupportsCudaRender(true);
-//#ifdef __APPLE__
-//p_Desc.setSupportsMetalRender(true);
-//#endif
+#ifdef __APPLE__
+p_Desc.setSupportsMetalRender(true);
+#endif
 
 }
 

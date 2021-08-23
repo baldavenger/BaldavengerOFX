@@ -29,14 +29,10 @@ using namespace std;
 #define kPluginGrouping "BaldavengerOFX"
 #define kPluginDescription \
 "Useful information : The following references can be applied to the expressions \n" \
-"------------------------------------------------------------------------------------------------------------------ \n" \
 "Red, Green, Blue channels: r, g, b // Coordinates: x, y // Operators: +, -, *, /, ^, =\n" \
-"------------------------------------------------------------------------------------------------------------------ \n" \
 "Functions: min, max, avg, sum, abs, fmod, ceil, floor, round, pow, exp, log, root\n" \
 "sqrt, lerp, sin, cos, tan, asin, acos, atan, hypot // Conditionals: ==, !=, >=, && \n" \
-"------------------------------------------------------------------------------------------------------------------ \n" \
 "if(a == b, c, d) : If a equals b then c, else d // a == b ? c : d  If a equals b then c, else d\n" \
-"------------------------------------------------------------------------------------------------------------------ \n" \
 "clamp(a,b,c) : a clamped to between b and c // pi : 3.1415926536 // width, height"
 
 #define kPluginIdentifier "BaldavengerOFX.ResolveMathxtra"

@@ -26,7 +26,6 @@ using std::string;
 #define kPluginName "Qualifier"
 #define kPluginGrouping "BaldavengerOFX"
 #define kPluginDescription \
-"------------------------------------------------------------------------------------------------------------------ \n" \
 "Qualifier: Combined Luma, Saturation, and Hue based keyer. Use eyedropper to isolate specific \n" \
 "range and finetune with the controls."
 
@@ -158,8 +157,6 @@ class Qualifier : public OFX::ImageProcessor
 public:
 explicit Qualifier(OFX::ImageEffect& p_Instance);
 
-//virtual void processImagesCUDA();
-virtual void processImagesOpenCL();
 virtual void processImagesMetal();
 virtual void multiThreadProcessImages(OfxRectI p_ProcWindow);
 
@@ -189,44 +186,6 @@ float _hsv[3];
 Qualifier::Qualifier(OFX::ImageEffect& p_Instance)
 : OFX::ImageProcessor(p_Instance)
 {
-}
-/*
-extern void RunCudaKernel(float* p_Input, float* p_Output, int p_Width, int p_Height, 
-int* p_Switch, float* p_AlphaH, float* p_AlphaS, float* p_AlphaL, float p_Mix, int p_Math, int p_OutputAlpha, 
-float p_Black, float p_White, float p_Blur, float p_Garbage, float p_Core, float p_Erode, float p_Dilate, float* p_HSV);
-
-void Qualifier::processImagesCUDA()
-{
-const OfxRectI& bounds = _srcImg->getBounds();
-const int width = bounds.x2 - bounds.x1;
-const int height = bounds.y2 - bounds.y1;
-
-_blur = _blur * kResolutionScale;
-
-float* input = static_cast<float*>(_srcImg->getPixelData());
-float* output = static_cast<float*>(_dstImg->getPixelData());
-
-RunCudaKernel(input, output, width, height, _switch, _alphaH, _alphaS, _alphaL, _mix, _math,
-_outputAlpha, _black, _white, _blur, _garbage, _core, _erode, _dilate, _hsv);
-}
-*/
-extern void RunOpenCLKernel(void* p_CmdQ, float* p_Input, float* p_Output, int p_Width, int p_Height, 
-int* p_Switch, float* p_AlphaH, float* p_AlphaS, float* p_AlphaL, float p_Mix, int p_Math, int p_OutputAlpha, 
-float p_Black, float p_White, float p_Blur, float p_Garbage, float p_Core, float p_Erode, float p_Dilate, float* p_HSV);
-
-void Qualifier::processImagesOpenCL()
-{
-const OfxRectI& bounds = _srcImg->getBounds();
-const int width = bounds.x2 - bounds.x1;
-const int height = bounds.y2 - bounds.y1;
-
-_blur *= kResolutionScale;
-
-float* input = static_cast<float*>(_srcImg->getPixelData());
-float* output = static_cast<float*>(_dstImg->getPixelData());
-
-RunOpenCLKernel(_pOpenCLCmdQ, input, output, width, height, _switch, _alphaH, _alphaS, _alphaL, _mix, _math,
-_outputAlpha, _black, _white, _blur, _garbage, _core, _erode, _dilate, _hsv);
 }
 
 #ifdef __APPLE__
@@ -770,8 +729,6 @@ p_Desc.setTemporalClipAccess(false);
 p_Desc.setRenderTwiceAlways(false);
 p_Desc.setSupportsMultipleClipPARs(kSupportsMultipleClipPARs);
 
-p_Desc.setSupportsOpenCLRender(true);
-//p_Desc.setSupportsCudaRender(true);
 #ifdef __APPLE__
 p_Desc.setSupportsMetalRender(true);
 #endif

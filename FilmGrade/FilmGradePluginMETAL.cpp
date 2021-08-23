@@ -22,7 +22,6 @@ using std::string;
 #define kPluginName "FilmGrade"
 #define kPluginGrouping "BaldavengerOFX"
 #define kPluginDescription \
-"------------------------------------------------------------------------------------------------------------------ \n" \
 "FilmGrade: Film-style (log scan) grading. Order of operations are Exposure, Midtone, Shadows, \n" \
 "Highlights, Contrast, Saturation."
 
@@ -65,8 +64,6 @@ class FilmGrade : public OFX::ImageProcessor
 public:
 explicit FilmGrade(OFX::ImageEffect& p_Instance);
 
-//virtual void processImagesCUDA();
-virtual void processImagesOpenCL();
 virtual void processImagesMetal();
 virtual void multiThreadProcessImages(OfxRectI p_ProcWindow);
 
@@ -91,36 +88,6 @@ int _display;
 FilmGrade::FilmGrade(OFX::ImageEffect& p_Instance)
 : OFX::ImageProcessor(p_Instance)
 {
-}
-/*
-extern void RunCudaKernel(float* p_Input, float* p_Output, int p_Width, int p_Height, float* p_Exp, 
-float* p_Cont, float* p_Sat, float* p_Shad, float* p_Mid, float* p_High, float* p_Pivot, int p_Display);
-
-void FilmGrade::processImagesCUDA()
-{
-const OfxRectI& bounds = _srcImg->getBounds();
-const int width = bounds.x2 - bounds.x1;
-const int height = bounds.y2 - bounds.y1;
-
-float* input = static_cast<float*>(_srcImg->getPixelData());
-float* output = static_cast<float*>(_dstImg->getPixelData());
-
-RunCudaKernel(input, output, width, height, _exp, _cont, _sat, _shad, _mid, _high, _pivot, _display);
-}
-*/
-extern void RunOpenCLKernel(void* p_CmdQ, float* p_Input, float* p_Output, int p_Width, int p_Height, float* p_Exp, 
-float* p_Cont, float* p_Sat, float* p_Shad, float* p_Mid, float* p_High, float* p_Pivot, int p_Display);
-
-void FilmGrade::processImagesOpenCL()
-{
-const OfxRectI& bounds = _srcImg->getBounds();
-const int width = bounds.x2 - bounds.x1;
-const int height = bounds.y2 - bounds.y1;
-
-float* input = static_cast<float*>(_srcImg->getPixelData());
-float* output = static_cast<float*>(_dstImg->getPixelData());
-
-RunOpenCLKernel(_pOpenCLCmdQ, input, output, width, height, _exp, _cont, _sat, _shad, _mid, _high, _pivot, _display);
 }
 
 #ifdef __APPLE__
@@ -2155,8 +2122,6 @@ p_Desc.setTemporalClipAccess(false);
 p_Desc.setRenderTwiceAlways(false);
 p_Desc.setSupportsMultipleClipPARs(kSupportsMultipleClipPARs);
 
-p_Desc.setSupportsOpenCLRender(true);
-//p_Desc.setSupportsCudaRender(true);
 #ifdef __APPLE__
 p_Desc.setSupportsMetalRender(true);
 #endif

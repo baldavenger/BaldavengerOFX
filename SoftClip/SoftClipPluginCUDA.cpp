@@ -27,7 +27,6 @@ using std::string;
 #define kPluginName "SoftClip"
 #define kPluginGrouping "BaldavengerOFX"
 #define kPluginDescription \
-"------------------------------------------------------------------------------------------------------------------ \n" \
 "SoftClip: Highlight and Shadow roll-off control, with the option of viewing the signal between 1.0 and 2.0, or \n" \
 "0.0 and -1.0. Cineon option converts from cineon log to linear, then Rec.709 gamma at the final transform, \n" \
 "and LogC Alexa Wide Gamut converts from logC to linear, then Arri Wide Gamut to Rec.709 primaries, and finally \n" \
@@ -67,8 +66,6 @@ public:
 explicit SoftClip(OFX::ImageEffect& p_Instance);
 
 virtual void processImagesCUDA();
-virtual void processImagesOpenCL();
-//virtual void processImagesMetal();
 virtual void multiThreadProcessImages(OfxRectI p_ProcWindow);
 
 void setSrcImg(OFX::Image* p_SrcImg);
@@ -101,40 +98,6 @@ float* output = static_cast<float*>(_dstImg->getPixelData());
 RunCudaKernel(input, output, width, height, _scales, _switch, _source);
 }
 
-extern void RunOpenCLKernel(void* p_CmdQ, const float* p_Input, float* p_Output, int p_Width, 
-int p_Height, float* p_Scales, int* p_Switch, int p_Source);
-
-void SoftClip::processImagesOpenCL()
-{
-const OfxRectI& bounds = _srcImg->getBounds();
-const int width = bounds.x2 - bounds.x1;
-const int height = bounds.y2 - bounds.y1;
-
-float* input = static_cast<float*>(_srcImg->getPixelData());
-float* output = static_cast<float*>(_dstImg->getPixelData());
-
-RunOpenCLKernel(_pOpenCLCmdQ, input, output, width, height, _scales, _switch, _source);
-}
-/*
-#ifdef __APPLE__
-extern void RunMetalKernel(void* p_CmdQ, const float* p_Input, float* p_Output, int p_Width, 
-int p_Height, float* p_Scales, int* p_Switch, int p_Source);
-#endif
-
-void SoftClip::processImagesMetal()
-{
-#ifdef __APPLE__
-const OfxRectI& bounds = _srcImg->getBounds();
-const int width = bounds.x2 - bounds.x1;
-const int height = bounds.y2 - bounds.y1;
-
-float* input = static_cast<float*>(_srcImg->getPixelData());
-float* output = static_cast<float*>(_dstImg->getPixelData());
-
-RunMetalKernel(_pMetalCmdQ, input, output, width, height, _scales, _switch, _source);
-#endif
-}
-*/
 void SoftClip::multiThreadProcessImages(OfxRectI p_ProcWindow)
 {
 for (int y = p_ProcWindow.y1; y < p_ProcWindow.y2; ++y) {
@@ -917,11 +880,7 @@ p_Desc.setTemporalClipAccess(false);
 p_Desc.setRenderTwiceAlways(false);
 p_Desc.setSupportsMultipleClipPARs(kSupportsMultipleClipPARs);
 
-p_Desc.setSupportsOpenCLRender(true);
 p_Desc.setSupportsCudaRender(true);
-//#ifdef __APPLE__
-//p_Desc.setSupportsMetalRender(true);
-//#endif
 }
 
 static DoubleParamDescriptor* defineScaleParam(OFX::ImageEffectDescriptor& p_Desc, const std::string& p_Name, 

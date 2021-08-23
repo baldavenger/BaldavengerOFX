@@ -29,7 +29,6 @@ using std::string;
 #define kPluginName "ACES 1.2"
 #define kPluginGrouping "BaldavengerOFX"
 #define kPluginDescription \
-"------------------------------------------------------------------------------------------------------------------ \n" \
 "ACES 1.2"
 
 #define kPluginIdentifier "BaldavengerOFX.ACES"
@@ -647,7 +646,7 @@ public:
 explicit ACES(OFX::ImageEffect& p_Instance);
 
 //virtual void processImagesCUDA();
-//virtual void processImagesMetal();
+virtual void processImagesMetal();
 virtual void multiThreadProcessImages(OfxRectI p_ProcWindow);
 
 void setSrcImg(OFX::Image* p_SrcImg);
@@ -678,24 +677,6 @@ int _switch[3];
 
 ACES::ACES(OFX::ImageEffect& p_Instance)
 : OFX::ImageProcessor(p_Instance) {}
-/*
-extern void RunCudaKernel(const float* p_Input, float* p_Output, int p_Width, int p_Height, 
-int p_Direction, int p_CSCIN, int p_IDT, int p_LMT, int p_CSCOUT, int p_RRT, int p_InvRRT, 
-int p_ODT, int p_InvODT, float p_Exposure, float* p_LMTScale, float *p_Lum, 
-int p_DISPLAY, int p_LIMIT, int p_EOTF, int p_SURROUND, int *p_Switch);
-
-void ACES::processImagesCUDA()
-{
-const OfxRectI& bounds = _srcImg->getBounds();
-const int width = bounds.x2 - bounds.x1;
-const int height = bounds.y2 - bounds.y1;
-
-float* input = static_cast<float*>(_srcImg->getPixelData());
-float* output = static_cast<float*>(_dstImg->getPixelData());
-
-RunCudaKernel(input, output, width, height, _direction, _cscin, _idt, _lmt, _cscout, _rrt, 
-_invrrt, _odt, _invodt, _exposure, _lmtscale, _lum, _display, _limit, _eotf, _surround, _switch);
-}
 
 #ifdef __APPLE__
 extern void RunMetalKernel(void* p_CmdQ, const float* p_Input, float* p_Output, int p_Width, int p_Height, 
@@ -718,7 +699,7 @@ RunMetalKernel(_pMetalCmdQ, input, output, width, height, _direction, _cscin, _i
 _invrrt, _odt, _invodt, _exposure, _lmtscale, _lum, _display, _limit, _eotf, _surround, _switch);
 #endif
 }
-*/
+
 void ACES::multiThreadProcessImages(OfxRectI p_ProcWindow)
 {
 for (int y = p_ProcWindow.y1; y < p_ProcWindow.y2; ++y) {
@@ -2933,7 +2914,7 @@ p_ACES.setDstImg(dst.get());
 p_ACES.setSrcImg(src.get());
 
 // Setup GPU Render arguments
-//p_ACES.setGPURenderArgs(p_Args);
+p_ACES.setGPURenderArgs(p_Args);
 
 p_ACES.setRenderWindow(p_Args.renderWindow);
 
@@ -2968,11 +2949,9 @@ p_Desc.setTemporalClipAccess(false);
 p_Desc.setRenderTwiceAlways(false);
 p_Desc.setSupportsMultipleClipPARs(kSupportsMultipleClipPARs);
 
-//p_Desc.setSupportsOpenCLRender(true);
-//p_Desc.setSupportsCudaRender(true);
-//#ifdef __APPLE__
-//p_Desc.setSupportsMetalRender(true);
-//#endif
+#ifdef __APPLE__
+p_Desc.setSupportsMetalRender(true);
+#endif
 }
 
 static DoubleParamDescriptor* defineScaleParam(ImageEffectDescriptor& p_Desc, const std::string& p_Name, 

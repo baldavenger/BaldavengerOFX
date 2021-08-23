@@ -49,7 +49,6 @@ using namespace OFX;
 #define kPluginName "Scan"
 #define kPluginGrouping "BaldavengerOFX"
 #define kPluginDescription \
-"------------------------------------------------------------------------------------------------------------------ \n" \
 "White Balance and Image Analysis. Use ColorPicker or Rectangle to sample pixel values. \n" \
 "Derive Min, Max, Mean RGB and HSV values, Median RGB values, and Min, Max Luma values \n" \
 "and their pixel coordinates. Apply White Balance with ColorPicker, Mean, or Median source \n" \
@@ -344,8 +343,6 @@ public:
 explicit Scan(ImageEffect &instance);
 
 virtual void processImagesCUDA();
-virtual void processImagesOpenCL();
-//virtual void processImagesMetal();
 virtual void multiThreadProcessImages(OfxRectI p_ProcWindow);
 
 void setSrcImg(Image* p_SrcImg);
@@ -389,50 +386,6 @@ RunCudaKernel(input, output, width, height, _gain, _offset, _lift, _lumaBalance,
 _lumaLimit, _blur, _switch, _lumaMath, _lumaMaxXY, _lumaMinXY, _displayXY, _radius);
 }
 
-extern void RunOpenCLKernel(void* p_CmdQ, const float* p_Input, float* p_Output, int p_Width, int p_Height, float* p_Gain, 
-float* p_Offset, float* p_Lift, float p_LumaBalance, float p_LumaLimit, float p_Blur, int* p_Switch, int p_LumaMath, 
-int* p_LumaMaxXY, int* p_LumaMinXY, int* p_DisplayXY, int Radius);
-
-void Scan::processImagesOpenCL()
-{
-const OfxRectI& bounds = _srcImg->getBounds();
-const int width = bounds.x2 - bounds.x1;
-const int height = bounds.y2 - bounds.y1;
-
-float* input = static_cast<float*>(_srcImg->getPixelData());
-float* output = static_cast<float*>(_dstImg->getPixelData());
-
-int _radius = (int)(15.0f * kResolutionScale);
-_blur *= kResolutionScale;
-
-RunOpenCLKernel(_pOpenCLCmdQ, input, output, width, height, _gain, _offset, _lift, _lumaBalance, 
-_lumaLimit, _blur, _switch, _lumaMath, _lumaMaxXY, _lumaMinXY, _displayXY, _radius);
-}
-/*
-#ifdef __APPLE__
-extern void RunMetalKernel(void* p_CmdQ, const float* p_Input, float* p_Output, int p_Width, int p_Height, float* p_Gain, 
-float* p_Offset, float* p_Lift, float p_LumaBalance, float p_LumaLimit, float p_Blur, int* p_Switch, int p_LumaMath, 
-int* p_LumaMaxXY, int* p_LumaMinXY, int* p_DisplayXY, int Radius);
-#endif
-
-void Scan::processImagesMetal()
-{
-#ifdef __APPLE__
-const OfxRectI& bounds = _srcImg->getBounds();
-const int width = bounds.x2 - bounds.x1;
-const int height = bounds.y2 - bounds.y1;
-
-float* input = static_cast<float*>(_srcImg->getPixelData());
-float* output = static_cast<float*>(_dstImg->getPixelData());
-
-int _radius = (int)(15.0f * kResolutionScale);
-_blur *= kResolutionScale;
-
-RunMetalKernel(_pMetalCmdQ, input, output, width, height, _gain, _offset, _lift, _lumaBalance, 
-_lumaLimit, _blur, _switch, _lumaMath, _lumaMaxXY, _lumaMinXY, _displayXY, _radius);
-#endif
-}
-*/
 void Scan::multiThreadProcessImages(OfxRectI p_ProcWindow)
 {
 for (int y = p_ProcWindow.y1; y < p_ProcWindow.y2; ++y) {
@@ -1724,11 +1677,7 @@ desc.setSupportsMultipleClipPARs(kSupportsMultipleClipPARs);
 desc.setSupportsMultipleClipDepths(kSupportsMultipleClipDepths);
 
 // Setup GPU render capability flags
-desc.setSupportsOpenCLRender(true);
 desc.setSupportsCudaRender(true);
-//#ifdef __APPLE__
-//desc.setSupportsMetalRender(true);
-//#endif
 desc.setOverlayInteractDescriptor(new ScanOverlayDescriptor);
 }
 

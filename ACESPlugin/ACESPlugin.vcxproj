@@ -20,7 +20,7 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
-    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 8.0.props" />
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 11.0.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -58,10 +58,10 @@
     </Link>
     <PostBuildEvent>
       <Message>Creating bundle...</Message>
-      <Command>if not exist "$(OutDir)ACES.ofx.bundle\Contents\Resources" mkdir "$(OutDir)ACES.ofx.bundle\Contents\Resources"
-      copy "(OutDir)../../BaldavengerOFX.ACES.png" "$(OutDir)ACES.ofx.bundle\Contents\Resources"
-	  if not exist "$(OutDir)ACES.ofx.bundle\Contents\Win64" mkdir "$(OutDir)ACES.ofx.bundle\Contents\Win64"
-	  copy /Y "$(TargetPath)" /B "$(OutDir)ACES.ofx.bundle\Contents\Win64\ACES.ofx" /B
+      <Command>if not exist "$(OutDir)ACES.Win10.DR17.CUDA.ofx.bundle\Contents\Resources" mkdir "$(OutDir)ACES.Win10.DR17.CUDA.ofx.bundle\Contents\Resources"
+      copy "(OutDir)../../BaldavengerOFX.ACES.png" "$(OutDir)ACES.Win10.DR17.CUDA.ofx.bundle\Contents\Resources"
+	  if not exist "$(OutDir)ACES.Win10.DR17.CUDA.ofx.bundle\Contents\Win64" mkdir "$(OutDir)ACES.Win10.DR17.CUDA.ofx.bundle\Contents\Win64"
+	  copy /Y "$(TargetPath)" /B "$(OutDir)ACES.Win10.DR17.CUDA.ofx.bundle\Contents\Win64\ACES.ofx" /B
 	  </Command>
     </PostBuildEvent>
     <CudaCompile>
@@ -84,6 +84,6 @@
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 8.0.targets" />
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 11.0.targets" />
   </ImportGroup>
 </Project>

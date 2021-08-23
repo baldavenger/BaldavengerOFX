@@ -26,7 +26,6 @@ using std::string;
 #define kPluginName "Convolution"
 #define kPluginGrouping "BaldavengerOFX"
 #define kPluginDescription \
-"------------------------------------------------------------------------------------------------------------------ \n" \
 "Convolution Filters"
 
 #define kPluginIdentifier "BaldavengerOFX.Convolution"
@@ -93,8 +92,6 @@ public:
 explicit Convolution(OFX::ImageEffect& p_Instance);
 
 virtual void processImagesCUDA();
-virtual void processImagesOpenCL();
-//virtual void processImagesMetal();
 virtual void multiThreadProcessImages(OfxRectI p_ProcWindow);
 
 void setSrcImg(OFX::Image* p_SrcImg);
@@ -130,47 +127,6 @@ float* output = static_cast<float*>(_dstImg->getPixelData());
 
 RunCudaKernel(input, output, width, height, _convolve, _display, _adjust, _matrix);
 }
-
-extern void RunOpenCLKernel(void* p_CmdQ, float* p_Input, float* p_Output, int p_Width, int p_Height, 
-int p_Convolve, int p_Display, float* p_Adjust, float* p_Matrix);
-
-void Convolution::processImagesOpenCL()
-{
-const OfxRectI& bounds = _srcImg->getBounds();
-const int width = bounds.x2 - bounds.x1;
-const int height = bounds.y2 - bounds.y1;
-
-_adjust[0] = _adjust[0] * kResolutionScale;
-_adjust[2] = _adjust[2] * kResolutionScale;
-
-float* input = static_cast<float*>(_srcImg->getPixelData());
-float* output = static_cast<float*>(_dstImg->getPixelData());
-
-RunOpenCLKernel(_pOpenCLCmdQ, input, output, width, height, _convolve, _display, _adjust, _matrix);
-}
-/*
-#ifdef __APPLE__
-extern void RunMetalKernel(void* p_CmdQ, float* p_Input, float* p_Output, int p_Width, int p_Height, 
-int p_Convolve, int p_Display, float* p_Adjust, float* p_Matrix);
-#endif
-
-void Convolution::processImagesMetal()
-{
-#ifdef __APPLE__
-const OfxRectI& bounds = _srcImg->getBounds();
-const int width = bounds.x2 - bounds.x1;
-const int height = bounds.y2 - bounds.y1;
-
-_adjust[0] = _adjust[0] * kResolutionScale;
-_adjust[2] = _adjust[2] * kResolutionScale;
-
-float* input = static_cast<float*>(_srcImg->getPixelData());
-float* output = static_cast<float*>(_dstImg->getPixelData());
-
-RunMetalKernel(_pMetalCmdQ, input, output, width, height, _convolve, _display, _adjust, _matrix);
-#endif
-}
-*/
 
 void Convolution::multiThreadProcessImages(OfxRectI p_ProcWindow)
 {
@@ -500,11 +456,7 @@ p_Desc.setRenderTwiceAlways(false);
 p_Desc.setSupportsMultipleClipPARs(kSupportsMultipleClipPARs);
 
 // Setup GPU render capability flags
-p_Desc.setSupportsOpenCLRender(true);
 p_Desc.setSupportsCudaRender(true);
-//#ifdef __APPLE__
-//p_Desc.setSupportsMetalRender(true);
-//#endif
 }
 
 void ConvolutionPluginFactory::describeInContext(OFX::ImageEffectDescriptor& p_Desc, OFX::ContextEnum /*p_Context*/)

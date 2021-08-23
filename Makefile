@@ -3,6 +3,7 @@ ACESPlugin \
 ChannelBox \
 Convolution \
 FilmGrade \
+FreqEQ \
 FreqSep \
 HueConverge \
 Matrix \
@@ -19,6 +20,7 @@ ACESPlugin \
 ChannelBox \
 Convolution \
 FilmGrade \
+FreqEQ \
 FreqSep \
 HueConverge \
 Matrix \

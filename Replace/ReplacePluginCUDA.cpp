@@ -37,13 +37,10 @@ using namespace OFX;
 #define kPluginGrouping "BaldavengerOFX"
 #define kPluginDescription \
 "Adjust hue, saturation and luma, or perform colour replacement. \n" \
-"------------------------------------------------------------------------------------------------------------------ \n" \
 "Colour replacement: Set the srcColour and dstColour parameters. The range of the replacement is determined by the  \n" \
 "three groups of parameters: Hue, Saturation and Luma \n" \
-"------------------------------------------------------------------------------------------------------------------ \n" \
 "Colour adjust: Use the Rotation of the Hue parameter and the Adjustment of the Saturation and Luma. \n" \
 "The ranges and falloff parameters allow for more complex adjustments \n" \
-"------------------------------------------------------------------------------------------------------------------ \n" \
 "Hue keyer: Set the outputAlpha parameter to All, and select Display Alpha. \n" \
 "First, set the Range parameter of the Hue parameter set and then work down the other Ranges parameters, \n" \
 "tuning with the range Falloff and Adjustment parameters. \n" \
@@ -293,8 +290,6 @@ public:
 explicit Replace(ImageEffect &instance);
 
 virtual void processImagesCUDA();
-virtual void processImagesOpenCL();
-//virtual void processImagesMetal();
 virtual void multiThreadProcessImages(OfxRectI procWindow);
 
 void setSrcImg(Image* p_SrcImg);
@@ -333,44 +328,6 @@ float* output = static_cast<float*>(_dstImg->getPixelData());
 RunCudaKernel(input, output, width, height, _hue, _sat, _val, _outputAlpha, _displayAlpha, _mix, _blur);
 }
 
-extern void RunOpenCLKernel(void* p_CmdQ, const float* p_Input, float* p_Output, int p_Width, int p_Height, 
-float* p_Hue, float* p_Sat, float* p_Val, int OutputAlpha, int DisplayAlpha, float mix, float* p_Blur);
-
-void Replace::processImagesOpenCL()
-{
-const OfxRectI& bounds = _srcImg->getBounds();
-const int width = bounds.x2 - bounds.x1;
-const int height = bounds.y2 - bounds.y1;
-
-_blur[2] *= kResolutionScale;
-
-float* input = static_cast<float*>(_srcImg->getPixelData());
-float* output = static_cast<float*>(_dstImg->getPixelData());
-
-RunOpenCLKernel(_pOpenCLCmdQ, input, output, width, height, _hue, _sat, _val, _outputAlpha, _displayAlpha, _mix, _blur);
-}
-/*
-#ifdef __APPLE__
-extern void RunMetalKernel(void* p_CmdQ, const float* p_Input, float* p_Output, int p_Width, int p_Height, 
-float* p_Hue, float* p_Sat, float* p_Val, int OutputAlpha, int DisplayAlpha, float mix, float* p_Blur);
-#endif
-
-void Replace::processImagesMetal()
-{
-#ifdef __APPLE__
-const OfxRectI& bounds = _srcImg->getBounds();
-const int width = bounds.x2 - bounds.x1;
-const int height = bounds.y2 - bounds.y1;
-
-_blur[2] *= kResolutionScale;
-
-float* input = static_cast<float*>(_srcImg->getPixelData());
-float* output = static_cast<float*>(_dstImg->getPixelData());
-
-RunMetalKernel(_pMetalCmdQ, input, output, width, height, _hue, _sat, _val, _outputAlpha, _displayAlpha, _mix, _blur);
-#endif
-}
-*/
 void Replace::multiThreadProcessImages(OfxRectI procWindow)
 {
 for (int y = procWindow.y1; y < procWindow.y2; ++y) {
@@ -1412,11 +1369,7 @@ desc.setSupportsMultipleClipPARs(kSupportsMultipleClipPARs);
 desc.setSupportsMultipleClipDepths(kSupportsMultipleClipDepths);
 
 // Setup GPU render capability flags
-desc.setSupportsOpenCLRender(true);
 desc.setSupportsCudaRender(true);
-//#ifdef __APPLE__
-//desc.setSupportsMetalRender(true);
-//#endif
 desc.setOverlayInteractDescriptor(new ReplaceOverlayDescriptor);
 }
 
