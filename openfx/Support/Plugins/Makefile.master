@@ -1,14 +1,16 @@
 UNAME_SYSTEM := $(shell uname -s)
 
-CUDAPATH ?= /usr/local/cuda
-NVCC = ${CUDAPATH}/bin/nvcc
+CUDAPATH ?= /usr/local/cuda-$(CUDA_VERSION)
+NVCC = $(CUDAPATH)/bin/nvcc
 CXXFLAGS = -fvisibility=hidden -I$(OFXPATH)/include -I$(PATHTOROOT)/include -I$(OFXSEXTPATH)
 PLUGINFOLDER = BaldavengerPlugins_$(DR_VERSION)
 
 ifeq ($(UNAME_SYSTEM), Linux)
+	OPENCLPATH = /opt/AMDAPP
+	CXXFLAGS += -I$(OPENCLPATH)/include -fPIC
 	NVCCFLAGS = --compiler-options="-fPIC"
 	ARCH = Linux-x86-64
-	CUDAFLAGS = -shared -fvisibility=hidden -L${CUDAPATH}/lib64 -lcuda -lcudart
+	CUDAFLAGS = -shared -fvisibility=hidden -L$(CUDAPATH)/lib64 -lcuda -lcudart
 	LINKFLAGS_OR = -shared
 	LINKFLAGS = $(LINKFLAGS_OR)
 	OFX_DIR = /usr/OFX/Plugins
@@ -24,7 +26,7 @@ ifeq ($(UNAME_SYSTEM), Darwin)
 endif
 
 ifeq ($(ENABLECUDA), TRUE)
-	CXXFLAGS += -I${CUDAPATH}/include
+	CXXFLAGS += -I$(CUDAPATH)/include
 	LINKFLAGS += $(CUDAFLAGS)
 	PLUGINFOLDER = BaldavengerPluginsCUDA_$(DR_VERSION)
 endif
@@ -71,7 +73,7 @@ $(PLUGINNAME_LG).ofx: $(PLUGINOBJECTS) $(SUPPORTOBJECTS)
 	rm *.o *.ofx
 
 $(PLUGINNAME)CudaKernel.o: $(PLUGINNAME)CudaKernel.cu
-	${NVCC} -c $< $(NVCCFLAGS)
+	$(NVCC) -c $< $(NVCCFLAGS)
 
 $(PLUGINNAME)MetalKernel.o: $(PLUGINNAME)MetalKernel.mm
 	$(CXX) -c $< $(CXXFLAGS)
