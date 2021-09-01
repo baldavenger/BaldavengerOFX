@@ -230,7 +230,7 @@ out.x = powf(a.x, b); out.y = powf(a.y, b); out.z = powf(a.z, b);
 return out;
 }
 
-static float exp10f( float x) {
+float exp10f( float x) {
 return powf(10.0f, x);
 }
 
