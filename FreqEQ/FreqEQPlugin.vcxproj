@@ -58,10 +58,10 @@
     </Link>
     <PostBuildEvent>
       <Message>Creating bundle...</Message>
-      <Command>if not exist "$(OutDir)FreqEQ.Win10.DR17.CUDA.ofx.bundle\Contents\Resources" mkdir "$(OutDir)FreqEQ.Win10.DR17.CUDA.ofx.bundle\Contents\Resources"
-      copy "(OutDir)..\..\BaldavengerOFX.FreqEQ.png" "$(OutDir)FreqEQ.Win10.DR17.CUDA.ofx.bundle\Contents\Resources"
-if not exist "$(OutDir)FreqEQ.Win10.DR17.CUDA.ofx.bundle\Contents\Win64" mkdir "$(OutDir)FreqEQ.Win10.DR17.CUDA.ofx.bundle\Contents\Win64"
-copy /Y "$(TargetPath)" /B "$(OutDir)FreqEQ.Win10.DR17.CUDA.ofx.bundle\Contents\Win64\FreqEQ.ofx" /B
+      <Command>if not exist "$(OutDir)FreqEQ.ofx.bundle\Contents\Resources" mkdir "$(OutDir)FreqEQ.ofx.bundle\Contents\Resources"
+      copy "(OutDir)..\..\BaldavengerOFX.FreqEQ.png" "$(OutDir)FreqEQ.ofx.bundle\Contents\Resources"
+if not exist "$(OutDir)FreqEQ.ofx.bundle\Contents\Win64" mkdir "$(OutDir)FreqEQ.ofx.bundle\Contents\Win64"
+copy /Y "$(TargetPath)" /B "$(OutDir)FreqEQ.ofx.bundle\Contents\Win64\FreqEQ.ofx" /B
 </Command>
     </PostBuildEvent>
     <CudaCompile>

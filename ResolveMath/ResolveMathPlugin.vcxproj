@@ -58,10 +58,10 @@
     </Link>
     <PostBuildEvent>
       <Message>Creating bundle...</Message>
-      <Command>if not exist "$(OutDir)ResolveMath.Win10.DR17.CPU.ofx.bundle\Contents\Resources" mkdir "$(OutDir)ResolveMath.Win10.DR17.CPU.ofx.bundle\Contents\Resources"
-      copy "(OutDir)../../BaldavengerOFX.ResolveMath.png" "$(OutDir)ResolveMath.Win10.DR17.CPU.ofx.bundle\Contents\Resources"
-	  if not exist "$(OutDir)ResolveMath.Win10.DR17.CPU.ofx.bundle\Contents\Win64" mkdir "$(OutDir)ResolveMath.Win10.DR17.CPU.ofx.bundle\Contents\Win64"
-	  copy /Y "$(TargetPath)" /B "$(OutDir)ResolveMath.Win10.DR17.CPU.ofx.bundle\Contents\Win64\ResolveMath.ofx" /B
+      <Command>if not exist "$(OutDir)ResolveMath.ofx.bundle\Contents\Resources" mkdir "$(OutDir)ResolveMath.ofx.bundle\Contents\Resources"
+      copy "(OutDir)../../BaldavengerOFX.ResolveMath.png" "$(OutDir)ResolveMath.ofx.bundle\Contents\Resources"
+	  if not exist "$(OutDir)ResolveMath.ofx.bundle\Contents\Win64" mkdir "$(OutDir)ResolveMath.ofx.bundle\Contents\Win64"
+	  copy /Y "$(TargetPath)" /B "$(OutDir)ResolveMath.ofx.bundle\Contents\Win64\ResolveMath.ofx" /B
 </Command>
     </PostBuildEvent>
     <CudaCompile>

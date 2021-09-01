@@ -58,10 +58,10 @@
     </Link>
     <PostBuildEvent>
       <Message>Creating bundle...</Message>
-      <Command>if not exist "$(OutDir)Replace.Win10.DR17.CUDA.ofx.bundle\Contents\Resources" mkdir "$(OutDir)Replace.Win10.DR17.CUDA.ofx.bundle\Contents\Resources"
-      copy "(OutDir)..\..\BaldavengerOFX.Replace.png" "$(OutDir)Replace.Win10.DR17.CUDA.ofx.bundle\Contents\Resources"
-	  if not exist "$(OutDir)Replace.Win10.DR17.CUDA.ofx.bundle\Contents\Win64" mkdir "$(OutDir)Replace.Win10.DR17.CUDA.ofx.bundle\Contents\Win64"
-	  copy /Y "$(TargetPath)" /B "$(OutDir)Replace.Win10.DR17.CUDA.ofx.bundle\Contents\Win64\Replace.ofx" /B
+      <Command>if not exist "$(OutDir)Replace.ofx.bundle\Contents\Resources" mkdir "$(OutDir)Replace.ofx.bundle\Contents\Resources"
+      copy "(OutDir)..\..\BaldavengerOFX.Replace.png" "$(OutDir)Replace.ofx.bundle\Contents\Resources"
+	  if not exist "$(OutDir)Replace.ofx.bundle\Contents\Win64" mkdir "$(OutDir)Replace.ofx.bundle\Contents\Win64"
+	  copy /Y "$(TargetPath)" /B "$(OutDir)Replace.ofx.bundle\Contents\Win64\Replace.ofx" /B
 </Command>
     </PostBuildEvent>
     <CudaCompile>

@@ -58,10 +58,10 @@
     </Link>
     <PostBuildEvent>
       <Message>Creating bundle...</Message>
-      <Command>if not exist "$(OutDir)Matrix.Win10.DR17.CUDA.ofx.bundle\Contents\Resources" mkdir "$(OutDir)Matrix.Win10.DR17.CUDA.ofx.bundle\Contents\Resources"
-		copy "(OutDir)..\..\BaldavengerOFX.Matrix.png" "$(OutDir)Matrix.Win10.DR17.CUDA.ofx.bundle\Contents\Resources"
-		if not exist "$(OutDir)Matrix.Win10.DR17.CUDA.ofx.bundle\Contents\Win64" mkdir "$(OutDir)Matrix.Win10.DR17.CUDA.ofx.bundle\Contents\Win64"
-		copy /Y "$(TargetPath)" /B "$(OutDir)Matrix.Win10.DR17.CUDA.ofx.bundle\Contents\Win64\Matrix.ofx" /B
+      <Command>if not exist "$(OutDir)Matrix.ofx.bundle\Contents\Resources" mkdir "$(OutDir)Matrix.ofx.bundle\Contents\Resources"
+		copy "(OutDir)..\..\BaldavengerOFX.Matrix.png" "$(OutDir)Matrix.ofx.bundle\Contents\Resources"
+		if not exist "$(OutDir)Matrix.ofx.bundle\Contents\Win64" mkdir "$(OutDir)Matrix.ofx.bundle\Contents\Win64"
+		copy /Y "$(TargetPath)" /B "$(OutDir)Matrix.ofx.bundle\Contents\Win64\Matrix.ofx" /B
 	  </Command>
     </PostBuildEvent>
     <CudaCompile>

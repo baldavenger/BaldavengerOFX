@@ -34,25 +34,31 @@ case 3:
 {aces = ACEScg_to_ACES(aces);}
 break;
 case 4:
-{aces = ACESproxy_to_ACES(aces);}
-break;
-case 5:
 {aces = ADX_to_ACES(aces);}
 break;
-case 6:
+case 5:
 {aces = ICpCt_to_ACES(aces);}
 break;
-case 7:
+case 6:
 {aces = LogC_EI800_AWG_to_ACES(aces);}
 break;
-case 8:
+case 7:
 {aces = Log3G10_RWG_to_ACES(aces);}
 break;
-case 9:
+case 8:
 {aces = SLog3_SG3_to_ACES(aces);}
 break;
-case 10:
+case 9:
 {aces = SLog3_SG3C_to_ACES(aces);}
+break;
+case 10:
+{aces = Venice_SLog3_SG3_to_ACES(aces);}
+break;
+case 11:
+{aces = Venice_SLog3_SG3C_to_ACES(aces);}
+break;
+case 12:
+{aces = VLog_VGamut_to_ACES(aces);}
 }
 p_Input[index] = aces.x; 
 p_Input[index + 1] = aces.y;
@@ -198,7 +204,9 @@ float p_LMTScale1, float p_LMTScale2, float p_LMTScale3, float p_LMTScale4, floa
 float p_LMTScale6, float p_LMTScale7, float p_LMTScale8, float p_LMTScale9, float p_LMTScale10, 
 float p_LMTScale11, float p_LMTScale12,float p_LMTScale13, float p_LMTScale14, float p_LMTScale15, 
 float p_LMTScale16, float p_LMTScale17, float p_LMTScale18, float p_LMTScale19, float p_LMTScale20, 
-float p_LMTScale21, float p_LMTScale22, float p_LMTScale23, float p_LMTScale24) {
+float p_LMTScale21, float p_LMTScale22, float p_LMTScale23, float p_LMTScale24, float p_GCompress1, 
+float p_GCompress2, float p_GCompress3, float p_GCompress4, float p_GCompress5, float p_GCompress6, 
+float p_GCompress7, int p_GInvert) {
 const int x = blockIdx.x * blockDim.x + threadIdx.x;
 const int y = blockIdx.y * blockDim.y + threadIdx.y;
 if (x < p_Width && y < p_Height) {
@@ -269,6 +277,16 @@ aces = scale_C_at_H(aces, p_LMTScale22, p_LMTScale23, p_LMTScale24);
 break;
 case 5:
 {aces = LMT_Bleach(aces);}
+break;
+case 6:
+{aces = LMT_GamutCompress(aces);}
+break;
+case 7:
+{
+bool ginvert = p_GInvert == 1;
+aces = gamut_compress(aces, p_GCompress1, 
+p_GCompress2, p_GCompress3, p_GCompress4, p_GCompress5, p_GCompress6, 
+p_GCompress7, ginvert);}
 }
 p_Input[index] = aces.x; 
 p_Input[index + 1] = aces.y;
@@ -298,25 +316,31 @@ case 3:
 {aces = ACES_to_ACEScg(aces);}
 break;
 case 4:
-{aces = ACES_to_ACESproxy(aces);}
-break;
-case 5:
 {aces = ACES_to_ADX(aces);}
 break;
-case 6:
+case 5:
 {aces = ACES_to_ICpCt(aces);}
 break;
-case 7:
+case 6:
 {aces = ACES_to_LogC_EI800_AWG(aces);}
 break;
-case 8:
+case 7:
 {aces = ACES_to_Log3G10_RWG(aces);}
 break;
-case 9:
+case 8:
 {aces = ACES_to_SLog3_SG3(aces);}
 break;
-case 10:
+case 9:
 {aces = ACES_to_SLog3_SG3C(aces);}
+break;
+case 10:
+{aces = ACES_to_Venice_SLog3_SG3(aces);}
+break;
+case 11:
+{aces = ACES_to_Venice_SLog3_SG3C(aces);}
+break;
+case 12:
+{aces = ACES_to_VLog_VGamut(aces);}
 }
 p_Input[index] = aces.x; 
 p_Input[index + 1] = aces.y;
@@ -593,8 +617,8 @@ p_Input[index + 2] = aces.z;
 
 void RunCudaKernel(const float* p_Input, float* p_Output, int p_Width, int p_Height, 
 int p_Direction, int p_CSCIN, int p_IDT, int p_LMT, int p_CSCOUT, int p_RRT, 
-int p_InvRRT, int p_ODT, int p_InvODT, float p_Exposure, float *p_LMTScale, float *p_Lum, 
-int p_DISPLAY, int p_LIMIT, int p_EOTF, int p_SURROUND, int *p_Switch)
+int p_InvRRT, int p_ODT, int p_InvODT, float p_Exposure, float *p_LMTScale, float *p_GCompress, 
+int p_GInvert, float *p_Lum, int p_DISPLAY, int p_LIMIT, int p_EOTF, int p_SURROUND, int *p_Switch)
 {
 dim3 threads(128, 1, 1);
 dim3 blocks(((p_Width + threads.x - 1) / threads.x), p_Height, 1);
@@ -609,10 +633,11 @@ k_IDT<<<blocks, threads>>>(p_Output, p_Width, p_Height, p_IDT);
 if (p_Exposure != 0.0f)
 k_Exposure<<<blocks, threads>>>(p_Output, p_Width, p_Height, p_Exposure);
 if (p_LMT > 0)
-k_LMT<<<blocks, threads>>>(p_Output, p_Width, p_Height, p_LMT, p_LMTScale[0], p_LMTScale[1], p_LMTScale[2], p_LMTScale[3], p_LMTScale[4], 
-p_LMTScale[5], p_LMTScale[6], p_LMTScale[7], p_LMTScale[8], p_LMTScale[9], p_LMTScale[10], p_LMTScale[11], p_LMTScale[12], 
-p_LMTScale[13], p_LMTScale[14], p_LMTScale[15], p_LMTScale[16], p_LMTScale[17], p_LMTScale[18], p_LMTScale[19], p_LMTScale[20], 
-p_LMTScale[21], p_LMTScale[22], p_LMTScale[23]);
+k_LMT<<<blocks, threads>>>(p_Output, p_Width, p_Height, p_LMT, p_LMTScale[0], p_LMTScale[1], p_LMTScale[2], p_LMTScale[3], 
+p_LMTScale[4], p_LMTScale[5], p_LMTScale[6], p_LMTScale[7], p_LMTScale[8], p_LMTScale[9], p_LMTScale[10], p_LMTScale[11], 
+p_LMTScale[12], p_LMTScale[13], p_LMTScale[14], p_LMTScale[15], p_LMTScale[16], p_LMTScale[17], p_LMTScale[18], p_LMTScale[19], 
+p_LMTScale[20], p_LMTScale[21], p_LMTScale[22], p_LMTScale[23], p_GCompress[0], p_GCompress[1], p_GCompress[2], p_GCompress[3], 
+p_GCompress[4], p_GCompress[5], p_GCompress[6], p_GInvert);
 if (p_CSCOUT > 0)
 k_CSCOUT<<<blocks, threads>>>(p_Output, p_Width, p_Height, p_CSCOUT);
 if (p_RRT > 0 && p_ODT < 22)

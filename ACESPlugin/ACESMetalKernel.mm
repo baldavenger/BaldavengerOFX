@@ -125,6 +125,12 @@ const char* kernelSource =  \
 "{ { 0.6387886672f, -0.0039159061f, -0.0299072021f}, { 0.2723514337f, 1.0880732308f, -0.0264325799f}, { 0.0888598992f, -0.0841573249f, 1.056339782f} }; \n" \
 "constant mat3 AP0_2_SG3C_MAT =  \n" \
 "{ { 1.5554591070f,  0.0090216145f, 0.0442640666f}, {-0.3932807985f, 0.9185569566f, 0.0118502607f}, {-0.1621783087f, 0.0724214290f, 0.9438856727f} }; \n" \
+"constant mat3 VSG3_2_AP0_MAT =  \n" \
+"{ { 0.7933297411f, 0.0155810585f, -0.0188647478f}, { 0.0890786256f, 1.0327123069f, 0.0127694121f}, { 0.1175916333f, -0.0482933654f, 1.0060953358f} }; \n" \
+"constant mat3 VSG3C_2_AP0_MAT =  \n" \
+"{ { 0.6742570921f, -0.0093136061f, -0.0382090673f}, { 0.2205717359f, 1.1059588614f, -0.0179383766f}, { 0.1051711720f, -0.0966452553f, 1.0561474439f} }; \n" \
+"constant mat3 VGAMUT_2_AP0_MAT =  \n" \
+"{ { 0.724382758f, 0.166748484f, 0.108497411f}, { 0.021354009f, 0.985138372f, -0.006319092f}, {-0.009234278f, -0.00104295f, 1.010272625f} }; \n" \
 "constant mat3 AWG_2_AP0_MAT =  \n" \
 "{ { 0.6802059161f, 0.0854150695f, 0.0020562648f}, { 0.2361367500f, 1.0174707720f, -0.0625622837f}, { 0.0836574074f, -0.1028858550f, 1.0605062481f} }; \n" \
 "constant mat3 AP0_2_AWG_MAT =  \n" \
@@ -360,15 +366,25 @@ const char* kernelSource =  \
 "} \n" \
 "return out; \n" \
 "} \n" \
-"float vLogToLinScene( float x) { \n" \
-"const float cutInv = 0.181f; \n" \
-"const float b = 0.00873f; \n" \
-"const float c = 0.241514f; \n" \
-"const float d = 0.598206f; \n" \
+"float VLog_to_lin( float x) { \n" \
+"float cutInv = 0.181f; \n" \
+"float b = 0.00873f; \n" \
+"float c = 0.241514f; \n" \
+"float d = 0.598206f; \n" \
 "if (x <= cutInv) \n" \
 "return (x - 0.125f) / 5.6f; \n" \
 "else \n" \
 "return exp10((x - d) / c) - b; \n" \
+"} \n" \
+"float lin_to_VLog( float x) { \n" \
+"float cut1 = 0.01f; \n" \
+"float b = 0.00873f; \n" \
+"float c = 0.241514f; \n" \
+"float d = 0.598206f; \n" \
+"if (x < cut1 ) \n" \
+"return 5.6f * x + 0.125f; \n" \
+"else \n" \
+"return c * log10(x + b) + d; \n" \
 "} \n" \
 "float SLog1_to_lin( float SLog, float b, float ab, float w) { \n" \
 "float lin = 0.0f; \n" \
@@ -995,53 +1011,12 @@ const char* kernelSource =  \
 "return mult_f3_f33( ap1_lin, AP1_2_AP0_MAT); \n" \
 "} \n" \
 "float3 ACES_to_ACEScg( float3 ACES) { \n" \
-"ACES = max_f3_f( ACES, 0.0f); \n" \
 "float3 ACEScg = mult_f3_f33( ACES, AP0_2_AP1_MAT); \n" \
 "return ACEScg; \n" \
 "} \n" \
 "float3 ACEScg_to_ACES( float3 ACEScg) { \n" \
 "float3 ACES = mult_f3_f33( ACEScg, AP1_2_AP0_MAT); \n" \
 "return ACES; \n" \
-"} \n" \
-"float ACESproxy_to_lin( float in) { \n" \
-"float StepsPerStop = 50.0f; \n" \
-"float MidCVoffset = 425.0f; \n" \
-"return exp2(( in - MidCVoffset)/StepsPerStop - 2.5f); \n" \
-"} \n" \
-"float3 ACESproxy_to_ACES( float3 In) { \n" \
-"float3 ACESproxy; \n" \
-"ACESproxy.x = In.x * 1023.0f; \n" \
-"ACESproxy.y = In.y * 1023.0f; \n" \
-"ACESproxy.z = In.z * 1023.0f; \n" \
-"float3 lin_AP1; \n" \
-"lin_AP1.x = ACESproxy_to_lin( ACESproxy.x); \n" \
-"lin_AP1.y = ACESproxy_to_lin( ACESproxy.y); \n" \
-"lin_AP1.z = ACESproxy_to_lin( ACESproxy.z); \n" \
-"float3 ACES = mult_f3_f33( lin_AP1, AP1_2_AP0_MAT); \n" \
-"return ACES; \n" \
-"} \n" \
-"float lin_to_ACESproxy( float in) { \n" \
-"float StepsPerStop = 50.0f; \n" \
-"float MidCVoffset = 425.0f; \n" \
-"float CVmin = 64.0f; \n" \
-"float CVmax = 940.0f; \n" \
-"if (in <= pow(2.0f, -9.72f)) \n" \
-"return CVmin; \n" \
-"else \n" \
-"return fmax( CVmin, fmin( CVmax, round( (log2(in) + 2.5f) * StepsPerStop + MidCVoffset))); \n" \
-"} \n" \
-"float3 ACES_to_ACESproxy( float3 ACES) { \n" \
-"ACES = max_f3_f( ACES, 0.0f);  \n" \
-"float3 lin_AP1 = mult_f3_f33( ACES, AP0_2_AP1_MAT); \n" \
-"float ACESproxy[3]; \n" \
-"ACESproxy[0] = lin_to_ACESproxy( lin_AP1.x ); \n" \
-"ACESproxy[1] = lin_to_ACESproxy( lin_AP1.y ); \n" \
-"ACESproxy[2] = lin_to_ACESproxy( lin_AP1.z ); \n" \
-"float3 out;     \n" \
-"out.x = ACESproxy[0] / 1023.0f; \n" \
-"out.y = ACESproxy[1] / 1023.0f; \n" \
-"out.z = ACESproxy[2] / 1023.0f; \n" \
-"return out; \n" \
 "} \n" \
 "float3 adx_convertFromLinear( float3 aces) { \n" \
 "aces.x = aces.x < 0.00130127f ? (aces.x - 0.00130127f) / 0.04911331f : \n" \
@@ -1177,6 +1152,57 @@ const char* kernelSource =  \
 "out.z = lin_to_SLog3(lin_SG3C.z); \n" \
 "return out; \n" \
 "} \n" \
+"float3 Venice_SLog3_SG3_to_ACES( float3 in) { \n" \
+"float3 lin_SG3; \n" \
+"lin_SG3.x = SLog3_to_lin(in.x); \n" \
+"lin_SG3.y = SLog3_to_lin(in.y); \n" \
+"lin_SG3.z = SLog3_to_lin(in.z); \n" \
+"float3 aces = mult_f3_f33(lin_SG3, VSG3_2_AP0_MAT); \n" \
+"return aces; \n" \
+"} \n" \
+"float3 ACES_to_Venice_SLog3_SG3( float3 in) { \n" \
+"mat3 AP0_2_VSG3_MAT = invert_f33(VSG3_2_AP0_MAT); \n" \
+"float3 lin_SG3 = mult_f3_f33(in, AP0_2_VSG3_MAT); \n" \
+"float3 out; \n" \
+"out.x = lin_to_SLog3(lin_SG3.x); \n" \
+"out.y = lin_to_SLog3(lin_SG3.y); \n" \
+"out.z = lin_to_SLog3(lin_SG3.z); \n" \
+"return out; \n" \
+"} \n" \
+"float3 Venice_SLog3_SG3C_to_ACES( float3 in) { \n" \
+"float3 lin_SG3; \n" \
+"lin_SG3.x = SLog3_to_lin(in.x); \n" \
+"lin_SG3.y = SLog3_to_lin(in.y); \n" \
+"lin_SG3.z = SLog3_to_lin(in.z); \n" \
+"float3 aces = mult_f3_f33(lin_SG3, VSG3C_2_AP0_MAT); \n" \
+"return aces; \n" \
+"} \n" \
+"float3 ACES_to_Venice_SLog3_SG3C( float3 in) { \n" \
+"mat3 AP0_2_VSG3C_MAT = invert_f33(VSG3C_2_AP0_MAT); \n" \
+"float3 lin_SG3 = mult_f3_f33(in, AP0_2_VSG3C_MAT); \n" \
+"float3 out; \n" \
+"out.x = lin_to_SLog3(lin_SG3.x); \n" \
+"out.y = lin_to_SLog3(lin_SG3.y); \n" \
+"out.z = lin_to_SLog3(lin_SG3.z); \n" \
+"return out; \n" \
+"} \n" \
+"float3 VLog_VGamut_to_ACES( float3 in) { \n" \
+"float3 lin_Vlog; \n" \
+"lin_Vlog.x = VLog_to_lin(in.x); \n" \
+"lin_Vlog.y = VLog_to_lin(in.y); \n" \
+"lin_Vlog.z = VLog_to_lin(in.z); \n" \
+"float3 aces = mult_f3_f33(lin_Vlog, VGAMUT_2_AP0_MAT); \n" \
+"return aces; \n" \
+"} \n" \
+"float3 ACES_to_VLog_VGamut( float3 in) { \n" \
+"mat3 AP0_2_VGAMUT_MAT = invert_f33(VGAMUT_2_AP0_MAT); \n" \
+"float3 lin_VLog = mult_f3_f33(in, AP0_2_VGAMUT_MAT); \n" \
+"float3 out; \n" \
+"out.x = lin_to_VLog(lin_VLog.x); \n" \
+"out.y = lin_to_VLog(lin_VLog.y); \n" \
+"out.z = lin_to_VLog(lin_VLog.z); \n" \
+"return out; \n" \
+"} \n" \
 "float3 IDT_Alexa_v3_raw_EI800_CCT6500( float3 In){ \n" \
 "float black = 256.0f / 65535.0f; \n" \
 "float r_lin = (In.x - black); \n" \
@@ -1189,12 +1215,10 @@ const char* kernelSource =  \
 "return aces; \n" \
 "} \n" \
 "float3 IDT_Panasonic_V35( float3 VLog) { \n" \
-"mat3 mat = { {0.724382758f, 0.166748484f, 0.108497411f},  \n" \
-"{0.021354009f, 0.985138372f, -0.006319092f},  \n" \
-"{-0.009234278f, -0.00104295f, 1.010272625f} }; \n" \
-"float rLin = vLogToLinScene(VLog.x); \n" \
-"float gLin = vLogToLinScene(VLog.y); \n" \
-"float bLin = vLogToLinScene(VLog.z); \n" \
+"mat3 mat = VGAMUT_2_AP0_MAT; \n" \
+"float rLin = VLog_to_lin(VLog.x); \n" \
+"float gLin = VLog_to_lin(VLog.y); \n" \
+"float bLin = VLog_to_lin(VLog.z); \n" \
 "float3 out; \n" \
 "out.x = mat.c0.x * rLin + mat.c0.y * gLin + mat.c0.z * bLin; \n" \
 "out.y = mat.c1.x * rLin + mat.c1.y * gLin + mat.c1.z * bLin; \n" \
@@ -2490,6 +2514,63 @@ const char* kernelSource =  \
 "float3 acesMod = mult_f3_f33( aces, correctionMatrix); \n" \
 "return acesMod; \n" \
 "} \n" \
+"float compress( float dist, float lim, float thr, float pwr, bool invert) { \n" \
+"float comprDist; \n" \
+"float scl; \n" \
+"float nd; \n" \
+"float p; \n" \
+"if (dist < thr) { \n" \
+"comprDist = dist; \n" \
+"} else { \n" \
+"scl = (lim - thr) / pow(pow((1.0f - thr) / (lim - thr), -pwr) - 1.0f, 1.0f / pwr); \n" \
+"nd = (dist - thr) / scl; \n" \
+"p = pow(nd, pwr); \n" \
+"if (!invert) { \n" \
+"comprDist = thr + scl * nd / (pow(1.0f + p, 1.0f / pwr)); \n" \
+"} else { \n" \
+"if (dist > (thr + scl)) { \n" \
+"comprDist = dist; \n" \
+"} else { \n" \
+"comprDist = thr + scl * pow(-(p / (p - 1.0f)), 1.0f / pwr); \n" \
+"}}} \n" \
+"return comprDist; \n" \
+"} \n" \
+"float3 gamut_compress( float3 aces, float LIM_CYAN, float LIM_YELLOW, float LIM_MAGENTA,  \n" \
+"float THR_CYAN, float THR_YELLOW, float THR_MAGENTA, float PWR, bool invert) { \n" \
+"float3 linAP1 = mult_f3_f33(aces, AP0_2_AP1_MAT); \n" \
+"float ach = max_f3(linAP1); \n" \
+"float3 dist; \n" \
+"if (ach == 0.0f) { \n" \
+"dist = make_float3(0.0f, 0.0f, 0.0f); \n" \
+"} else { \n" \
+"dist.x = (ach - linAP1.x) / fabs(ach); \n" \
+"dist.y = (ach - linAP1.y) / fabs(ach); \n" \
+"dist.z = (ach - linAP1.z) / fabs(ach); \n" \
+"} \n" \
+"float3 comprDist; \n" \
+"comprDist.x = compress(dist.x, LIM_CYAN, THR_CYAN, PWR, invert); \n" \
+"comprDist.y = compress(dist.y, LIM_MAGENTA, THR_MAGENTA, PWR, invert); \n" \
+"comprDist.z = compress(dist.z, LIM_YELLOW, THR_YELLOW, PWR, invert); \n" \
+"float3 comprLinAP1; \n" \
+"comprLinAP1.x = ach - comprDist.x * fabs(ach); \n" \
+"comprLinAP1.y = ach - comprDist.y * fabs(ach); \n" \
+"comprLinAP1.z = ach - comprDist.z * fabs(ach); \n" \
+"aces = mult_f3_f33(comprLinAP1, AP1_2_AP0_MAT); \n" \
+"return aces; \n" \
+"} \n" \
+"float3 LMT_GamutCompress( float3 aces) { \n" \
+"float LIM_CYAN =  1.147f; \n" \
+"float LIM_MAGENTA = 1.264f; \n" \
+"float LIM_YELLOW = 1.312f; \n" \
+"float THR_CYAN = 0.815; \n" \
+"float THR_MAGENTA = 0.803; \n" \
+"float THR_YELLOW = 0.880; \n" \
+"float PWR = 1.2f; \n" \
+"bool invert = false; \n" \
+"aces = gamut_compress(aces, LIM_CYAN, LIM_YELLOW, LIM_MAGENTA,  \n" \
+"THR_CYAN, THR_YELLOW, THR_MAGENTA, PWR, invert); \n" \
+"return aces; \n" \
+"} \n" \
 "float3 RRT( float3 aces) { \n" \
 "float saturation = rgb_2_saturation( aces); \n" \
 "float ycIn = rgb_2_yc( aces); \n" \
@@ -3765,25 +3846,31 @@ const char* kernelSource =  \
 "{aces = ACEScg_to_ACES(aces);} \n" \
 "break; \n" \
 "case 4: \n" \
-"{aces = ACESproxy_to_ACES(aces);} \n" \
-"break; \n" \
-"case 5: \n" \
 "{aces = ADX_to_ACES(aces);} \n" \
 "break; \n" \
-"case 6: \n" \
+"case 5: \n" \
 "{aces = ICpCt_to_ACES(aces);} \n" \
 "break; \n" \
-"case 7: \n" \
+"case 6: \n" \
 "{aces = LogC_EI800_AWG_to_ACES(aces);} \n" \
 "break; \n" \
-"case 8: \n" \
+"case 7: \n" \
 "{aces = Log3G10_RWG_to_ACES(aces);} \n" \
 "break; \n" \
-"case 9: \n" \
+"case 8: \n" \
 "{aces = SLog3_SG3_to_ACES(aces);} \n" \
 "break; \n" \
-"case 10: \n" \
+"case 9: \n" \
 "{aces = SLog3_SG3C_to_ACES(aces);} \n" \
+"break; \n" \
+"case 10: \n" \
+"{aces = Venice_SLog3_SG3_to_ACES(aces);} \n" \
+"break; \n" \
+"case 11: \n" \
+"{aces = Venice_SLog3_SG3C_to_ACES(aces);} \n" \
+"break; \n" \
+"case 12: \n" \
+"{aces = VLog_VGamut_to_ACES(aces);} \n" \
 "} \n" \
 "p_Input[index] = aces.x;  \n" \
 "p_Input[index + 1] = aces.y; \n" \
@@ -3919,7 +4006,8 @@ const char* kernelSource =  \
 "p_Input[index + 2] = p_Input[index + 2] * exp2(p_Exposure); \n" \
 "}} \n" \
 "kernel void k_LMT( device float* p_Input [[buffer (1)]], constant int& p_Width [[buffer (2)]], constant int& p_Height [[buffer (3)]],  \n" \
-"constant int& p_LMT [[buffer (7)]], constant float* p_LMTScale [[buffer (13)]], uint2 id [[ thread_position_in_grid ]]) { \n" \
+"constant int& p_LMT [[buffer (7)]], constant float* p_LMTScale [[buffer (13)]], constant float* p_GCompress [[buffer (14)]],  \n" \
+"constant int& p_GInvert [[buffer (15)]], uint2 id [[ thread_position_in_grid ]]) { \n" \
 "if (id.x < p_Width && id.y < p_Height) { \n" \
 "const int index = (id.y * p_Width + id.x) * 4; \n" \
 "float3 aces; \n" \
@@ -3987,7 +4075,17 @@ const char* kernelSource =  \
 "} \n" \
 "break; \n" \
 "case 5: \n" \
-"{aces = LMT_Bleach(aces);}} \n" \
+"{aces = LMT_Bleach(aces);} \n" \
+"break; \n" \
+"case 6: \n" \
+"{aces = LMT_GamutCompress(aces);} \n" \
+"break; \n" \
+"case 7: \n" \
+"{ \n" \
+"bool ginvert = p_GInvert == 1; \n" \
+"aces = gamut_compress(aces, p_GCompress[0], p_GCompress[1], p_GCompress[2], p_GCompress[3],  \n" \
+"p_GCompress[4], p_GCompress[5], p_GCompress[6], ginvert);} \n" \
+"} \n" \
 "p_Input[index] = aces.x;  \n" \
 "p_Input[index + 1] = aces.y; \n" \
 "p_Input[index + 2] = aces.z; \n" \
@@ -4014,25 +4112,31 @@ const char* kernelSource =  \
 "{aces = ACES_to_ACEScg(aces);} \n" \
 "break; \n" \
 "case 4: \n" \
-"{aces = ACES_to_ACESproxy(aces);} \n" \
-"break; \n" \
-"case 5: \n" \
 "{aces = ACES_to_ADX(aces);} \n" \
 "break; \n" \
-"case 6: \n" \
+"case 5: \n" \
 "{aces = ACES_to_ICpCt(aces);} \n" \
 "break; \n" \
-"case 7: \n" \
+"case 6: \n" \
 "{aces = ACES_to_LogC_EI800_AWG(aces);} \n" \
 "break; \n" \
-"case 8: \n" \
+"case 7: \n" \
 "{aces = ACES_to_Log3G10_RWG(aces);} \n" \
 "break; \n" \
-"case 9: \n" \
+"case 8: \n" \
 "{aces = ACES_to_SLog3_SG3(aces);} \n" \
 "break; \n" \
-"case 10: \n" \
+"case 9: \n" \
 "{aces = ACES_to_SLog3_SG3C(aces);} \n" \
+"break; \n" \
+"case 10: \n" \
+"{aces = ACES_to_Venice_SLog3_SG3(aces);} \n" \
+"break; \n" \
+"case 11: \n" \
+"{aces = ACES_to_Venice_SLog3_SG3C(aces);} \n" \
+"break; \n" \
+"case 12: \n" \
+"{aces = ACES_to_VLog_VGamut(aces);} \n" \
 "} \n" \
 "p_Input[index] = aces.x;  \n" \
 "p_Input[index + 1] = aces.y; \n" \
@@ -4065,9 +4169,9 @@ const char* kernelSource =  \
 "p_Input[index + 2] = aces.z; \n" \
 "}} \n" \
 "kernel void k_ODT( device float* p_Input [[buffer (1)]], constant int& p_Width [[buffer (2)]], constant int& p_Height [[buffer (3)]], \n" \
-"constant int& p_ODT [[buffer (11)]], constant float* p_Lum [[buffer (14)]], constant int& p_DISPLAY [[buffer (15)]],  \n" \
-"constant int& p_LIMIT [[buffer (16)]], constant int& p_EOTF [[buffer (17)]], constant int& p_SURROUND [[buffer (18)]],  \n" \
-"constant int* p_Switch [[buffer (19)]], uint2 id [[ thread_position_in_grid ]]) { \n" \
+"constant int& p_ODT [[buffer (11)]], constant float* p_Lum [[buffer (16)]], constant int& p_DISPLAY [[buffer (17)]],  \n" \
+"constant int& p_LIMIT [[buffer (18)]], constant int& p_EOTF [[buffer (19)]], constant int& p_SURROUND [[buffer (20)]],  \n" \
+"constant int* p_Switch [[buffer (21)]], uint2 id [[ thread_position_in_grid ]]) { \n" \
 "if (id.x < p_Width && id.y < p_Height) { \n" \
 "const int index = (id.y * p_Width + id.x) * 4; \n" \
 "float3 aces; \n" \
@@ -4188,9 +4292,9 @@ const char* kernelSource =  \
 "p_Input[index + 2] = aces.z; \n" \
 "}} \n" \
 "kernel void k_InvODT( device float* p_Input [[buffer (1)]], constant int& p_Width [[buffer (2)]], constant int& p_Height [[buffer (3)]], \n" \
-"constant int& p_InvODT [[buffer (12)]], constant float* p_Lum [[buffer (14)]], constant int& p_DISPLAY [[buffer (15)]],  \n" \
-"constant int& p_LIMIT [[buffer (16)]], constant int& p_EOTF [[buffer (17)]], constant int& p_SURROUND [[buffer (18)]],  \n" \
-"constant int* p_Switch [[buffer (19)]], uint2 id [[ thread_position_in_grid ]]) { \n" \
+"constant int& p_InvODT [[buffer (12)]], constant float* p_Lum [[buffer (16)]], constant int& p_DISPLAY [[buffer (17)]],  \n" \
+"constant int& p_LIMIT [[buffer (18)]], constant int& p_EOTF [[buffer (19)]], constant int& p_SURROUND [[buffer (20)]],  \n" \
+"constant int* p_Switch [[buffer (21)]], uint2 id [[ thread_position_in_grid ]]) { \n" \
 "if (id.x < p_Width && id.y < p_Height) { \n" \
 "const int index = (id.y * p_Width + id.x) * 4; \n" \
 "float3 aces; \n" \
@@ -4305,9 +4409,9 @@ typedef std::unordered_map<id<MTLCommandQueue>, id<MTLComputePipelineState>> Pip
 PipelineQueueMap s_PipelineQueueMap;
 
 void RunMetalKernel(void* p_CmdQ, const float* p_Input, float* p_Output, int p_Width, int p_Height, 
-int p_Direction, int p_CSCIN, int p_IDT, int p_LMT, int p_CSCOUT, int p_RRT, 
-int p_InvRRT, int p_ODT, int p_InvODT, float p_Exposure, float *p_LMTScale, float *p_Lum, 
-int p_DISPLAY, int p_LIMIT, int p_EOTF, int p_SURROUND, int *p_Switch) {
+int p_Direction, int p_CSCIN, int p_IDT, int p_LMT, int p_CSCOUT, int p_RRT, int p_InvRRT, 
+int p_ODT, int p_InvODT, float p_Exposure, float *p_LMTScale, float *p_GCompress, int p_GInvert, 
+float *p_Lum, int p_DISPLAY, int p_LIMIT, int p_EOTF, int p_SURROUND, int *p_Switch) {
 const char* Simple 		   		= "k_Simple";
 const char* CSCIN 		   		= "k_CSCIN";
 const char* IDT 		   		= "k_IDT";
@@ -4517,12 +4621,14 @@ MTLSize threadGroups     = MTLSizeMake((p_Width + exeWidth - 1)/exeWidth, p_Heig
 [computeEncoder setBytes:&p_ODT length:sizeof(int) atIndex:11];
 [computeEncoder setBytes:&p_InvODT length:sizeof(int) atIndex:12];
 [computeEncoder setBytes:p_LMTScale length:(sizeof(float) * 24) atIndex:13];
-[computeEncoder setBytes:p_Lum length:(sizeof(float) * 3) atIndex:14];
-[computeEncoder setBytes:&p_DISPLAY length:sizeof(int) atIndex:15];
-[computeEncoder setBytes:&p_LIMIT length:sizeof(int) atIndex:16];
-[computeEncoder setBytes:&p_EOTF length:sizeof(int) atIndex:17];
-[computeEncoder setBytes:&p_SURROUND length:sizeof(int) atIndex:18];
-[computeEncoder setBytes:p_Switch length:(sizeof(int) * 3) atIndex:19];
+[computeEncoder setBytes:p_GCompress length:(sizeof(float) * 7) atIndex:14];
+[computeEncoder setBytes:&p_GInvert length:sizeof(int) atIndex:15];
+[computeEncoder setBytes:p_Lum length:(sizeof(float) * 3) atIndex:16];
+[computeEncoder setBytes:&p_DISPLAY length:sizeof(int) atIndex:17];
+[computeEncoder setBytes:&p_LIMIT length:sizeof(int) atIndex:18];
+[computeEncoder setBytes:&p_EOTF length:sizeof(int) atIndex:19];
+[computeEncoder setBytes:&p_SURROUND length:sizeof(int) atIndex:20];
+[computeEncoder setBytes:p_Switch length:(sizeof(int) * 3) atIndex:21];
 
 [computeEncoder dispatchThreadgroups:threadGroups threadsPerThreadgroup: threadGroupCount];
 

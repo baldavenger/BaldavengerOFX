@@ -130,6 +130,12 @@ __constant__ mat3 SG3C_2_AP0_MAT =
 { { 0.6387886672f, -0.0039159061f, -0.0299072021f}, { 0.2723514337f, 1.0880732308f, -0.0264325799f}, { 0.0888598992f, -0.0841573249f, 1.056339782f} };
 __constant__ mat3 AP0_2_SG3C_MAT = 
 { { 1.5554591070f,  0.0090216145f, 0.0442640666f}, {-0.3932807985f, 0.9185569566f, 0.0118502607f}, {-0.1621783087f, 0.0724214290f, 0.9438856727f} };
+__constant__ mat3 VSG3_2_AP0_MAT = 
+{ { 0.7933297411f, 0.0155810585f, -0.0188647478f}, { 0.0890786256f, 1.0327123069f, 0.0127694121f}, { 0.1175916333f, -0.0482933654f, 1.0060953358f} };
+__constant__ mat3 VSG3C_2_AP0_MAT = 
+{ { 0.6742570921f, -0.0093136061f, -0.0382090673f}, { 0.2205717359f, 1.1059588614f, -0.0179383766f}, { 0.1051711720f, -0.0966452553f, 1.0561474439f} };
+__constant__ mat3 VGAMUT_2_AP0_MAT = 
+{ { 0.724382758f, 0.166748484f, 0.108497411f}, { 0.021354009f, 0.985138372f, -0.006319092f}, {-0.009234278f, -0.00104295f, 1.010272625f} };
 __constant__ mat3 AWG_2_AP0_MAT = 
 { { 0.6802059161f, 0.0854150695f, 0.0020562648f}, { 0.2361367500f, 1.0174707720f, -0.0625622837f}, { 0.0836574074f, -0.1028858550f, 1.0605062481f} };
 __constant__ mat3 AP0_2_AWG_MAT = 
@@ -391,15 +397,26 @@ out = (in * (171.2102946929f - 95.0f) / 0.01125f + 95.0f) / 1023.0f;
 return out;
 }
 
-__device__ static float vLogToLinScene( float x) {
-const float cutInv = 0.181f;
-const float b = 0.00873f;
-const float c = 0.241514f;
-const float d = 0.598206f;
+__device__ static float VLog_to_lin( float x) {
+float cutInv = 0.181f;
+float b = 0.00873f;
+float c = 0.241514f;
+float d = 0.598206f;
 if (x <= cutInv)
 return (x - 0.125f) / 5.6f;
 else
 return exp10f((x - d) / c) - b;
+}
+
+__device__ static float lin_to_VLog( float x) {
+float cut1 = 0.01f;
+float b = 0.00873f;
+float c = 0.241514f;
+float d = 0.598206f;
+if (x < cut1 )
+return 5.6f * x + 0.125f;
+else
+return c * log10f(x + b) + d;
 }
 
 __device__ static float SLog1_to_lin( float SLog, float b, float ab, float w) {
@@ -1085,7 +1102,6 @@ return mult_f3_f33( ap1_lin, AP1_2_AP0_MAT);
 }
 
 __device__ static float3 ACES_to_ACEScg( float3 ACES) {
-ACES = max_f3_f( ACES, 0.0f);
 float3 ACEScg = mult_f3_f33( ACES, AP0_2_AP1_MAT);
 return ACEScg;
 }
@@ -1093,50 +1109,6 @@ return ACEScg;
 __device__ static float3 ACEScg_to_ACES( float3 ACEScg) {
 float3 ACES = mult_f3_f33( ACEScg, AP1_2_AP0_MAT);
 return ACES;
-}
-
-__device__ static float ACESproxy_to_lin( float in) {
-float StepsPerStop = 50.0f;
-float MidCVoffset = 425.0f;
-return exp2f( (in - MidCVoffset) / StepsPerStop - 2.5f);
-}
-
-__device__ static float3 ACESproxy_to_ACES( float3 In) {
-float3 ACESproxy;
-ACESproxy.x = In.x * 1023.0f;
-ACESproxy.y = In.y * 1023.0f;
-ACESproxy.z = In.z * 1023.0f;
-float3 lin_AP1;
-lin_AP1.x = ACESproxy_to_lin( ACESproxy.x);
-lin_AP1.y = ACESproxy_to_lin( ACESproxy.y);
-lin_AP1.z = ACESproxy_to_lin( ACESproxy.z);
-float3 ACES = mult_f3_f33( lin_AP1, AP1_2_AP0_MAT);
-return ACES;
-}
-
-__device__ static float lin_to_ACESproxy( float in) {
-float StepsPerStop = 50.0f;
-float MidCVoffset = 425.0f;
-float CVmin = 64.0f;
-float CVmax = 940.0f;
-if (in <= exp2f(-9.72f))
-return CVmin;
-else
-return fmaxf( CVmin, fminf( CVmax, round( (log2f(in) + 2.5f) * StepsPerStop + MidCVoffset)));
-}
-
-__device__ static float3 ACES_to_ACESproxy( float3 ACES) {
-ACES = max_f3_f( ACES, 0.0f); 
-float3 lin_AP1 = mult_f3_f33( ACES, AP0_2_AP1_MAT);
-float ACESproxy[3];
-ACESproxy[0] = lin_to_ACESproxy( lin_AP1.x );
-ACESproxy[1] = lin_to_ACESproxy( lin_AP1.y );
-ACESproxy[2] = lin_to_ACESproxy( lin_AP1.z );
-float3 out;    
-out.x = ACESproxy[0] / 1023.0f;
-out.y = ACESproxy[1] / 1023.0f;
-out.z = ACESproxy[2] / 1023.0f;
-return out;
 }
 
 __device__ static float3 adx_convertFromLinear( float3 aces) {
@@ -1287,6 +1259,63 @@ out.z = lin_to_SLog3(lin_SG3C.z);
 return out;
 }
 
+__device__ static float3 Venice_SLog3_SG3_to_ACES( float3 in) {
+float3 lin_SG3;
+lin_SG3.x = SLog3_to_lin(in.x);
+lin_SG3.y = SLog3_to_lin(in.y);
+lin_SG3.z = SLog3_to_lin(in.z);
+float3 aces = mult_f3_f33(lin_SG3, VSG3_2_AP0_MAT);
+return aces;
+}
+
+__device__ static float3 ACES_to_Venice_SLog3_SG3( float3 in) {
+mat3 AP0_2_VSG3_MAT = invert_f33(VSG3_2_AP0_MAT);
+float3 lin_SG3 = mult_f3_f33(in, AP0_2_VSG3_MAT);
+float3 out;
+out.x = lin_to_SLog3(lin_SG3.x);
+out.y = lin_to_SLog3(lin_SG3.y);
+out.z = lin_to_SLog3(lin_SG3.z);
+return out;
+}
+
+__device__ static float3 Venice_SLog3_SG3C_to_ACES( float3 in) {
+float3 lin_SG3;
+lin_SG3.x = SLog3_to_lin(in.x);
+lin_SG3.y = SLog3_to_lin(in.y);
+lin_SG3.z = SLog3_to_lin(in.z);
+float3 aces = mult_f3_f33(lin_SG3, VSG3C_2_AP0_MAT);
+return aces;
+}
+
+__device__ static float3 ACES_to_Venice_SLog3_SG3C( float3 in) {
+mat3 AP0_2_VSG3C_MAT = invert_f33(VSG3C_2_AP0_MAT);
+float3 lin_SG3 = mult_f3_f33(in, AP0_2_VSG3C_MAT);
+float3 out;
+out.x = lin_to_SLog3(lin_SG3.x);
+out.y = lin_to_SLog3(lin_SG3.y);
+out.z = lin_to_SLog3(lin_SG3.z);
+return out;
+}
+
+__device__ static float3 VLog_VGamut_to_ACES( float3 in) {
+float3 lin_Vlog;
+lin_Vlog.x = VLog_to_lin(in.x);
+lin_Vlog.y = VLog_to_lin(in.y);
+lin_Vlog.z = VLog_to_lin(in.z);
+float3 aces = mult_f3_f33(lin_Vlog, VGAMUT_2_AP0_MAT);
+return aces;
+}
+
+__device__ static float3 ACES_to_VLog_VGamut( float3 in) {
+mat3 AP0_2_VGAMUT_MAT = invert_f33(VGAMUT_2_AP0_MAT);
+float3 lin_VLog = mult_f3_f33(in, AP0_2_VGAMUT_MAT);
+float3 out;
+out.x = lin_to_VLog(lin_VLog.x);
+out.y = lin_to_VLog(lin_VLog.y);
+out.z = lin_to_VLog(lin_VLog.z);
+return out;
+}
+
 __device__ static float3 IDT_Alexa_v3_raw_EI800_CCT6500( float3 In) {
 float black = 256.0f / 65535.0f;
 float r_lin = (In.x - black);
@@ -1300,12 +1329,10 @@ return aces;
 }
 
 __device__ static float3 IDT_Panasonic_V35( float3 VLog) {
-mat3 mat = { {0.724382758f, 0.166748484f, 0.108497411f}, 
-{0.021354009f, 0.985138372f, -0.006319092f}, 
-{-0.009234278f, -0.00104295f, 1.010272625f} };
-float rLin = vLogToLinScene(VLog.x);
-float gLin = vLogToLinScene(VLog.y);
-float bLin = vLogToLinScene(VLog.z);
+mat3 mat = VGAMUT_2_AP0_MAT;
+float rLin = VLog_to_lin(VLog.x);
+float gLin = VLog_to_lin(VLog.y);
+float bLin = VLog_to_lin(VLog.z);
 float3 out;
 out.x = mat.c0.x * rLin + mat.c0.y * gLin + mat.c0.z * bLin;
 out.y = mat.c1.x * rLin + mat.c1.y * gLin + mat.c1.z * bLin;
@@ -2700,6 +2727,66 @@ mat3 correctionMatrix =
 { 0.0778696104f, 0.1629613092f, 1.0003362486f } };
 float3 acesMod = mult_f3_f33( aces, correctionMatrix);
 return acesMod;
+}
+
+__device__ static float compress( float dist, float lim, float thr, float pwr, bool invert) {
+float comprDist;
+float scl;
+float nd;
+float p;
+if (dist < thr) {
+comprDist = dist;
+} else {
+scl = (lim - thr) / powf(powf((1.0f - thr) / (lim - thr), -pwr) - 1.0f, 1.0f / pwr);
+nd = (dist - thr) / scl;
+p = powf(nd, pwr);
+if (!invert) {
+comprDist = thr + scl * nd / (powf(1.0f + p, 1.0f / pwr));
+} else {
+if (dist > (thr + scl)) {
+comprDist = dist;
+} else {
+comprDist = thr + scl * powf(-(p / (p - 1.0f)), 1.0f / pwr);
+}}}
+return comprDist;
+}
+
+__device__ static float3 gamut_compress( float3 aces, float LIM_CYAN, float LIM_YELLOW, float LIM_MAGENTA, 
+float THR_CYAN, float THR_YELLOW, float THR_MAGENTA, float PWR, bool invert) {
+float3 linAP1 = mult_f3_f33(aces, AP0_2_AP1_MAT);
+float ach = max_f3(linAP1);
+float3 dist;
+if (ach == 0.0f) {
+dist = make_float3(0.0f, 0.0f, 0.0f);
+} else {
+dist.x = (ach - linAP1.x) / fabs(ach);
+dist.y = (ach - linAP1.y) / fabs(ach);
+dist.z = (ach - linAP1.z) / fabs(ach);
+}
+float3 comprDist;
+comprDist.x = compress(dist.x, LIM_CYAN, THR_CYAN, PWR, invert);
+comprDist.y = compress(dist.y, LIM_MAGENTA, THR_MAGENTA, PWR, invert);
+comprDist.z = compress(dist.z, LIM_YELLOW, THR_YELLOW, PWR, invert);
+float3 comprLinAP1;
+comprLinAP1.x = ach - comprDist.x * fabs(ach);
+comprLinAP1.y = ach - comprDist.y * fabs(ach);
+comprLinAP1.z = ach - comprDist.z * fabs(ach);
+aces = mult_f3_f33(comprLinAP1, AP1_2_AP0_MAT);
+return aces;
+}
+
+__device__ static float3 LMT_GamutCompress( float3 aces) {
+float LIM_CYAN =  1.147f;
+float LIM_MAGENTA = 1.264f;
+float LIM_YELLOW = 1.312f;
+float THR_CYAN = 0.815;
+float THR_MAGENTA = 0.803;
+float THR_YELLOW = 0.880;
+float PWR = 1.2f;
+bool invert = false;
+aces = gamut_compress(aces, LIM_CYAN, LIM_YELLOW, LIM_MAGENTA, 
+THR_CYAN, THR_YELLOW, THR_MAGENTA, PWR, invert);
+return aces;
 }
 
 __device__ static float3 RRT( float3 aces) {

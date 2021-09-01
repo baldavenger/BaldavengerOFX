@@ -58,10 +58,10 @@
     </Link>
     <PostBuildEvent>
       <Message>Creating bundle...</Message>
-      <Command>if not exist "$(OutDir)VideoGrade.Win10.DR17.CUDA.ofx.bundle\Contents\Resources" mkdir "$(OutDir)VideoGrade.Win10.DR17.CUDA.ofx.bundle\Contents\Resources"
-      copy "(OutDir)..\..\BaldavengerOFX.VideoGrade.png" "$(OutDir)VideoGrade.Win10.DR17.CUDA.ofx.bundle\Contents\Resources"
-	  if not exist "$(OutDir)VideoGrade.Win10.DR17.CUDA.ofx.bundle\Contents\Win64" mkdir "$(OutDir)VideoGrade.Win10.DR17.CUDA.ofx.bundle\Contents\Win64"
-	  copy /Y "$(TargetPath)" /B "$(OutDir)VideoGrade.Win10.DR17.CUDA.ofx.bundle\Contents\Win64\VideoGrade.ofx" /B
+      <Command>if not exist "$(OutDir)VideoGrade.ofx.bundle\Contents\Resources" mkdir "$(OutDir)VideoGrade.ofx.bundle\Contents\Resources"
+      copy "(OutDir)..\..\BaldavengerOFX.VideoGrade.png" "$(OutDir)VideoGrade.ofx.bundle\Contents\Resources"
+	  if not exist "$(OutDir)VideoGrade.ofx.bundle\Contents\Win64" mkdir "$(OutDir)VideoGrade.ofx.bundle\Contents\Win64"
+	  copy /Y "$(TargetPath)" /B "$(OutDir)VideoGrade.ofx.bundle\Contents\Win64\VideoGrade.ofx" /B
 </Command>
     </PostBuildEvent>
     <CudaCompile>

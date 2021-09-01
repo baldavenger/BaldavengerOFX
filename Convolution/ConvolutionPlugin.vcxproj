@@ -58,10 +58,10 @@
     </Link>
     <PostBuildEvent>
       <Message>Creating bundle...</Message>
-      <Command>if not exist "$(OutDir)Convolution.Win10.DR17.CUDA.ofx.bundle\Contents\Resources" mkdir "$(OutDir)Convolution.Win10.DR17.CUDA.ofx.bundle\Contents\Resources"
-      copy "(OutDir)..\..\BaldavengerOFX.Convolution.png" "$(OutDir)Convolution.Win10.DR17.CUDA.ofx.bundle\Contents\Resources"
-if not exist "$(OutDir)Convolution.Win10.DR17.CUDA.ofx.bundle\Contents\Win64" mkdir "$(OutDir)Convolution.Win10.DR17.CUDA.ofx.bundle\Contents\Win64"
-copy /Y "$(TargetPath)" /B "$(OutDir)Convolution.Win10.DR17.CUDA.ofx.bundle\Contents\Win64\Convolution.ofx" /B
+      <Command>if not exist "$(OutDir)Convolution.ofx.bundle\Contents\Resources" mkdir "$(OutDir)Convolution.ofx.bundle\Contents\Resources"
+      copy "(OutDir)..\..\BaldavengerOFX.Convolution.png" "$(OutDir)Convolution.ofx.bundle\Contents\Resources"
+if not exist "$(OutDir)Convolution.ofx.bundle\Contents\Win64" mkdir "$(OutDir)Convolution.ofx.bundle\Contents\Win64"
+copy /Y "$(TargetPath)" /B "$(OutDir)Convolution.ofx.bundle\Contents\Win64\Convolution.ofx" /B
 </Command>
     </PostBuildEvent>
     <CudaCompile>

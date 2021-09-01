@@ -58,10 +58,10 @@
     </Link>
     <PostBuildEvent>
       <Message>Creating bundle...</Message>
-      <Command>if not exist "$(OutDir)Qualifier.Win10.DR17.CUDA.ofx.bundle\Contents\Resources" mkdir "$(OutDir)Qualifier.Win10.DR17.CUDA.ofx.bundle\Contents\Resources"
-      copy "(OutDir)..\..\BaldavengerOFX.Qualifier.png" "$(OutDir)Qualifier.Win10.DR17.CUDA.ofx.bundle\Contents\Resources"
-	  if not exist "$(OutDir)Qualifier.Win10.DR17.CUDA.ofx.bundle\Contents\Win64" mkdir "$(OutDir)Qualifier.Win10.DR17.CUDA.ofx.bundle\Contents\Win64"
-	  copy /Y "$(TargetPath)" /B "$(OutDir)Qualifier.Win10.DR17.CUDA.ofx.bundle\Contents\Win64\Qualifier.ofx" /B
+      <Command>if not exist "$(OutDir)Qualifier.ofx.bundle\Contents\Resources" mkdir "$(OutDir)Qualifier.ofx.bundle\Contents\Resources"
+      copy "(OutDir)..\..\BaldavengerOFX.Qualifier.png" "$(OutDir)Qualifier.ofx.bundle\Contents\Resources"
+	  if not exist "$(OutDir)Qualifier.ofx.bundle\Contents\Win64" mkdir "$(OutDir)Qualifier.ofx.bundle\Contents\Win64"
+	  copy /Y "$(TargetPath)" /B "$(OutDir)Qualifier.ofx.bundle\Contents\Win64\Qualifier.ofx" /B
 </Command>
     </PostBuildEvent>
     <CudaCompile>

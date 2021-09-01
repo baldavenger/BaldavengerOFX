@@ -1,6 +1,6 @@
-#include "ACESPlugin.h"
+#include "../ACESPlugin.h"
 
-#include "ACES_LIB_CPU.h"
+#include "../ACES_LIB_CPU.h"
 
 #include <cstring>
 #include <cmath>
@@ -13,7 +13,7 @@ using std::string;
 #include "ofxsMultiThread.h"
 #include "ofxsProcessing.h"
 #include "ofxsLog.h"
-#include "exprtk.hpp"
+#include "../exprtk.hpp"
 
 #ifdef __APPLE__
 #define kPluginScript "/Library/Application Support/Blackmagic Design/DaVinci Resolve/LUT/ACES_DCTL/"
@@ -26,13 +26,13 @@ using std::string;
 #define kPluginScript2 "/home/resolve/LUT/"
 #endif
 
-#define kPluginName "ACES 1.2"
+#define kPluginName "ACES 1.3"
 #define kPluginGrouping "BaldavengerOFX"
 #define kPluginDescription \
-"ACES 1.2"
+"ACES 1.3"
 
 #define kPluginIdentifier "BaldavengerOFX.ACES"
-#define kPluginVersionMajor 3
+#define kPluginVersionMajor 4
 #define kPluginVersionMinor 0
 
 #define kSupportsTiles false
@@ -64,8 +64,6 @@ eInputInverse,
 #define kParamCSCINOptionACEScctHint "ACEScct to ACES"
 #define kParamCSCINOptionACEScg "ACEScg"
 #define kParamCSCINOptionACEScgHint "ACEScg to ACES"
-#define kParamCSCINOptionACESproxy "ACESproxy"
-#define kParamCSCINOptionACESproxyHint "ACESproxy to ACES"
 #define kParamCSCINOptionADX "ADX"
 #define kParamCSCINOptionADXHint "ADX to ACES"
 #define kParamCSCINOptionICPCT "ICpCt"
@@ -78,6 +76,12 @@ eInputInverse,
 #define kParamCSCINOptionSLOG3SG3Hint "Slog3 SGamut3 to ACES"
 #define kParamCSCINOptionSLOG3SG3C "Sony SLog3 SGamut3Cine"
 #define kParamCSCINOptionSLOG3SG3CHint "Slog3 SGamut3Cine to ACES"
+#define kParamCSCINOptionVENSLOG3SG3 "Venice Sony SLog3 SGamut3"
+#define kParamCSCINOptionVENSLOG3SG3Hint "Venice Slog3 SGamut3 to ACES"
+#define kParamCSCINOptionVENSLOG3SG3C "Venice Sony SLog3 SGamut3Cine"
+#define kParamCSCINOptionVENSLOG3SG3CHint "Venice Slog3 SGamut3Cine to ACES"
+#define kParamCSCINOptionVLOGVG "VLog VGamut"
+#define kParamCSCINOptionVLOGVGHint "VLog VGamut to ACES"
 
 enum CSCINEnum
 {
@@ -85,13 +89,15 @@ eCSCINBypass,
 eCSCINACEScc,
 eCSCINACEScct,
 eCSCINACEScg,
-eCSCINACESproxy,
 eCSCINADX,
 eCSCINICPCT,
 eCSCINLOGCAWG,
 eCSCINLOG3G10RWG,
 eCSCINSLOG3SG3,
 eCSCINSLOG3SG3C,
+eCSCINVENSLOG3SG3,
+eCSCINVENSLOG3SG3C,
+eCSCINVLOGVG,
 };
 
 #define kParamIDT "k_IDT"
@@ -232,6 +238,10 @@ eIDTSRGB,
 #define kParamLMTOptionPFECustomHint "Custom Print Film Emulation"
 #define kParamLMTOptionBleach "Bleach Bypass"
 #define kParamLMTOptionBleachHint "Bleach Bypass"
+#define kParamLMTOptionCompress "Gamut Compress"
+#define kParamLMTOptionCompressHint "Gamut Compress"
+#define kParamLMTOptionCompressCustom "Custom Gamut Compress"
+#define kParamLMTOptionCompressCustomHint "Custom Gamut Compress"
 
 enum LMTEnum
 {
@@ -241,6 +251,8 @@ eLMTFix,
 eLMTPFE,
 eLMTPFECustom,
 eLMTBleach,
+eLMTCompress,
+eLMTCompressCustom,
 };
 
 #define kParamCSCOUT "h_CSCOUT"
@@ -254,8 +266,6 @@ eLMTBleach,
 #define kParamCSCOUTOptionACEScctHint "ACES to ACEScct"
 #define kParamCSCOUTOptionACEScg "ACEScg"
 #define kParamCSCOUTOptionACEScgHint "ACES to ACEScg"
-#define kParamCSCOUTOptionACESproxy "ACESproxy"
-#define kParamCSCOUTOptionACESproxyHint "ACES to ACESproxy"
 #define kParamCSCOUTOptionADX "ADX"
 #define kParamCSCOUTOptionADXHint "ACES to ADX"
 #define kParamCSCOUTOptionICPCT "ICpCt"
@@ -268,6 +278,12 @@ eLMTBleach,
 #define kParamCSCOUTOptionSLOG3SG3Hint "ACES to Slog3 SGamut3"
 #define kParamCSCOUTOptionSLOG3SG3C "Sony SLog3 SGamut3Cine"
 #define kParamCSCOUTOptionSLOG3SG3CHint "ACES to Slog3 SGamut3Cine"
+#define kParamCSCOUTOptionVENSLOG3SG3 "Venice Sony SLog3 SGamut3"
+#define kParamCSCOUTOptionVENSLOG3SG3Hint "ACES to Venice Slog3 SGamut3"
+#define kParamCSCOUTOptionVENSLOG3SG3C "Venice Sony SLog3 SGamut3Cine"
+#define kParamCSCOUTOptionVENSLOG3SG3CHint "ACES to Venice Slog3 SGamut3Cine"
+#define kParamCSCOUTOptionVLOGVG "VLog VGamut"
+#define kParamCSCOUTOptionVLOGVGHint "ACES to VLog VGamut"
 
 enum CSCOUTEnum
 {
@@ -275,13 +291,15 @@ eCSCOUTBypass,
 eCSCOUTACEScc,
 eCSCOUTACEScct,
 eCSCOUTACEScg,
-eCSCOUTACESproxy,
 eCSCOUTADX,
 eCSCOUTICPCT,
 eCSCOUTLOGCAWG,
 eCSCOUTLOG3G10RWG,
 eCSCOUTSLOG3SG3,
 eCSCOUTSLOG3SG3C,
+eCSCOUTVENSLOG3SG3,
+eCSCOUTVENSLOG3SG3C,
+eCSCOUTVLOGVG,
 };
 
 #define kParamRRT "h_RRT"
@@ -645,14 +663,14 @@ class ACES : public OFX::ImageProcessor
 public:
 explicit ACES(OFX::ImageEffect& p_Instance);
 
-//virtual void processImagesCUDA();
 virtual void processImagesMetal();
 virtual void multiThreadProcessImages(OfxRectI p_ProcWindow);
 
 void setSrcImg(OFX::Image* p_SrcImg);
 void setScales(int p_Direction, int p_CSCIN, int p_IDT, int p_LMT, int p_CSCOUT, 
 int p_RRT, int p_InvRRT, int p_ODT, int p_InvODT, float p_Exposure, float *p_LMTScale, 
-float *p_Lum, int p_DISPLAY, int p_LIMIT, int p_EOTF, int p_SURROUND, int *p_SWitch);
+float *p_GCompress, int p_GInvert, float *p_Lum, int p_DISPLAY, int p_LIMIT, 
+int p_EOTF, int p_SURROUND, int *p_SWitch);
 
 private:
 OFX::Image* _srcImg;
@@ -667,6 +685,8 @@ int _odt;
 int _invodt;
 float _exposure;
 float _lmtscale[24];
+float _gcompress[7];
+int _ginvert;
 float _lum[3];
 int _display;
 int _limit;
@@ -681,8 +701,8 @@ ACES::ACES(OFX::ImageEffect& p_Instance)
 #ifdef __APPLE__
 extern void RunMetalKernel(void* p_CmdQ, const float* p_Input, float* p_Output, int p_Width, int p_Height, 
 int p_Direction, int p_CSCIN, int p_IDT, int p_LMT, int p_CSCOUT, int p_RRT, int p_InvRRT, 
-int p_ODT, int p_InvODT, float p_Exposure, float* p_LMTScale, float *p_Lum, 
-int p_DISPLAY, int p_LIMIT, int p_EOTF, int p_SURROUND, int *p_Switch);
+int p_ODT, int p_InvODT, float p_Exposure, float* p_LMTScale, float *p_GCompress, int p_GInvert, 
+float *p_Lum, int p_DISPLAY, int p_LIMIT, int p_EOTF, int p_SURROUND, int *p_Switch);
 #endif
 
 void ACES::processImagesMetal()
@@ -696,7 +716,8 @@ float* input = static_cast<float*>(_srcImg->getPixelData());
 float* output = static_cast<float*>(_dstImg->getPixelData());
 
 RunMetalKernel(_pMetalCmdQ, input, output, width, height, _direction, _cscin, _idt, _lmt, _cscout, _rrt, 
-_invrrt, _odt, _invodt, _exposure, _lmtscale, _lum, _display, _limit, _eotf, _surround, _switch);
+_invrrt, _odt, _invodt, _exposure, _lmtscale, _gcompress, _ginvert, _lum, _display, 
+_limit, _eotf, _surround, _switch);
 #endif
 }
 
@@ -724,25 +745,31 @@ case 3:
 {aces = ACEScg_to_ACES(aces);}
 break;
 case 4:
-{aces = ACESproxy_to_ACES(aces);}
-break;
-case 5:
 {aces = ADX_to_ACES(aces);}
 break;
-case 6:
+case 5:
 {aces = ICpCt_to_ACES(aces);}
 break;
-case 7:
+case 6:
 {aces = LogC_EI800_AWG_to_ACES(aces);}
 break;
-case 8:
+case 7:
 {aces = Log3G10_RWG_to_ACES(aces);}
 break;
-case 9:
+case 8:
 {aces = SLog3_SG3_to_ACES(aces);}
 break;
+case 9:
+{aces = SLog3_SG3C_to_ACES(aces);}
+break;
 case 10:
-{aces = SLog3_SG3C_to_ACES(aces);}}
+{aces = Venice_SLog3_SG3_to_ACES(aces);}
+break;
+case 11:
+{aces = Venice_SLog3_SG3C_to_ACES(aces);}
+break;
+case 12:
+{aces = VLog_VGamut_to_ACES(aces);}}
 
 switch (_idt){
 case 0:
@@ -923,8 +950,16 @@ aces = scale_C_at_H(aces, _lmtscale[21], _lmtscale[22], _lmtscale[23]);
 break;
 case 5:
 {aces = LMT_Bleach(aces);}
+break;
+case 6:
+{aces = LMT_GamutCompress(aces);}
+break;
+case 7:
+{
+bool ginvert = _ginvert == 1;
+aces = gamut_compress(aces, _gcompress[0], _gcompress[1], _gcompress[2], _gcompress[3], 
+_gcompress[4], _gcompress[5], _gcompress[6], ginvert);}
 }
-
 switch (_cscout){
 case 0:
 {}
@@ -939,26 +974,31 @@ case 3:
 {aces = ACES_to_ACEScg(aces);}
 break;
 case 4:
-{aces = ACES_to_ACESproxy(aces);}
-break;
-case 5:
 {aces = ACES_to_ADX(aces);}
 break;
-case 6:
+case 5:
 {aces = ACES_to_ICpCt(aces);}
 break;
-case 7:
+case 6:
 {aces = ACES_to_LogC_EI800_AWG(aces);}
 break;
-case 8:
+case 7:
 {aces = ACES_to_Log3G10_RWG(aces);}
 break;
-case 9:
+case 8:
 {aces = ACES_to_SLog3_SG3(aces);}
 break;
-case 10:
+case 9:
 {aces = ACES_to_SLog3_SG3C(aces);}
-}
+break;
+case 10:
+{aces = ACES_to_Venice_SLog3_SG3(aces);}
+break;
+case 11:
+{aces = ACES_to_Venice_SLog3_SG3C(aces);}
+break;
+case 12:
+{aces = ACES_to_VLog_VGamut(aces);}}
 
 if (_rrt == 1 && _odt < 22)
 aces = h_RRT(aces);
@@ -1194,8 +1234,8 @@ _srcImg = p_SrcImg;
 }
 
 void ACES::setScales(int p_Direction, int p_CSCIN, int p_IDT, int p_LMT, int p_CSCOUT, int p_RRT, 
-int p_InvRRT, int p_ODT, int p_InvODT, float p_Exposure, float *p_LMTScale, float *p_Lum, 
-int p_DISPLAY, int p_LIMIT, int p_EOTF, int p_SURROUND, int *p_Switch)
+int p_InvRRT, int p_ODT, int p_InvODT, float p_Exposure, float *p_LMTScale, float *p_GCompress, 
+int p_GInvert, float *p_Lum, int p_DISPLAY, int p_LIMIT, int p_EOTF, int p_SURROUND, int *p_Switch)
 {
 _direction = p_Direction;
 _cscin = p_CSCIN;
@@ -1231,6 +1271,14 @@ _lmtscale[20] = p_LMTScale[20];
 _lmtscale[21] = p_LMTScale[21];
 _lmtscale[22] = p_LMTScale[22];
 _lmtscale[23] = p_LMTScale[23];
+_gcompress[0] = p_GCompress[0];
+_gcompress[1] = p_GCompress[1];
+_gcompress[2] = p_GCompress[2];
+_gcompress[3] = p_GCompress[3];
+_gcompress[4] = p_GCompress[4];
+_gcompress[5] = p_GCompress[5];
+_gcompress[6] = p_GCompress[6];
+_ginvert = p_GInvert;
 _lum[0] = p_Lum[0];
 _lum[1] = p_Lum[1];
 _lum[2] = p_Lum[2];
@@ -1292,6 +1340,14 @@ OFX::DoubleParam* m_Shift4;
 OFX::DoubleParam* m_HueCH2;
 OFX::DoubleParam* m_RangeCH2;
 OFX::DoubleParam* m_ScaleCH2;
+OFX::DoubleParam* m_LCYAN;
+OFX::DoubleParam* m_LYELLOW;
+OFX::DoubleParam* m_LMAGENTA;
+OFX::DoubleParam* m_TCYAN;
+OFX::DoubleParam* m_TYELLOW;
+OFX::DoubleParam* m_TMAGENTA;
+OFX::DoubleParam* m_PWR;
+OFX::BooleanParam* m_GINVERT;
 OFX::DoubleParam* m_YMIN;
 OFX::DoubleParam* m_YMID;
 OFX::DoubleParam* m_YMAX;
@@ -1357,6 +1413,14 @@ m_Shift4 = fetchDoubleParam("Shift4");
 m_HueCH2 = fetchDoubleParam("HueCH2");
 m_RangeCH2 = fetchDoubleParam("RangeCH2");
 m_ScaleCH2 = fetchDoubleParam("ScaleCH2");
+m_LCYAN = fetchDoubleParam("LCYAN");
+m_LYELLOW = fetchDoubleParam("LYELLOW");
+m_LMAGENTA = fetchDoubleParam("LMAGENTA");
+m_TCYAN = fetchDoubleParam("TCYAN");
+m_TYELLOW = fetchDoubleParam("TYELLOW");
+m_TMAGENTA = fetchDoubleParam("TMAGENTA");
+m_PWR = fetchDoubleParam("PWR");
+m_GINVERT = fetchBooleanParam("GINVERT");
 m_YMIN = fetchDoubleParam("YMIN");
 m_YMID = fetchDoubleParam("YMID");
 m_YMAX = fetchDoubleParam("YMAX");
@@ -1440,6 +1504,7 @@ bool inverse = direction == 1;
 int _lmt;
 m_LMT->getValueAtTime(p_Args.time, _lmt);
 bool custom = _lmt == 1;
+bool gamutcustom = _lmt == 7;
 m_CSCIN->setIsSecretAndDisabled(!forward);
 m_IDT->setIsSecretAndDisabled(!forward);
 m_LMT->setIsSecretAndDisabled(!forward);
@@ -1473,6 +1538,14 @@ m_Shift4->setIsSecretAndDisabled(!forward || !custom);
 m_HueCH2->setIsSecretAndDisabled(!forward || !custom);
 m_RangeCH2->setIsSecretAndDisabled(!forward || !custom);
 m_ScaleCH2->setIsSecretAndDisabled(!forward || !custom);
+m_LCYAN->setIsSecretAndDisabled(!forward || !gamutcustom);
+m_LYELLOW->setIsSecretAndDisabled(!forward || !gamutcustom);
+m_LMAGENTA->setIsSecretAndDisabled(!forward || !gamutcustom);
+m_TCYAN->setIsSecretAndDisabled(!forward || !gamutcustom);
+m_TYELLOW->setIsSecretAndDisabled(!forward || !gamutcustom);
+m_TMAGENTA->setIsSecretAndDisabled(!forward || !gamutcustom);
+m_PWR->setIsSecretAndDisabled(!forward || !gamutcustom);
+m_GINVERT->setIsSecretAndDisabled(!forward || !gamutcustom);
 int _odt;
 m_ODT->getValueAtTime(p_Args.time, _odt);
 bool odt = _odt == 1;
@@ -1495,6 +1568,7 @@ if (p_ParamName == kParamLMT) {
 int _lmt;
 m_LMT->getValueAtTime(p_Args.time, _lmt);
 bool custom = _lmt == 1 || _lmt == 4;
+bool gamutcustom = _lmt == 7;
 m_ScaleC->setIsSecretAndDisabled(!custom);
 m_Slope->setIsSecretAndDisabled(!custom);
 m_Offset->setIsSecretAndDisabled(!custom);
@@ -1519,6 +1593,14 @@ m_Shift4->setIsSecretAndDisabled(!custom);
 m_HueCH2->setIsSecretAndDisabled(!custom);
 m_RangeCH2->setIsSecretAndDisabled(!custom);
 m_ScaleCH2->setIsSecretAndDisabled(!custom);
+m_LCYAN->setIsSecretAndDisabled(!gamutcustom);
+m_LYELLOW->setIsSecretAndDisabled(!gamutcustom);
+m_LMAGENTA->setIsSecretAndDisabled(!gamutcustom);
+m_TCYAN->setIsSecretAndDisabled(!gamutcustom);
+m_TYELLOW->setIsSecretAndDisabled(!gamutcustom);
+m_TMAGENTA->setIsSecretAndDisabled(!gamutcustom);
+m_PWR->setIsSecretAndDisabled(!gamutcustom);
+m_GINVERT->setIsSecretAndDisabled(!gamutcustom);
 
 if (_lmt == 4) {
 m_ScaleC->setValue(0.7);
@@ -1654,6 +1736,16 @@ _lmtscale[20] = m_Shift4->getValueAtTime(p_Args.time);
 _lmtscale[21] = m_HueCH2->getValueAtTime(p_Args.time);
 _lmtscale[22] = m_RangeCH2->getValueAtTime(p_Args.time);
 _lmtscale[23] = m_ScaleCH2->getValueAtTime(p_Args.time);
+float _gcompress[7];
+_gcompress[0] = m_LCYAN->getValueAtTime(p_Args.time);
+_gcompress[1] = m_LYELLOW->getValueAtTime(p_Args.time);
+_gcompress[2] = m_LMAGENTA->getValueAtTime(p_Args.time);
+_gcompress[3] = m_TCYAN->getValueAtTime(p_Args.time);
+_gcompress[4] = m_TYELLOW->getValueAtTime(p_Args.time);
+_gcompress[5] = m_TMAGENTA->getValueAtTime(p_Args.time);
+_gcompress[6] = m_PWR->getValueAtTime(p_Args.time);
+bool ginvert = m_GINVERT->getValueAtTime(p_Args.time);
+int _ginvert = ginvert ? 1 : 0;
 float _lum[3];
 _lum[0] = m_YMIN->getValueAtTime(p_Args.time);
 _lum[0] *= 0.0001f;
@@ -1685,7 +1777,7 @@ if (reply == OFX::Message::eMessageReplyYes) {
 FILE * pFile;
 pFile = fopen ((PATH + NAME + ".dctl").c_str(), "w");
 if (pFile != NULL) {
-fprintf (pFile, "// ACES 1.2 DCTL export \n" \
+fprintf (pFile, "// ACES 1.3 DCTL export \n" \
 "// Should be placed in directory as ACES_LIB.h \n" \
 " \n" \
 "#include \"ACES_LIB.h\" \n" \
@@ -1726,6 +1818,14 @@ fprintf (pFile, "// ACES 1.2 DCTL export \n" \
 "float HueCH2 = %ff; \n" \
 "float RangeCH2 = %ff; \n" \
 "float ScaleCH2 = %ff; \n" \
+"float LIM_CYAN =  %ff; \n" \
+"float LIM_MAGENTA = %ff; \n" \
+"float LIM_YELLOW = %ff; \n" \
+"float THR_CYAN = %ff; \n" \
+"float THR_MAGENTA = %ff; \n" \
+"float THR_YELLOW = %ff; \n" \
+"float PWR = %ff; \n" \
+"int GInvert = %d; \n" \
 "float Black_Luminance = %ff; \n" \
 "float Midpoint_Luminance = %ff; \n" \
 "float Peak_white_Luminance = %ff; \n" \
@@ -1752,25 +1852,31 @@ fprintf (pFile, "// ACES 1.2 DCTL export \n" \
 "{aces = ACEScg_to_ACES(aces);} \n" \
 "break; \n" \
 "case 4: \n" \
-"{aces = ACESproxy_to_ACES(aces);} \n" \
-"break; \n" \
-"case 5: \n" \
 "{aces = ADX_to_ACES(aces);} \n" \
 "break; \n" \
-"case 6: \n" \
+"case 5: \n" \
 "{aces = ICpCt_to_ACES(aces);} \n" \
 "break; \n" \
-"case 7: \n" \
+"case 6: \n" \
 "{aces = LogC_EI800_AWG_to_ACES(aces);} \n" \
 "break; \n" \
-"case 8: \n" \
+"case 7: \n" \
 "{aces = Log3G10_RWG_to_ACES(aces);} \n" \
 "break; \n" \
-"case 9: \n" \
+"case 8: \n" \
 "{aces = SLog3_SG3_to_ACES(aces);} \n" \
 "break; \n" \
+"case 9: \n" \
+"{aces = SLog3_SG3C_to_ACES(aces);} \n" \
+"break; \n" \
 "case 10: \n" \
-"{aces = SLog3_SG3C_to_ACES(aces);}} \n" \
+"{aces = Venice_SLog3_SG3_to_ACES(aces);} \n" \
+"break; \n" \
+"case 11: \n" \
+"{aces = Venice_SLog3_SG3C_to_ACES(aces);} \n" \
+"break; \n" \
+"case 12: \n" \
+"{aces = VLog_VGamut_to_ACES(aces);}} \n" \
 "switch (Idt){ \n" \
 "case 0: \n" \
 "{} \n" \
@@ -1951,7 +2057,16 @@ fprintf (pFile, "// ACES 1.2 DCTL export \n" \
 "case 5: \n" \
 "{ \n" \
 "aces = LMT_Bleach(aces); \n" \
-"}} \n" \
+"break; \n" \
+"case 6: \n" \
+"{aces = LMT_GamutCompress(aces);} \n" \
+"break; \n" \
+"case 7: \n" \
+"{ \n" \
+"bool ginvert = GInvert == 1; \n" \
+"aces = gamut_compress(aces, LIM_CYAN, LIM_YELLOW, LIM_MAGENTA, \n" \
+"THR_CYAN, THR_YELLOW, THR_MAGENTA, PWR, ginvert);} \n" \
+"} \n" \
 "switch (CscOut){ \n" \
 "case 0: \n" \
 "{} \n" \
@@ -1966,26 +2081,31 @@ fprintf (pFile, "// ACES 1.2 DCTL export \n" \
 "{aces = ACES_to_ACEScg(aces);} \n" \
 "break; \n" \
 "case 4: \n" \
-"{aces = ACES_to_ACESproxy(aces);} \n" \
-"break; \n" \
-"case 5: \n" \
 "{aces = ACES_to_ADX(aces);} \n" \
 "break; \n" \
-"case 6: \n" \
+"case 5: \n" \
 "{aces = ACES_to_ICpCt(aces);} \n" \
 "break; \n" \
-"case 7: \n" \
+"case 6: \n" \
 "{aces = ACES_to_LogC_EI800_AWG(aces);} \n" \
 "break; \n" \
-"case 8: \n" \
+"case 7: \n" \
 "{aces = ACES_to_Log3G10_RWG(aces);} \n" \
 "break; \n" \
-"case 9: \n" \
+"case 8: \n" \
 "{aces = ACES_to_SLog3_SG3(aces);} \n" \
 "break; \n" \
-"case 10: \n" \
+"case 9: \n" \
 "{aces = ACES_to_SLog3_SG3C(aces);} \n" \
-"} \n" \
+"break; \n" \
+"case 10: \n" \
+"{aces = ACES_to_Venice_SLog3_SG3(aces);} \n" \
+"break; \n" \
+"case 11: \n" \
+"{aces = ACES_to_Venice_SLog3_SG3C(aces);} \n" \
+"break; \n" \
+"case 12: \n" \
+"{aces = ACES_to_VLog_VGamut(aces);}} \n" \
 "if (Rrt == 1 && Odt < 22) \n" \
 "aces = RRT(aces); \n" \
 "switch (Odt){ \n" \
@@ -2203,6 +2323,7 @@ fprintf (pFile, "// ACES 1.2 DCTL export \n" \
 _lmtscale[0], _lmtscale[1], _lmtscale[2], _lmtscale[3], _lmtscale[4], _lmtscale[5], _lmtscale[6], _lmtscale[7], 
 _lmtscale[8], _lmtscale[9], _lmtscale[10], _lmtscale[11], _lmtscale[12], _lmtscale[13], _lmtscale[14], _lmtscale[15], 
 _lmtscale[16], _lmtscale[17], _lmtscale[18], _lmtscale[19], _lmtscale[20], _lmtscale[21], _lmtscale[22], _lmtscale[23], 
+_gcompress[0], _gcompress[1], _gcompress[2], _gcompress[3], _gcompress[4], _gcompress[5], _gcompress[6], _ginvert, 
 _lum[0], _lum[1], _lum[2], _display, _limit, _eotf, _surround, _switch[0], _switch[1], _switch[2]);
 fclose (pFile);
 } else {
@@ -2371,25 +2492,31 @@ case 3:
 {aces = ACEScg_to_ACES(aces);}
 break;
 case 4:
-{aces = ACESproxy_to_ACES(aces);}
-break;
-case 5:
 {aces = ADX_to_ACES(aces);}
 break;
-case 6:
+case 5:
 {aces = ICpCt_to_ACES(aces);}
 break;
-case 7:
+case 6:
 {aces = LogC_EI800_AWG_to_ACES(aces);}
 break;
-case 8:
+case 7:
 {aces = Log3G10_RWG_to_ACES(aces);}
 break;
-case 9:
+case 8:
 {aces = SLog3_SG3_to_ACES(aces);}
 break;
+case 9:
+{aces = SLog3_SG3C_to_ACES(aces);}
+break;
 case 10:
-{aces = SLog3_SG3C_to_ACES(aces);}}
+{aces = Venice_SLog3_SG3_to_ACES(aces);}
+break;
+case 11:
+{aces = Venice_SLog3_SG3C_to_ACES(aces);}
+break;
+case 12:
+{aces = VLog_VGamut_to_ACES(aces);}}
 switch (_idt){
 case 0:
 {}
@@ -2567,6 +2694,13 @@ aces = scale_C_at_H(aces, _lmtscale[21], _lmtscale[22], _lmtscale[23]);
 break;
 case 5:
 {aces = LMT_Bleach(aces);}
+break;
+case 6:
+{aces = LMT_GamutCompress(aces);}
+break;
+case 7:
+{aces = gamut_compress(aces, _gcompress[0], _gcompress[1], _gcompress[2], 
+_gcompress[3], _gcompress[4], _gcompress[5], _gcompress[6], ginvert);}
 }
 switch (_cscout){
 case 0:
@@ -2582,26 +2716,31 @@ case 3:
 {aces = ACES_to_ACEScg(aces);}
 break;
 case 4:
-{aces = ACES_to_ACESproxy(aces);}
-break;
-case 5:
 {aces = ACES_to_ADX(aces);}
 break;
-case 6:
+case 5:
 {aces = ACES_to_ICpCt(aces);}
 break;
-case 7:
+case 6:
 {aces = ACES_to_LogC_EI800_AWG(aces);}
 break;
-case 8:
+case 7:
 {aces = ACES_to_Log3G10_RWG(aces);}
 break;
-case 9:
+case 8:
 {aces = ACES_to_SLog3_SG3(aces);}
 break;
-case 10:
+case 9:
 {aces = ACES_to_SLog3_SG3C(aces);}
-}
+break;
+case 10:
+{aces = ACES_to_Venice_SLog3_SG3(aces);}
+break;
+case 11:
+{aces = ACES_to_Venice_SLog3_SG3C(aces);}
+break;
+case 12:
+{aces = ACES_to_VLog_VGamut(aces);}}
 if (_rrt == 1 && _odt < 22)
 aces = h_RRT(aces);
 switch (_odt)
@@ -2888,6 +3027,17 @@ _lmtscale[21] = m_HueCH2->getValueAtTime(p_Args.time);
 _lmtscale[22] = m_RangeCH2->getValueAtTime(p_Args.time);
 _lmtscale[23] = m_ScaleCH2->getValueAtTime(p_Args.time);
 
+float _gcompress[7];
+_gcompress[0] = m_LCYAN->getValueAtTime(p_Args.time);
+_gcompress[1] = m_LYELLOW->getValueAtTime(p_Args.time);
+_gcompress[2] = m_LMAGENTA->getValueAtTime(p_Args.time);
+_gcompress[3] = m_TCYAN->getValueAtTime(p_Args.time);
+_gcompress[4] = m_TYELLOW->getValueAtTime(p_Args.time);
+_gcompress[5] = m_TMAGENTA->getValueAtTime(p_Args.time);
+_gcompress[6] = m_PWR->getValueAtTime(p_Args.time);
+bool ginvert = m_GINVERT->getValueAtTime(p_Args.time);
+int _ginvert = ginvert ? 1 : 0;
+
 float _lum[3];
 _lum[0] = m_YMIN->getValueAtTime(p_Args.time);
 _lum[1] = m_YMID->getValueAtTime(p_Args.time);
@@ -2919,7 +3069,7 @@ p_ACES.setGPURenderArgs(p_Args);
 p_ACES.setRenderWindow(p_Args.renderWindow);
 
 p_ACES.setScales(_direction, _cscin, _idt, _lmt, _cscout, _rrt, _invrrt, _odt, 
-_invodt, _exposure, _lmtscale, _lum, _display, _limit, _eotf, _surround, _switch);
+_invodt, _exposure, _lmtscale, _gcompress, _ginvert, _lum, _display, _limit, _eotf, _surround, _switch);
 
 p_ACES.process();
 }
@@ -3007,8 +3157,6 @@ assert(choiceparam->getNOptions() == (int)eCSCINACEScct);
 choiceparam->appendOption(kParamCSCINOptionACEScct, kParamCSCINOptionACEScctHint);
 assert(choiceparam->getNOptions() == (int)eCSCINACEScg);
 choiceparam->appendOption(kParamCSCINOptionACEScg, kParamCSCINOptionACEScgHint);
-assert(choiceparam->getNOptions() == (int)eCSCINACESproxy);
-choiceparam->appendOption(kParamCSCINOptionACESproxy, kParamCSCINOptionACESproxyHint);
 assert(choiceparam->getNOptions() == (int)eCSCINADX);
 choiceparam->appendOption(kParamCSCINOptionADX, kParamCSCINOptionADXHint);
 assert(choiceparam->getNOptions() == (int)eCSCINICPCT);
@@ -3021,6 +3169,12 @@ assert(choiceparam->getNOptions() == (int)eCSCINSLOG3SG3);
 choiceparam->appendOption(kParamCSCINOptionSLOG3SG3, kParamCSCINOptionSLOG3SG3Hint);
 assert(choiceparam->getNOptions() == (int)eCSCINSLOG3SG3C);
 choiceparam->appendOption(kParamCSCINOptionSLOG3SG3C, kParamCSCINOptionSLOG3SG3CHint);
+assert(choiceparam->getNOptions() == (int)eCSCINVENSLOG3SG3);
+choiceparam->appendOption(kParamCSCINOptionVENSLOG3SG3, kParamCSCINOptionVENSLOG3SG3Hint);
+assert(choiceparam->getNOptions() == (int)eCSCINVENSLOG3SG3C);
+choiceparam->appendOption(kParamCSCINOptionVENSLOG3SG3C, kParamCSCINOptionVENSLOG3SG3CHint);
+assert(choiceparam->getNOptions() == (int)eCSCINVLOGVG);
+choiceparam->appendOption(kParamCSCINOptionVLOGVG, kParamCSCINOptionVLOGVGHint);
 choiceparam->setDefault( (int)eCSCINBypass );
 choiceparam->setAnimates(false);
 choiceparam->setIsSecretAndDisabled(false);
@@ -3129,6 +3283,10 @@ assert(choiceparam->getNOptions() == (int)eLMTPFECustom);
 choiceparam->appendOption(kParamLMTOptionPFECustom, kParamLMTOptionPFECustomHint);
 assert(choiceparam->getNOptions() == (int)eLMTBleach);
 choiceparam->appendOption(kParamLMTOptionBleach, kParamLMTOptionBleachHint);
+assert(choiceparam->getNOptions() == (int)eLMTCompress);
+choiceparam->appendOption(kParamLMTOptionCompress, kParamLMTOptionCompressHint);
+assert(choiceparam->getNOptions() == (int)eLMTCompressCustom);
+choiceparam->appendOption(kParamLMTOptionCompressCustom, kParamLMTOptionCompressCustomHint);
 choiceparam->setDefault( (int)eLMTBypass );
 choiceparam->setAnimates(false);
 choiceparam->setIsSecretAndDisabled(false);
@@ -3326,6 +3484,69 @@ param->setDisplayRange(0.0, 2.0);
 param->setIsSecretAndDisabled(true);
 page->addChild(*param);
 
+param = defineScaleParam(p_Desc, "LCYAN", "cyan limit", "distance from achromatic", 0);
+param->setDefault(1.147);
+param->setRange(1.001, 2.0);
+param->setIncrement(0.001);
+param->setDisplayRange(1.001, 2.0);
+param->setIsSecretAndDisabled(true);
+page->addChild(*param);
+
+param = defineScaleParam(p_Desc, "TCYAN", "cyan threshold", "percentage of the core gamut", 0);
+param->setDefault(0.815);
+param->setRange(0.0, 1.0);
+param->setIncrement(0.001);
+param->setDisplayRange(0.0, 1.0);
+param->setIsSecretAndDisabled(true);
+page->addChild(*param);
+
+param = defineScaleParam(p_Desc, "LMAGENTA", "magenta limit", "distance from achromatic", 0);
+param->setDefault(1.264);
+param->setRange(1.001, 2.0);
+param->setIncrement(0.001);
+param->setDisplayRange(1.001, 2.0);
+param->setIsSecretAndDisabled(true);
+page->addChild(*param);
+
+param = defineScaleParam(p_Desc, "TMAGENTA", "magenta threshold", "percentage of the core gamut", 0);
+param->setDefault(0.803);
+param->setRange(0.0, 1.0);
+param->setIncrement(0.001);
+param->setDisplayRange(0.0, 1.0);
+param->setIsSecretAndDisabled(true);
+page->addChild(*param);
+
+param = defineScaleParam(p_Desc, "LYELLOW", "yellow limit", "distance from achromatic", 0);
+param->setDefault(1.312);
+param->setRange(1.001, 2.0);
+param->setIncrement(0.001);
+param->setDisplayRange(1.001, 2.0);
+param->setIsSecretAndDisabled(true);
+page->addChild(*param);
+
+param = defineScaleParam(p_Desc, "TYELLOW", "yellow threshold", "percentage of the core gamut", 0);
+param->setDefault(0.88);
+param->setRange(0.0, 1.0);
+param->setIncrement(0.001);
+param->setDisplayRange(0.0, 1.0);
+param->setIsSecretAndDisabled(true);
+page->addChild(*param);
+
+param = defineScaleParam(p_Desc, "PWR", "power", "aggressiveness of the compression curve", 0);
+param->setDefault(1.2);
+param->setRange(0.1, 2.0);
+param->setIncrement(0.001);
+param->setDisplayRange(0.1, 2.0);
+param->setIsSecretAndDisabled(true);
+page->addChild(*param);
+
+BooleanParamDescriptor* boolParam = p_Desc.defineBooleanParam("GINVERT");
+boolParam->setLabel("invert");
+boolParam->setHint("invert gamut compression");
+boolParam->setDefault(false);
+boolParam->setIsSecretAndDisabled(true);
+page->addChild(*boolParam);
+
 choiceparam = p_Desc.defineChoiceParam(kParamCSCOUT);
 choiceparam->setLabel(kParamCSCOUTLabel);
 choiceparam->setHint(kParamCSCOUTHint);
@@ -3337,8 +3558,6 @@ assert(choiceparam->getNOptions() == (int)eCSCOUTACEScct);
 choiceparam->appendOption(kParamCSCOUTOptionACEScct, kParamCSCOUTOptionACEScctHint);
 assert(choiceparam->getNOptions() == (int)eCSCOUTACEScg);
 choiceparam->appendOption(kParamCSCOUTOptionACEScg, kParamCSCOUTOptionACEScgHint);
-assert(choiceparam->getNOptions() == (int)eCSCOUTACESproxy);
-choiceparam->appendOption(kParamCSCOUTOptionACESproxy, kParamCSCOUTOptionACESproxyHint);
 assert(choiceparam->getNOptions() == (int)eCSCOUTADX);
 choiceparam->appendOption(kParamCSCOUTOptionADX, kParamCSCOUTOptionADXHint);
 assert(choiceparam->getNOptions() == (int)eCSCOUTICPCT);
@@ -3351,6 +3570,12 @@ assert(choiceparam->getNOptions() == (int)eCSCOUTSLOG3SG3);
 choiceparam->appendOption(kParamCSCOUTOptionSLOG3SG3, kParamCSCOUTOptionSLOG3SG3Hint);
 assert(choiceparam->getNOptions() == (int)eCSCOUTSLOG3SG3C);
 choiceparam->appendOption(kParamCSCOUTOptionSLOG3SG3C, kParamCSCOUTOptionSLOG3SG3CHint);
+assert(choiceparam->getNOptions() == (int)eCSCOUTVENSLOG3SG3);
+choiceparam->appendOption(kParamCSCOUTOptionVENSLOG3SG3, kParamCSCOUTOptionVENSLOG3SG3Hint);
+assert(choiceparam->getNOptions() == (int)eCSCOUTVENSLOG3SG3C);
+choiceparam->appendOption(kParamCSCOUTOptionVENSLOG3SG3C, kParamCSCOUTOptionVENSLOG3SG3CHint);
+assert(choiceparam->getNOptions() == (int)eCSCOUTVLOGVG);
+choiceparam->appendOption(kParamCSCOUTOptionVLOGVG, kParamCSCOUTOptionVLOGVGHint);
 choiceparam->setDefault( (int)eCSCOUTBypass );
 choiceparam->setAnimates(false);
 choiceparam->setIsSecretAndDisabled(false);
@@ -3604,7 +3829,7 @@ choiceparam->setAnimates(false);
 choiceparam->setIsSecretAndDisabled(true);
 page->addChild(*choiceparam);
 
-BooleanParamDescriptor* boolParam = p_Desc.defineBooleanParam("STRETCH");
+boolParam = p_Desc.defineBooleanParam("STRETCH");
 boolParam->setLabel("Stretch Black");
 boolParam->setHint("stretch black luminance to a PQ code value of 0");
 boolParam->setDefault(true);
