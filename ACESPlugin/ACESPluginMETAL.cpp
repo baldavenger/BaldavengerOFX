@@ -2055,8 +2055,7 @@ fprintf (pFile, "// ACES 1.3 DCTL export \n" \
 "} \n" \
 "break; \n" \
 "case 5: \n" \
-"{ \n" \
-"aces = LMT_Bleach(aces); \n" \
+"{aces = LMT_Bleach(aces);} \n" \
 "break; \n" \
 "case 6: \n" \
 "{aces = LMT_GamutCompress(aces);} \n" \
